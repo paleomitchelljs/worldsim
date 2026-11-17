@@ -1,0 +1,265 @@
+{
+ "resources": [
+  {
+   "kind": "amber",
+   "row": 337,
+   "col": 157
+  },
+  {
+   "kind": "amber",
+   "row": 315,
+   "col": 78
+  },
+  {
+   "kind": "amber",
+   "row": 325,
+   "col": 713
+  },
+  {
+   "kind": "amber",
+   "row": 332,
+   "col": 351
+  },
+  {
+   "kind": "incense",
+   "row": 147,
+   "col": 534
+  },
+  {
+   "kind": "incense",
+   "row": 189,
+   "col": 183
+  },
+  {
+   "kind": "incense",
+   "row": 257,
+   "col": 518
+  },
+  {
+   "kind": "incense",
+   "row": 269,
+   "col": 600
+  },
+  {
+   "kind": "electrum",
+   "row": 172,
+   "col": 573
+  },
+  {
+   "kind": "electrum",
+   "row": 190,
+   "col": 206
+  },
+  {
+   "kind": "electrum",
+   "row": 326,
+   "col": 633
+  },
+  {
+   "kind": "electrum",
+   "row": 220,
+   "col": 163
+  },
+  {
+   "kind": "lapis",
+   "row": 232,
+   "col": 266
+  },
+  {
+   "kind": "lapis",
+   "row": 356,
+   "col": 19
+  },
+  {
+   "kind": "lapis",
+   "row": 208,
+   "col": 198
+  },
+  {
+   "kind": "ivory",
+   "row": 183,
+   "col": 211
+  },
+  {
+   "kind": "ivory",
+   "row": 204,
+   "col": 516
+  },
+  {
+   "kind": "ivory",
+   "row": 193,
+   "col": 591
+  },
+  {
+   "kind": "ivory",
+   "row": 137,
+   "col": 321
+  },
+  {
+   "kind": "purple dye",
+   "row": 111,
+   "col": 225
+  },
+  {
+   "kind": "purple dye",
+   "row": 228,
+   "col": 156
+  },
+  {
+   "kind": "purple dye",
+   "row": 193,
+   "col": 465
+  },
+  {
+   "kind": "purple dye",
+   "row": 222,
+   "col": 203
+  },
+  {
+   "kind": "spice",
+   "row": 240,
+   "col": 207
+  },
+  {
+   "kind": "spice",
+   "row": 290,
+   "col": 389
+  },
+  {
+   "kind": "spice",
+   "row": 177,
+   "col": 480
+  },
+  {
+   "kind": "spice",
+   "row": 200,
+   "col": 595
+  },
+  {
+   "kind": "jade",
+   "row": 262,
+   "col": 434
+  },
+  {
+   "kind": "jade",
+   "row": 127,
+   "col": 538
+  },
+  {
+   "kind": "jade",
+   "row": 168,
+   "col": 401
+  },
+  {
+   "kind": "pearls",
+   "row": 133,
+   "col": 572
+  },
+  {
+   "kind": "pearls",
+   "row": 163,
+   "col": 487
+  },
+  {
+   "kind": "pearls",
+   "row": 237,
+   "col": 246
+  },
+  {
+   "kind": "silver",
+   "row": 158,
+   "col": 543
+  },
+  {
+   "kind": "silver",
+   "row": 224,
+   "col": 601
+  },
+  {
+   "kind": "silver",
+   "row": 228,
+   "col": 500
+  }
+ ],
+ "hearths": [
+  {
+   "kind": "crop",
+   "biome": "Grassland",
+   "row": 262,
+   "col": 636
+  },
+  {
+   "kind": "crop",
+   "biome": "Grassland",
+   "row": 183,
+   "col": 560
+  },
+  {
+   "kind": "crop",
+   "biome": "Temperate forest",
+   "row": 178,
+   "col": 528
+  },
+  {
+   "kind": "crop",
+   "biome": "Temperate forest",
+   "row": 148,
+   "col": 469
+  },
+  {
+   "kind": "crop",
+   "biome": "Jungle",
+   "row": 126,
+   "col": 335
+  },
+  {
+   "kind": "crop",
+   "biome": "Jungle",
+   "row": 286,
+   "col": 488
+  },
+  {
+   "kind": "crop",
+   "biome": "Desert",
+   "row": 188,
+   "col": 158
+  },
+  {
+   "kind": "animal",
+   "biome": "Grassland",
+   "row": 236,
+   "col": 562
+  },
+  {
+   "kind": "animal",
+   "biome": "Grassland",
+   "row": 246,
+   "col": 519
+  },
+  {
+   "kind": "animal",
+   "biome": "Desert",
+   "row": 221,
+   "col": 546
+  },
+  {
+   "kind": "animal",
+   "biome": "Tundra",
+   "row": 316,
+   "col": 512
+  },
+  {
+   "kind": "animal",
+   "biome": "Temperate forest",
+   "row": 309,
+   "col": 391
+  },
+  {
+   "kind": "animal",
+   "biome": "Jungle",
+   "row": 290,
+   "col": 573
+  }
+ ],
+ "seed": 1
+}

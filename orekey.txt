@@ -1,0 +1,11 @@
+Red Triangle: Surface Iron
+
+Purple Triangle: Deep Iron
+
+Red Square: Surface Tin
+
+Purple Square: Deep Tin
+
+Red Circle: Surface Copper
+
+Purple Circle: Deep Copper
