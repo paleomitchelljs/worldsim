@@ -4,11 +4,25 @@ Environment: `~/.venvs/worldsim` (Python 3.12 with numpy, scipy, pillow and
 matplotlib). The map is opened read-only through sqlite3, so geopandas isn't
 needed.
 
+## Where runs go
+
+Runs go in the runs root: `$WORLDSIM_RUNS` if set, else `sim/runs/`
+(D2, U, 2026-11-17; git ignores it). `--out NAME` with no `/` puts the
+run in the root; a path is used as given. `realism.py`, `figures.py`,
+`landmass_report.py`, `timeline.py`, `bigcities.py` and `turnover.py`
+take either a bare run name (`base_seed101`, or a quoted pattern
+`'base_seed10?'`), looked up in the root, or a path. `snapcheck.py` does
+the same for its saved-state file. The lookup is in `runroot.py`.
+
+The runs made before 2026-11-17 (446 folders, many online-only) stay in
+the old Dropbox folder `Dropbox/Personal/_book/art/world/sim/runs/` (D3,
+U); give their full path to read them.
+
 Current scenario (ten peoples, head starts):
 
     ~/.venvs/worldsim/bin/python worldsim.py --peoples peoples_headstart \
         --starts 20 --start-vary 0.1 --seed 91 --years 6400 --vary 0.12 \
-        --out runs/terrain_seed91
+        --out terrain_seed91
 
 An 8,000-year run (seed 101, the sweep's settings) takes about 14 minutes
 with two running side by side (2026-11-07; 23 minutes before that day's
@@ -34,7 +48,7 @@ digest of every part of the state:
     ~/.venvs/worldsim/bin/python snapcheck.py run /tmp/s5000.pkl --ticks 20 --digest new.json
     ~/.venvs/worldsim/bin/python snapcheck.py diff old.json new.json
 
-The state is about 300 MB at year 5000: keep it outside Dropbox. `OLD` is
+The state is about 300 MB at year 5000; git ignores `*.pkl`. `OLD` is
 a folder holding a copy of `wsim/` and the roster modules, with the map
 at `OLD/../gis/world.gpkg`. A whole-run check is still worth doing for a
 change that touches the early years.
@@ -63,11 +77,11 @@ change that touches the early years.
 | `--dragon-shun` | 0 | dragons do not settle near cells holding this share of their ward size (0 = off) |
 | `--dragon-penalty` | 0.036 | cut in the yearly growth rate per unit of dragon hazard at the worst group size ([structural.md](structural.md#dragons-dragons)); replaced `--dragon-kill` |
 | `--off` | none | structural mechanics to switch off, comma-separated, or `all` ([structural.md](structural.md)) |
-| `--out` | `runs/seed<N>` | output folder |
+| `--out` | `seed<N>` | output folder; a bare name goes in the runs root |
 
 With `--off all --city-cap 3 40` the model reproduces the pre-structural one draw for draw
 (checked: identical `events.txt` and `polities.csv` over 1,500 years, seed
-91). The archived copy is `../archive/worldsim_2026-10-29_pre_structural.py`.
+91). The archived copy is `archive/worldsim_2026-10-29_pre_structural.py` in git commit 3338050 (see `archive/README.md`).
 
 ## Outputs (per run folder)
 

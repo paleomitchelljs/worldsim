@@ -12,7 +12,6 @@ kills people. References are rough orders of magnitude, not targets
 "_seed") and shows the range across seeds.
 """
 import argparse
-import glob
 import os
 import re
 import sqlite3
@@ -20,6 +19,8 @@ import sys
 
 import numpy as np
 import pandas as pd
+
+import runroot
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GPKG = os.path.join(HERE, "..", "gis", "world.gpkg")
@@ -184,7 +185,7 @@ def main():
     a = ap.parse_args()
     LAND = land_km2()
     # a run still going has a timeseries but no polities yet
-    runs = sorted({r for p in a.runs for r in glob.glob(p)
+    runs = sorted({r for r in runroot.expand(a.runs)
                    if os.path.exists(os.path.join(r, "timeseries.csv"))
                    and os.path.getsize(os.path.join(r, "polities.csv")) > 0})
     # Dropbox can leave files online-only (macOS "dataless"); reading one

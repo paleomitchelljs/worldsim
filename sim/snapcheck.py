@@ -5,7 +5,8 @@ from year 0 never reaches the war, voyage and city code; a saved state at
 year 5000 exercises all of it in a few seconds per tick.
 
   # once: run to a year and save the whole Sim. Large (~300 MB at year
-  # 5000): keep it outside Dropbox. Arguments after -- are worldsim.py's.
+  # 5000). A bare file name goes in the runs root (runroot.py).
+  # Arguments after -- are worldsim.py's.
   python snapcheck.py save /tmp/s5000.pkl --year 5000 -- \\
       --peoples peoples_regional --starts 20 --start-vary 0.1 --vary 0 \\
       --sites sites_v2.json --seed 101 --years 8000
@@ -30,6 +31,8 @@ import sys
 import time
 
 import numpy as np
+
+import runroot
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # caches, not state; the food graph and its version are rebuilt from the
@@ -168,6 +171,8 @@ def main():
     d.add_argument("a")
     d.add_argument("b")
     a = ap.parse_args(argv)
+    if hasattr(a, "state"):
+        a.state = runroot.path(a.state)   # bare name: in the runs root
     dict(save=cmd_save, run=cmd_run, diff=cmd_diff)[a.cmd](a, rest)
 
 

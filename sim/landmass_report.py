@@ -17,6 +17,8 @@ import sys
 
 import numpy as np
 
+import runroot
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import landmasses as LM  # noqa: E402
@@ -259,7 +261,7 @@ def main():
     keep = LM.ids(a.lm)
     G = Geo()
     allo = []
-    for r in a.runs:
+    for r in runroot.expand(a.runs):
         o = report(r, keep, G)
         allo.append(o)
         print(fmt(o))

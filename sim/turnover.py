@@ -11,6 +11,8 @@ import argparse
 import os
 import numpy as np
 
+import runroot
+
 
 def ruler_people(h):
     """Ruling people per cell for every snapshot (-1 outside states)."""
@@ -57,5 +59,5 @@ if __name__ == "__main__":
     ap.add_argument("runs", nargs="+")
     ap.add_argument("--window", type=int, default=500)
     a = ap.parse_args()
-    for r in a.runs:
+    for r in runroot.expand(a.runs):
         report(r, a.window)

@@ -35,7 +35,8 @@ Three layers, each driving the next:
 One tick is DT years. The world file is opened read-only.
 
 Run:  ~/.venvs/worldsim/bin/python worldsim.py --seed 1 --years 4000
-Out:  sim/runs/seed<N>/  (history.gif, final.png, legacy.png,
+Out:  <runs root>/seed<N>/, or --out (runroot.py; root is $WORLDSIM_RUNS
+      or sim/runs)  (history.gif, final.png, legacy.png,
       population.png, events.txt, cities.csv, polities.csv, timeseries.csv)
 """
 import argparse
@@ -53,6 +54,7 @@ from scipy import ndimage, signal, sparse
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import cKDTree
 
+import runroot
 from wsim import params
 from wsim.params import *  # noqa: F401,F403
 from wsim.geo import World, gc_km, unit_xyz, vary_peoples  # noqa: F401
@@ -137,7 +139,9 @@ def make_sim(argv=None):
     ap.add_argument("--sites", default="sites.json",
                     help="site file (sites_v2.json: landmass quotas, more "
                     "kinds, precious metals)")
-    ap.add_argument("--out", default=None)
+    ap.add_argument("--out", default=None,
+                    help="run folder; a bare name goes in the runs root "
+                    "($WORLDSIM_RUNS or sim/runs); default seed<N>")
     a = ap.parse_args(argv)
     for kv in a.set:
         k, v = kv.split("=", 1)
@@ -157,7 +161,7 @@ def make_sim(argv=None):
         setp("CITY_CAP", True)
         setp("CITY_CAP0", a.city_cap[0])
         setp("CITY_CAP1", a.city_cap[1])
-    out = a.out or os.path.join(HERE, "runs", f"seed{a.seed}")
+    out = runroot.path(a.out or f"seed{a.seed}")
     t0 = time.time()
     world = World()
     print(f"world: {world.N} land cells, loaded in {time.time()-t0:.1f}s")

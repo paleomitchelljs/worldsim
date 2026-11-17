@@ -16,6 +16,8 @@ import sys
 import numpy as np
 import pandas as pd
 
+import runroot
+
 N, R = 25, 150.0
 
 
@@ -95,4 +97,4 @@ def main(dirs):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(runroot.expand(sys.argv[1:]))

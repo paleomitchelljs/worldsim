@@ -19,6 +19,8 @@ import re
 
 import numpy as np
 
+import runroot
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 EV = re.compile(r"\s*(\d+)\s+(\w+)\s+(.*)")
 PID = re.compile(r"P(\d+)\((\w+)\)")
@@ -43,6 +45,7 @@ def main():
                     help="states this large at peak count as major")
     ap.add_argument("--list-landmasses", action="store_true")
     a = ap.parse_args()
+    a.run = runroot.path(a.run)
 
     import sys
     sys.path.insert(0, HERE)

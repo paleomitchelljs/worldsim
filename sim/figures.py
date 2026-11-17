@@ -29,6 +29,8 @@ import sys
 import numpy as np
 from PIL import Image
 
+import runroot
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import landmasses as LM  # noqa: E402
@@ -888,6 +890,6 @@ def compose(run):
 
 
 if __name__ == "__main__":
-    for r in sys.argv[1:]:
+    for r in runroot.expand(sys.argv[1:]):
         compose(r)
         print("wrote", os.path.join(r, "final.png"), "and wars.png")
