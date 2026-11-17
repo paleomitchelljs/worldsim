@@ -184,9 +184,11 @@ def main():
                     help="pool runs by the name before _seed")
     a = ap.parse_args()
     LAND = land_km2()
-    # a run still going has a timeseries but no polities yet
+    # a run still going (or killed) is measured up to its last flush
+    # (output.Stream); one that has not flushed yet has no polities.csv
     runs = sorted({r for r in runroot.expand(a.runs)
                    if os.path.exists(os.path.join(r, "timeseries.csv"))
+                   and os.path.exists(os.path.join(r, "polities.csv"))
                    and os.path.getsize(os.path.join(r, "polities.csv")) > 0})
     # Dropbox can leave files online-only (macOS "dataless"); reading one
     # can hang, so skip the run and say so

@@ -1,18 +1,6 @@
 """The simulation: state and the yearly step."""
-import argparse
-import importlib
-import csv
-import json
-import math
-import os
-import sqlite3
-import sys
 import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -262,7 +250,6 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.city_ts = []           # (year, id, cell, status, size, ...)
         self.ruins = {}             # cell -> record of the city that ended
         self.ts = []
-        self.frames = []
         self.rel = []               # relations.csv rows (on frame ticks)
         self.hist = []              # history.npz snapshots (HIST_EVERY)
         self.war_log = []           # wars.csv (records only)
@@ -408,15 +395,22 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                           np.array(ti, float).reshape(-1, 3)))
 
     def run(self, verbose=True):
+        """Run to the end, writing output to self.out as it goes (frames
+        when rendered, tables every FLUSH_EVERY ticks), so a killed run
+        keeps what it had written."""
+        from .output import Stream
+        stream = Stream(self, self.out)
         t0 = time.time()
         nt = self.years // DT
         for _ in range(nt):
             self.step()
             if self.tick % self.frame_every == 0 or self.tick == nt:
-                self.frames.append(render(self))
+                stream.frame(render(self))
                 self.relations()
             if self.tick % HIST_EVERY == 0 or self.tick == nt:
                 self.snapshot()
+            if self.tick % FLUSH_EVERY == 0 or self.tick == nt:
+                stream.flush()
             if verbose and self.tick % 50 == 0:
                 s = self.ts[-1]
                 tot = sum(s[f"pop_{k}"] for k in self.keys)

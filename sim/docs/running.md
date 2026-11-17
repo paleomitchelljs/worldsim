@@ -85,6 +85,22 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 
 ## Outputs (per run folder)
 
+From 2026-11-17 the run writes as it goes (`wsim/output.py`, `Stream`).
+Each frame is saved to `frames/` when it is rendered. Every `FLUSH_EVERY`
+ticks (C: 100 ticks, 500 years) and at the end, the append-only tables
+(`events.txt`, `timeseries.csv`, `city_sizes.csv`, `sieges.csv`,
+`revolts.csv`, `relations.csv`, `price.csv`, `cityfood.csv`, `deaths.csv`,
+`citylevel.csv`, `citygaps.csv`, `citytraits.csv`, `lineage_events.csv`,
+`lineage_pairs.csv`) get their new rows. `wars.csv`, `rulers.csv`,
+`cities.csv`, `polities.csv`, `lineages.csv`, `dragons.csv`, `posts.csv`,
+`history.npz` and `run.json` are rewritten under a temporary name and then
+renamed into place. A killed run therefore keeps readable tables up to its
+last flush, and `run.json`'s `year_reached` says how far that was.
+`realism.py` reads such a partial run. The rest is written only when the
+run ends: `history.gif`, `final_maps.png`, the plots, `traits.txt`,
+`chronicle.txt`, `checks.txt`, `final_state.npz` and `figures.py`'s
+figures.
+
 | File | What |
 |---|---|
 | `history.gif`, `frames/`, `final_maps.png` | animation and last frame. The top panel shows states, the bottom peoples by density (red dots: dragons). Dots are cities; ringed dots are capitals. |
@@ -105,7 +121,7 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 | `lineages.csv` | every lineage, with parent, origin, traits and the technology stage reached |
 | `cities.csv`, `polities.csv` | lon/lat, founding and end years, peaks, rulers, peoples ruled (loads into QGIS) |
 | `timeseries.csv`, `final_state.npz` | per-tick statistics; final per-cell grid (row/col match `cells`), including roads, improvements, land condition, rivers and the drainage network as it ended |
-| `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the run's end, before the figures), and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides |
+| `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the last write of `run.json`), `year_reached`, and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides |
 | `price.csv` | Price-equation decomposition of each cultural trait, per century, per people and world-wide ([diagnostics.md](diagnostics.md)) |
 | `dragons.csv` | every dragon: birth, first home, end, fate, ally (with `dragons`) |
 | `relations.csv` | every pair of neighbouring live states on each frame tick: similarity, enmity and faith motives both ways, trade tie, war, alliance, truce, and `similarity_lin` (the ruling lineages'). From 2026-11-07 similarity and motives are those the war rule reads (the states' cultures under `city_culture`); before, they were always the ruling lineages', so they did not show what drove wars |
@@ -116,7 +132,8 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 
 Analysis tools: `realism.py RUNS [--group]` prints the realism checks
 side by side ([diagnostics.md](diagnostics.md#realism-checks-realismpy-2026-11-09));
-it skips runs still going and runs whose files Dropbox has made
+a run still going, or killed, is measured up to its last flush (its
+`years` row says how far). It skips runs whose files Dropbox has made
 online-only (reading those can hang), and names them.
 `landmasses.py` holds short codes per landmass (S, W1-W5,
 N1-N4, E1, X1-X4; groups S, W, N, E, X) and draws `docs/landmass_key.png`.

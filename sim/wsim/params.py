@@ -522,6 +522,10 @@ ROADT_INV, ROADT_BORROW, ROAD_Q0 = 0.001, 0.002, 0.15
 # history.npz (figures.py war and trade maps): a map snapshot every
 # HIST_EVERY ticks (100 years), apart from the rendered frames.
 HIST_EVERY = 20
+# Output is written while the run goes (output.Stream): every FLUSH_EVERY
+# ticks (C: 100 ticks = 500 years) and at the end, so a killed run keeps
+# its tables up to the last flush. Records only.
+FLUSH_EVERY = 100
 CITY_MAX = 20000
 # U 2026-11-02 (option c): weaker cohesion between cities and weaker
 # feedback into lineages, so cities diverge on their own histories and
