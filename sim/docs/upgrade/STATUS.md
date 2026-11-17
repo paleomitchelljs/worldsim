@@ -9,9 +9,9 @@ what an entry holds.
 | 0 | B runs out of Dropbox | done | 2026-11-17 | 0ec5f91 |
 | 0 | C run manifest and overrides | done | 2026-11-17 | d17745c |
 | 0 | D streamed output | done | 2026-11-17 | 858b205 |
-| 0 | E clean-up | not started | | |
-| 1 | A polity table | not started | | |
-| 1 | B capacity factoring | not started | | |
+| 0 | E clean-up | done | 2026-11-17 | 44ef835 + fix a5b8d95 |
+| 1 | A polity table | done | 2026-11-17 | 48ce872 |
+| 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
 | 1 | C resident capacity cache | not started | | |
 | 1 | D migration, raids, climate, wars | not started | | |
 | 1 | E branching from a saved state | not started | | |
@@ -155,4 +155,112 @@ killed run up to its last flush, instead of skipping it.
 **Next stage needs to know.** Memory use is unchanged apart from the
 frames. If memory becomes a problem, the append lists could be drained
 once their readers move to the files.
+
+### WP0 stage E: clean-up (2026-11-17, 44ef835)
+
+**Correction.** Commit 44ef835 did not hold exactly the code that was
+sanity-run. When I split its hunks from WP1 stage A's working-tree
+edits, the line `pc[pid], pl[pid] = P["culture"], P["lin"]` in
+`extraction()` was lost. In that phase every state's ruling people then
+read as -1 and its lineage as 0. a5b8d95 restores the line. With it, the
+per-phase state hashes over 100 ticks equal stage D's. Any run made at
+44ef835 itself has the wrong `extraction`; I made none apart from a
+profile, which I discarded. Lesson: do not split one working tree into
+two commits by hunk. Commit each stage before starting the next.
+
+**Done.**
+- **Dead code after `return`:** removed in `culture.drift_trait`,
+  `war.war_prize`, `economy.kind_value`, `economy.offer` and
+  `settlement.colon`.
+- **Branches behind flags that were always `True`:** `tp` and `ce`
+  (`culture.experience`), `no_drought` and `imm_on` (`land.disasters`),
+  `col` (`settlement.voyages`), `sup` (`technology.technology`) and
+  `betray` (`war.wars_step`). Also removed the overwritten `kinf = 1.0` in
+  `war.raids`. These flags are the former switches that
+  `switch-inventory.md` lists as core. A search for other local booleans
+  assigned once and used in a test found none.
+- **Constants:** `EXP_UNUSED` and `EXP_SUP_CALM` were read only by the
+  removed branches, so they are gone. `structural.md` and the
+  `params.py` comments say so.
+- **Unused imports:** dropped from every `wsim` module. A name was kept
+  where a module that star-imports the file uses it without importing it
+  itself. `params.py` no longer imports the default roster. A static check
+  found no undefined names afterwards.
+- **World cache:** `World()` keeps the cells table in
+  `<runs root>/_world_cache.npz` (83 MB), keyed on the world file's path,
+  size and modification time. A load takes 1.7 s from the cache against
+  3.8 s from SQLite. The brief's 13-15 s was probably measured while the
+  file was in Dropbox. A World built from the cache matched one built from
+  SQLite in all 60 arrays.
+
+**Runs.** `wp0e_sanity_seed101`: 3,000 years, 225 s. `events.txt`,
+`timeseries.csv`, `cities.csv`, `polities.csv`, `wars.csv` and
+`lineages.csv` are byte-identical to `wp0d_sanity_seed101`, so the removed
+branches were dead.
+
+**Next stage needs to know.**
+- `docs/upgrade/tools/profile_phases.py` now streams output through
+  `Stream`, as `Sim.run()` does. Without that it broke after stage D.
+- The cache key holds the world file's path as given, without resolving
+  symlinks. A copy of the code that reaches `gis/` through a symlink
+  therefore rebuilds the cache once.
+
+### WP1 stages A and B: polity table, lineage capacity tables (2026-11-17, 48ce872)
+
+One commit for both stages; after the WP0 E mistake I did not split by hunk.
+
+**Done.**
+- A. `ptab()` holds the live polities as arrays by id (ruling lineage,
+  people, capital; -1 for ended ones), keyed on `(pver, next_pid)`.
+  `padm()` gives the ruling lineage's administration, with 0 for ended
+  ids, and is read fresh because administration changes within a tick.
+  `pver` is bumped at every write to a polity's lin, culture, capital or
+  ended (grep `pver += 1`). Eight loops now use these arrays.
+  `extraction` keeps its own loop for `xr`, which calls `eff`. `eff`
+  reads `CITY_COLS` and `RT_IDX`.
+- B (lineage half only). `ltab()` holds K2's per-lineage biome tables
+  (fit, crop and animal package weights; `MAXL x 5`). It adds rows for
+  new lineages and rebuilds when `lver` moves. `lver` is bumped after
+  every write to agri, metal or domlv of an existing lineage
+  (technology x2, `blend`, `lineage_fusion`).
+
+**Not done.**
+- The cell-only vectors of stage B. They need refreshes after
+  `land_use`, `raids`, `capture` and `sack`, which is more places to get
+  wrong. Kf is no longer the top cost (table below). I would fold them
+  into stage C's resident cache, where the same invalidation is needed
+  anyway, rather than build them twice.
+- The `polity_stats` and `food_flows` loops named in the brief. The first
+  writes the lineage hand-over; the second builds a filtered live list.
+  Neither just rebuilds `pl`.
+
+**Checks.**
+- A wrapper compared the new K2 with the old formula on every call for 40
+  ticks from year 4,000: 5,274 calls, 30.0M values, worst relative
+  difference 0.
+- State hashes (pop, lin, RNG state) after every phase for 100 ticks
+  equal stage D's. The 6,000-year profiles below end with the same
+  cities, polities and lineage counts (381, 2,168, 3,993).
+
+**Profile** (`docs/upgrade/tools/profile_phases.py`, seed 101, 6,000
+years). Seconds per 1,000-year era; both run at the same time on a
+machine with other load, so compare within the pair, not with the
+2026-11-16 baseline.
+
+| phase | E (a5b8d95) 0k / 3k / 5k | A+B 0k / 3k / 5k |
+|---|---|---|
+| TOTAL | 29.8 / 63.9 / 117.0 | 27.6 / 58.1 / 110.0 |
+| migrate | 10.6 / 18.8 / 34.3 | 9.2 / 17.1 / 30.7 |
+| Kf | 5.6 / 14.7 / 21.6 | 3.4 / 8.9 / 13.7 |
+| raids | 2.8 / 14.0 / 18.4 | 2.5 / 12.1 / 16.5 |
+| technology | 2.0 / 6.0 / 8.8 | 1.8 / 5.2 / 8.1 |
+
+Over the whole run: 392 s against 362 s of phase time (-8%); 401 s
+against 369 s wall time. Kf is down 37% in the last era. The polity
+table saves little directly: most of the loops it replaces cost well
+under 1 s per era. The largest costs are now migrate, raids and
+wars_step (13.7 s in the last era, unchanged). Those belong to stage D.
+
+**Next.** Stage C (resident capacity cache), with the cell vectors
+inside it.
 
