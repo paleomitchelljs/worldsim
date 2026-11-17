@@ -51,7 +51,11 @@ These come from the user (`docs/README.md`, "Principles").
 
 ### Dropbox hazards
 
-The project sits in Dropbox and the disk is nearly full, so Dropbox turns
+As of 2026-11-17 the project lives at `~/Desktop/world`, outside Dropbox,
+under git (remote: github.com/paleomitchelljs/worldsim). The cautions below
+still apply to old run folders and saved states that remain in Dropbox.
+
+The project sat in Dropbox and the disk is nearly full, so Dropbox turns
 files into online-only placeholders. Reading one can hang for minutes.
 
 - Never run `find`, `du`, `grep -r` or `wc` across `runs/` or `archive/`.

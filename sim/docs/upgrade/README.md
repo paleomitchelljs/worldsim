@@ -57,7 +57,7 @@ Why this order:
 ## How to run a session
 
 One stage of one work package per session. Open the session in
-`art/world/sim` and give it:
+`~/Desktop/world/sim` (formerly `art/world/sim` in Dropbox) and give it:
 
 > Read `docs/upgrade/GUIDE.md`, then `docs/upgrade/WP<n>-<name>.md`. Do
 > stage <letter> only. Follow the guide's rules on testing (light) and
@@ -72,7 +72,7 @@ Recommendations are mine (C). Record answers here with the date.
 
 | # | Decision | Recommendation | Answer |
 |---|---|---|---|
-| D1 | Where the git metadata lives (a `.git` folder inside Dropbox can be corrupted by sync) | `git init --separate-git-dir ~/git/worldsim.git` in `art/world` | |
+| D1 | Where the git metadata lives (a `.git` folder inside Dropbox can be corrupted by sync) | `git init --separate-git-dir ~/git/worldsim.git` in `art/world` | 2026-11-17 (U): the project moved out of Dropbox to `~/Desktop/world`, so a plain `.git` there; remote `origin` = github.com/paleomitchelljs/worldsim, pushing allowed |
 | D2 | Where runs live | `~/worldsim_runs` (outside Dropbox), with `WORLDSIM_RUNS` to override; keep only `metrics.json`, `run.json` and chosen figures in Dropbox | |
 | D3 | What to do with the ~900 existing run folders | keep the batches the run log cites; delete or archive the rest to an external disk | |
 | D4 | New Python packages in `~/.venvs/worldsim` (xarray + netCDF4, geopandas, SALib) | yes; pin in a `requirements.txt` | |
