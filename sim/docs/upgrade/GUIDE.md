@@ -45,6 +45,8 @@ These come from the user (`docs/README.md`, "Principles").
   matplotlib, pandas). No numba, no pytest. Ask before installing anything
   not approved in the decision register (`README.md`, D4).
 - `ffmpeg` and `git` are installed.
+- **Commit and push to `origin` (GitHub) after every commit (U,
+  2026-11-17).** The repository is public and that is fine.
 - The machine has 4 performance cores. Run at most 8 simulations at once;
   check `uptime` first, because the user often has other jobs running.
 - An 8,000-year run takes about 14 minutes on an idle machine.

@@ -29,7 +29,6 @@ Read first: `docs/README.md`, `docs/running.md`, `worldsim.py`,
    `archive/wsim_*` folders. Keep `archive/v1_2026-11-02/` (the docs cite
    it as the last single-file model) and `archive/snaps/` unless the user
    says otherwise.
-4. Do not push anywhere. Do not add a remote unless asked.
 
 Done when: `git status` is clean and `git log` shows the two commits.
 
