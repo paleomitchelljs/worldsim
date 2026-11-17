@@ -74,6 +74,9 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.Lr = np.zeros(MAXL)
         self.Laff = np.ones((MAXL, len(BIOMES)))
         self.Lbest = np.ones(MAXL)       # best biome affinity (cached)
+        # ltab(): K2's per-lineage tables and the version that invalidates
+        # them (bumped by every write to agri, metal or domlv)
+        self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
         self.Lpeople = -np.ones(MAXL, int)
         self.Lparent = -np.ones(MAXL, int)
         self.Lparent2 = -np.ones(MAXL, int)   # second parent (fusion)
@@ -237,6 +240,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.city_years = np.zeros(N)
         self.city_peak = np.zeros(N)
         self.polities = {}          # pid -> record
+        self.pver = 0               # bumped when a polity's lin, culture,
+        self._ptab_key = None       # capital or end changes (ptab())
         self.next_pid = 1
         self.wars = {}              # (lo, hi) -> record
         self.truce = {}             # (lo, hi) -> tick until
@@ -282,6 +287,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v2()
         if not hasattr(self, "uc_on"):
             self.uc_on = "urban_city" in self.on
+        if not hasattr(self, "lver"):
+            self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
+        if not hasattr(self, "pver"):
+            self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):
             self.W.food_graph()
 

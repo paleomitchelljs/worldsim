@@ -44,10 +44,7 @@ class TechnologyMixin:
         la, lb = self.lin[W.E1], self.lin[W.E2]
         m = (la >= 0) & (lb >= 0) & (la != lb)
         add(amap[la[m]], amap[lb[m]], 1.0, 0)
-        pl = np.full(self.next_pid, -1)
-        for pid, p in self.polities.items():
-            if p["ended"] is None:
-                pl[pid] = p["lin"]
+        pl = self.ptab()[0]
         rl = np.where(self.cell_pol >= 0, pl[np.maximum(self.cell_pol, 0)],
                       -1)
         m = occ & (rl >= 0) & (rl != self.lin)
@@ -153,6 +150,7 @@ class TechnologyMixin:
         self.agri[A] = np.clip(ag2, 0, 1)
         self.metal[A] = np.minimum(mt2, cap)
         self.metal[A] = np.maximum(self.metal[A], 0)
+        self.lver += 1                      # agri, metal: ltab()
         ad2 = np.clip(ad2, 0, 1)
         self.sail[A] = sl2
         if not self.ca_on:
@@ -389,6 +387,7 @@ class TechnologyMixin:
         bor = np.stack([diffuse(lv[:, k], DOM_BORROW) for k in range(nh)], 1)
         new = np.clip(lv + DT * (inv * (1 - lv) + bor * suit), 0, 1)
         self.domlv[A] = new
+        self.lver += 1                      # ltab()
         for k in range(nh):
             got = (new[:, k] >= 0.5) & (lv[:, k] < 0.5)
             for L in A[got][:1]:

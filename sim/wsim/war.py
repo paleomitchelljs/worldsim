@@ -57,10 +57,7 @@ class WarMixin:
         """Violence costs lives where no ordered state keeps the peace."""
         f = np.clip((self.viol[L] - FEUD_PIVOT) / (1 - FEUD_PIVOT), 0, 1)
         pol = self.cell_pol[occ]
-        ordv = np.zeros(max(self.next_pid, 1))
-        for pid, P in self.polities.items():
-            if P["ended"] is None:
-                ordv[pid] = self.admin[P["lin"]]
+        ordv = self.padm()
         order = np.where(pol >= 0, ordv[np.maximum(pol, 0)], 0)
         lost = DT * FEUD_K * f * (1 - order)
         b_pop = self.pop[occ]
@@ -194,10 +191,7 @@ class WarMixin:
 
     def raid_order(self, att, dfn, same_state):
         """How far states and peace hold raids back on these edges."""
-        pl = np.full(self.next_pid, -1)
-        for pid, P in self.polities.items():
-            if P["ended"] is None:
-                pl[pid] = P["lin"]
+        pl = self.ptab()[0]
         f = np.ones(len(att))
         for c in (att, dfn):
             pc = self.cell_pol[c]

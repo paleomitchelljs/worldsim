@@ -630,11 +630,7 @@ class SettlementMixin:
         m = np.nonzero((self.mlin >= 0) & (self.cell_pol >= 0))[0]
         if not len(m):
             return
-        pl = np.full(self.next_pid, -1)
-        pc = np.full(self.next_pid, -1)
-        for pid, p in self.polities.items():
-            if p["ended"] is None:
-                pl[pid], pc[pid] = p["lin"], p["culture"]
+        pl, pc = self.ptab()[:2]
         L = pl[self.cell_pol[m]]
         foreign = (L >= 0) & (self.mcul[m] != pc[self.cell_pol[m]])
         pr = DT * MIN_EXPEL * self.hostile(L) * self.tolf(L, 1.0)

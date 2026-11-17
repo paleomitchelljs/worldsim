@@ -443,6 +443,7 @@ class CitiesMixin:
                 if P["ended"] is None and P["lin"] == L and \
                         P["capital"] == cell:
                     P["lin"] = D
+                    self.pver += 1
             self.count("city_speciation")
             if self.pop[cell] > 0 and len(self.cities) >= 1:
                 self.first(("city_spec", int(self.Lpeople[L])), "culture",
@@ -540,6 +541,7 @@ class CitiesMixin:
                       "bronze", "iron", "steel"):
                 v = getattr(self, t)
                 v[to] = max(v[A], v[B])
+            self.lver += 1                  # agri, metal: ltab()
             olds = (small,) if kind == "absorb" else (A, B)
             mv = np.zeros(len(self.lin), bool)
             mv[moved] = True
@@ -558,6 +560,7 @@ class CitiesMixin:
                 if P["ended"] is None and P["lin"] in olds and \
                         (P["id"] == S or left[P["lin"]] <= 0):
                     P["lin"] = to
+                    self.pver += 1
             self.lin_events.append(dict(
                 year=self.year, kind=kind, people=self.keys[self.Lpeople[A]],
                 a=big, b=small, to=to, state=S, years_together=age[k],

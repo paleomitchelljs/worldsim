@@ -7,12 +7,38 @@ from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
+from .cities import CITY_COLS
+
+RT_IDX = {a: k for k, a in enumerate(RT_TRAITS)}   # eff(): trait -> column
 
 
 class StatesMixin:
+    def ptab(self):
+        """Live polities as arrays by id: rows ruling lineage, people,
+        capital; -1 for ended ids. Rebuilt only when pver has moved: every
+        write to a polity's lin, culture, capital or ended bumps it.
+        Read-only."""
+        key = (self.pver, self.next_pid)
+        if self._ptab_key != key:
+            t = np.full((3, self.next_pid), -1, int)
+            for pid, P in self.polities.items():
+                if P["ended"] is None:
+                    t[0, pid], t[1, pid] = P["lin"], P["culture"]
+                    t[2, pid] = -1 if P["capital"] is None else P["capital"]
+            t.setflags(write=False)
+            self._ptab, self._ptab_key = t, key
+        return self._ptab
+
+    def padm(self):
+        """Administration of each live polity's ruling lineage by id, 0
+        for ended ids (read now: administration changes within a tick)."""
+        pl = self.ptab()[0]
+        return np.where(pl >= 0, self.admin[np.maximum(pl, 0)], 0.0)
+
     def new_polity(self, L, capital, cohesion=0.6, parent=None):
         pid = self.next_pid
         self.next_pid += 1
+        self.pver += 1
         c = int(self.Lpeople[L])
         self.polities[pid] = dict(id=pid, culture=c, lin=int(L),
                                   capital=capital, founded=self.year,
@@ -60,12 +86,14 @@ class StatesMixin:
             self.kill_polity(p["id"], "lost its last city")
             return
         p["capital"] = max(p["cities"], key=self.city_weight)
+        self.pver += 1
 
     def kill_polity(self, pid, why):
         p = self.polities.get(pid)
         if p is None or p["ended"] is not None:
             return
         p["ended"] = self.year
+        self.pver += 1
         self.vassal.pop(pid, None)
         for v in [v for v, o in self.vassal.items() if o == pid]:
             del self.vassal[v]
@@ -233,6 +261,7 @@ class StatesMixin:
                     p["lin"] = int(self.lin[cap])
                     p["dyn"] = self.year
                     p["culture"] = int(self.cul[cap])
+                    self.pver += 1
                 pc[pid], pl[pid] = p["culture"], p["lin"]
         own = m & (self.cul == pc[np.maximum(pol, 0)])
         # records: share of each state's people (food-equivalents) not of
@@ -387,11 +416,11 @@ class StatesMixin:
             return
         n, pol = self.next_pid, self.cell_pol
         m = pol >= 0
-        pc, pl = np.full(n, -1), np.zeros(n, int)
+        pl, pc = self.ptab()[:2]
+        pl = np.maximum(pl, 0)              # ended ids: lineage 0, unread
         xr = np.zeros(n)
         for pid, P in self.polities.items():
             if P["ended"] is None:
-                pc[pid], pl[pid] = P["culture"], P["lin"]
                 xr[pid] = EXT_SUBJ * (0.5 + self.eff(P, "hier"))
         pp = np.maximum(pol, 0)
         self.rul_c = np.where(m, pc[pp], -1)
@@ -835,6 +864,7 @@ class StatesMixin:
                 v = getattr(self, t)
                 v[D] = max(v[La], v[Lb])
             self.domlv[D] = np.maximum(self.domlv[La], self.domlv[Lb])
+            self.lver += 1                  # agri, metal, domlv: ltab()
             self.guard[D] = self.guard[La] | self.guard[Lb]
             for t in ("bronze", "iron", "steel"):
                 v = getattr(self, t)
@@ -846,6 +876,7 @@ class StatesMixin:
         for Lo in (La, Lb):
             self.lin[cells[self.lin[cells] == Lo]] = new[int(self.Lpeople[Lo])]
         big["lin"] = new[int(big["culture"])]
+        self.pver += 1
         big["dyn"] = self.year
 
     def city_dist(self, a, b):
@@ -1073,17 +1104,17 @@ class StatesMixin:
         L = P["lin"]
         if self.cc_on:
             v = self.state_vec(P)
-            cols = self.city_cols()
-            x = v[cols[a]]
-            h, cf = v[cols["hier"]], v[cols["conf"]]
+            x = v[CITY_COLS[a]]
+            h, cf = v[CITY_COLS["hier"]], v[CITY_COLS["conf"]]
         else:
             x = getattr(self, a)[L]
             h, cf = self.hier[L], self.conf[L]
         r = P.get("ruler")
-        if not self.rt or not r or "x" not in r or a not in RT_TRAITS:
+        k = RT_IDX.get(a)
+        if not self.rt or not r or "x" not in r or k is None:
             return x
         w = min(1.0, h * (1.5 - cf))
-        return float(x + w * (r["x"][RT_TRAITS.index(a)] - x))
+        return float(x + w * (r["x"][k] - x))
 
     def rt_gap(self, P, L, ci=None):
         """RMS distance between state P's ruler and lineage L (or, with

@@ -165,10 +165,7 @@ class EconomyMixin:
     def pref_spread(self):
         """Tastes spread: subjects toward their ruler, trading rulers
         toward each other (`goods_value`)."""
-        rl = np.full(self.next_pid, -1)
-        for pid, p in self.polities.items():
-            if p["ended"] is None:
-                rl[pid] = p["lin"]
+        rl = self.ptab()[0]
         m = (self.lin >= 0) & (self.cell_pol >= 0)
         key = np.unique(self.cell_pol[m].astype(np.int64) * MAXL +
                         self.lin[m])

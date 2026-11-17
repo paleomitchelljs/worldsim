@@ -176,10 +176,7 @@ class CultureMixin:
         self.revolted[:] = 0
         self.pevent = {}
         out = dict(s=s[A], v=v[A], q=q[A], r=r[A], u=u[A], yev=yev[A])
-        ordv = np.zeros(self.next_pid)
-        for pid, P in self.polities.items():
-            if P["ended"] is None:
-                ordv[pid] = self.admin[P["lin"]]
+        ordv = self.padm()
         out["order"] = (np.bincount(L, weights=(w * ordv[pol])[occ],
                                     minlength=nL) / den)[A]
         out["instate"] = (np.bincount(L, weights=w[occ], minlength=nL)

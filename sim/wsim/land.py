@@ -58,11 +58,29 @@ class LandMixin:
         return 0.5 * np.clip((self.agri[L] - 0.25) / 0.75, 0, 1) + \
             0.5 * np.clip(self.metal[L] / 2.6, 0, 1)
 
-    def biome_fit(self, L, b):
-        """Effective biome affinity of lineages L in biomes b."""
-        best = self.Lbest[L]
-        k = BIOME_K * (1 - BIOME_ADAPT * self.adapt(L))
-        return best * (self.Laff[L, b] / best) ** k
+    def ltab(self):
+        """Per-lineage tables for K2, (MAXL, biomes) each, rows below nL
+        valid: effective biome affinity (fit), and the best crop and animal
+        package weights the lineage holds in each biome. A full rebuild
+        when lver moves (every write to agri, metal or domlv of an existing
+        lineage bumps it; Laff and Lbest are set only by new_lineage), else
+        only the rows of lineages added since."""
+        n0 = 0 if self._ltab_ver != self.lver else self._ltab_n
+        if n0 < self.nL:
+            if n0 == 0:
+                nb = len(BIOMES)
+                self._ltab = (np.ones((MAXL, nb)), np.zeros((MAXL, nb)),
+                              np.zeros((MAXL, nb)))
+            fit, cr, an = self._ltab
+            L = np.arange(n0, self.nL)
+            best = self.Lbest[L][:, None]
+            k = BIOME_K * (1 - BIOME_ADAPT * self.adapt(L))
+            fit[L] = best * (self.Laff[L] / best) ** k[:, None]
+            lv = self.domlv[L][:, :, None]
+            cr[L] = (lv * self.h_wc[None]).max(1)
+            an[L] = (lv * self.h_wa[None]).max(1)
+            self._ltab_ver, self._ltab_n = self.lver, self.nL
+        return self._ltab
 
     def Kf(self, L, j, parts=False, raw=False):
         """Carrying capacity of cells j for lineages L (broadcast): the
@@ -124,18 +142,16 @@ class LandMixin:
         farm = farm * (1 - SALT_MAX * self.salt[j] * W.irr_share[j])
         # what there is to farm and herd: the packages a lineage holds
         b = W.biome[j]
-        lv = self.domlv[L]
-        cr = (lv * np.moveaxis(self.h_wc[:, b], 0, -1)).max(-1)
-        an = (lv * np.moveaxis(self.h_wa[:, b], 0, -1)).max(-1)
+        FIT, CR, AN = self.ltab()
+        cr, an = CR[L, b], AN[L, b]
         farm = farm * (DOM_FLOOR + (1 - DOM_FLOOR) * cr)
         herd = herd * (DOM_HFLOOR + (1 - DOM_HFLOOR) * an)
         dens = forage * (1 - a) + farm * a * tools
         eat = self.peat[self.Lpeople[L]]
-        fit = self.biome_fit(L, W.biome[j])
+        fit = FIT[L, b]
         # near a biome edge, a dry or wet spell moves the edge
         f = self.eco_f[j]
-        fit = fit + f * (self.biome_fit(L, np.maximum(self.eco_tgt[j], 0))
-                         - fit)
+        fit = fit + f * (FIT[L, np.maximum(self.eco_tgt[j], 0)] - fit)
         coast = 1 + (FISH0 + FISH1 * self.fishing[L]) * W.water[j]
         if self.pwet.any():
             fit = fit * (1 + WET_K * self.pwet[self.Lpeople[L]] * W.wet[j])
@@ -256,10 +272,7 @@ class LandMixin:
             mix.append(1 - f + f * v[t2] / v[b])
         raw = np.array([rain * mix[0], irr, forage * mix[1], forage * mix[2]])
         # granaries: states smooth short swings, more so with good offices
-        pl = np.full(self.next_pid, -1)
-        for pid, p in self.polities.items():
-            if p["ended"] is None:
-                pl[pid] = p["lin"]
+        pl = self.ptab()[0]
         rl = np.where(self.cell_pol >= 0, pl[np.maximum(self.cell_pol, 0)],
                       -1)
         tau = np.where(rl >= 0, STORE_YEARS * self.admin[np.maximum(rl, 0)],
@@ -463,10 +476,7 @@ class LandMixin:
             gain - SALT_REC * (1 - it) * self.salt), 0, 1)
         # farmers build; capable states build faster; unused works
         # silt up and fall in
-        pl = np.full(self.next_pid, -1)
-        for pid, p in self.polities.items():
-            if p["ended"] is None:
-                pl[pid] = p["lin"]
+        pl = self.ptab()[0]
         rl = pl[np.maximum(self.cell_pol[occ], 0)]
         adm = np.where((self.cell_pol[occ] >= 0) & (rl >= 0),
                        self.admin[np.maximum(rl, 0)], 0)
