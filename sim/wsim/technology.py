@@ -1,18 +1,6 @@
 """Technology."""
-import argparse
-import importlib
-import csv
-import json
-import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
+from scipy import sparse
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -141,35 +129,31 @@ class TechnologyMixin:
                     stA[amap[p["lin"]]] = self.eff(p, "state")
         ad2 = ad + DT * (0.0008 * Fad * stA * (1 - ad) *
                          np.sqrt(np.clip(nc / 5, 0, 1)) + diffuse(ad, 0.002))
-        sup = True
-        kb, ki = (self.known[A, 0], self.known[A, 1]) if sup else \
-            (self.bronze[A], self.iron[A])
+        kb, ki = self.known[A, 0], self.known[A, 1]
         cap = np.where(~kb, 1.2, np.where(~ki, 2.0, 3.5))
-        if sup:
-            # outside any state, offices and workshops lapse
-            ruled = np.bincount(self.lin[occ], weights=(self.pop * (
-                self.cell_pol >= 0))[occ], minlength=nL)[A]
-            idle = 1 - ruled / np.maximum(Lpop[A], 1)
-            ad2 = ad2 - DT * DECAY_ADMIN * idle
-            mt2 = mt2 - DT * DECAY_METAL * idle
-            # farming, fishing and sailing lapse where they are not used
-            Kocc = np.maximum(self.Kf(self.lin[occ], np.nonzero(occ)[0]),
-                              1e-3)
-            unused = self.herding[occ] | (self.pop[occ] < AGRI_THIN * Kocc)
-            nofarm = (np.bincount(self.lin[occ], weights=self.pop[occ] *
-                                  unused, minlength=nL) /
-                      np.maximum(Lpop, 1))[A]
-            ag2 = ag2 - DT * DECAY_AGRI * nofarm * np.maximum(ag2 - 0.25, 0)
-            sl2 = sl2 - DT * DECAY_SAIL * (1 - coastal[A]) * \
-                np.maximum(sl2 - SAIL_START, 0)
-            fs2 = self.fishing[A]
-            self.fishing[A] = fs2 - DT * DECAY_FISH * \
-                (1 - waterside[A]) * np.maximum(fs2 - FISH_START, 0)
+        # outside any state, offices and workshops lapse
+        ruled = np.bincount(self.lin[occ], weights=(self.pop * (
+            self.cell_pol >= 0))[occ], minlength=nL)[A]
+        idle = 1 - ruled / np.maximum(Lpop[A], 1)
+        ad2 = ad2 - DT * DECAY_ADMIN * idle
+        mt2 = mt2 - DT * DECAY_METAL * idle
+        # farming, fishing and sailing lapse where they are not used
+        Kocc = np.maximum(self.Kf(self.lin[occ], np.nonzero(occ)[0]),
+                          1e-3)
+        unused = self.herding[occ] | (self.pop[occ] < AGRI_THIN * Kocc)
+        nofarm = (np.bincount(self.lin[occ], weights=self.pop[occ] *
+                              unused, minlength=nL) /
+                  np.maximum(Lpop, 1))[A]
+        ag2 = ag2 - DT * DECAY_AGRI * nofarm * np.maximum(ag2 - 0.25, 0)
+        sl2 = sl2 - DT * DECAY_SAIL * (1 - coastal[A]) * \
+            np.maximum(sl2 - SAIL_START, 0)
+        fs2 = self.fishing[A]
+        self.fishing[A] = fs2 - DT * DECAY_FISH * \
+            (1 - waterside[A]) * np.maximum(fs2 - FISH_START, 0)
         self.agri[A] = np.clip(ag2, 0, 1)
         self.metal[A] = np.minimum(mt2, cap)
-        if sup:
-            self.metal[A] = np.maximum(self.metal[A], 0)
-            ad2 = np.clip(ad2, 0, 1)
+        self.metal[A] = np.maximum(self.metal[A], 0)
+        ad2 = np.clip(ad2, 0, 1)
         self.sail[A] = sl2
         if not self.ca_on:
             self.admin[A] = ad2
@@ -180,8 +164,7 @@ class TechnologyMixin:
         rt = self.roadt[A]
         rt2 = rt + DT * (ROADT_INV * F * inn * ins * (1 - rt) +
                          diffuse(rt, ROADT_BORROW))
-        if sup:
-            rt2 = rt2 - DT * DECAY_ADMIN * (1 - ins)
+        rt2 = rt2 - DT * DECAY_ADMIN * (1 - ins)
         self.roadt[A] = np.clip(rt2, 0, 1)
         # settled specialists make prized goods
         cr = self.craft[A]
@@ -189,8 +172,7 @@ class TechnologyMixin:
                          (0.5 + self.pati[A]) *
                          np.sqrt(np.clip(nc / 3, 0, 1)) * (1 - cr) +
                          diffuse(cr, CRAFT_BORROW))
-        if sup:
-            cr2 = cr2 - DT * CRAFT_DECAY * idle * cr2
+        cr2 = cr2 - DT * CRAFT_DECAY * idle * cr2
         self.craft[A] = np.clip(cr2, 0, 1)
         self.domesticate(A, occ, Lpop, inn * F, diffuse)
         self.guarded(A, crow, ccol, cval, nc)
@@ -207,30 +189,24 @@ class TechnologyMixin:
                 has[nm] = has[nm] | self.ore_by_trade(near, nL)[A]
         self.ore_has[A] = np.stack([has["cu"], has["sn"], has["fe"]], 1)
         # a stage needs the lineage's own metallurgy plus the ore in hand
-        if sup:
-            # ...and stays in use only while the ore (and, for steel, the
-            # cities) remain; knowledge is kept, use lapses after a grace
-            mtA = self.metal[A]
-            okb = (mtA >= 1.0) & has["cu"] & has["sn"]
-            oki = (mtA >= 1.8) & has["fe"] & (self.known[A, 0] | okb)
-            oks = oki & (mtA >= 2.6) & (nc >= 6)
-            stages = []
-            for s, (arr, ok) in enumerate(((self.bronze, okb),
-                                           (self.iron, oki),
-                                           (self.steel, oks))):
-                self.known[A, s] |= ok
-                self.lack[A, s] = np.where(ok, 0, self.lack[A, s] + 1)
-                stages.append(ok | (arr[A] & (self.lack[A, s] <= SUPPLY_GRACE)))
-            br, fe, st = stages
-            lost = self.bronze[A] & ~br & (Lpop[A] > 3e5)
-            for L in A[lost]:
-                self.log("tech", f"{self.lname(L)} can no longer get tin and "
-                         "copper: bronze goes out of use")
-        else:
-            br = self.bronze[A] | ((self.metal[A] >= 1.0) & has["cu"] &
-                                   has["sn"])
-            fe = self.iron[A] | (br & (self.metal[A] >= 1.8) & has["fe"])
-            st = self.steel[A] | (fe & (self.metal[A] >= 2.6) & (nc >= 6))
+        # ...and stays in use only while the ore (and, for steel, the
+        # cities) remain; knowledge is kept, use lapses after a grace
+        mtA = self.metal[A]
+        okb = (mtA >= 1.0) & has["cu"] & has["sn"]
+        oki = (mtA >= 1.8) & has["fe"] & (self.known[A, 0] | okb)
+        oks = oki & (mtA >= 2.6) & (nc >= 6)
+        stages = []
+        for s, (arr, ok) in enumerate(((self.bronze, okb),
+                                       (self.iron, oki),
+                                       (self.steel, oks))):
+            self.known[A, s] |= ok
+            self.lack[A, s] = np.where(ok, 0, self.lack[A, s] + 1)
+            stages.append(ok | (arr[A] & (self.lack[A, s] <= SUPPLY_GRACE)))
+        br, fe, st = stages
+        lost = self.bronze[A] & ~br & (Lpop[A] > 3e5)
+        for L in A[lost]:
+            self.log("tech", f"{self.lname(L)} can no longer get tin and "
+                     "copper: bronze goes out of use")
         for arr, new, nm in ((self.bronze, br, "cast bronze"),
                              (self.iron, fe, "work iron"),
                              (self.steel, st, "forge steel")):

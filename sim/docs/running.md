@@ -14,6 +14,11 @@ take either a bare run name (`base_seed101`, or a quoted pattern
 `'base_seed10?'`), looked up in the root, or a path. `snapcheck.py` does
 the same for its saved-state file. The lookup is in `runroot.py`.
 
+`World()` caches the world file's cell columns in the runs root as
+`_world_cache.npz` (about 83 MB), keyed on the file's path, size and
+modification time, and rebuilds it when any of them changes (2026-11-17).
+A load from the cache takes about 1.7 s, against 3.8 s from SQLite.
+
 The runs made before 2026-11-17 (446 folders, many online-only) stay in
 the old Dropbox folder `Dropbox/Personal/_book/art/world/sim/runs/` (D3,
 U); give their full path to read them.

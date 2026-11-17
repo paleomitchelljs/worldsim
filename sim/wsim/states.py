@@ -1,16 +1,7 @@
 """Cities, states, diplomacy, roads, rulers, revolts."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
+from scipy import ndimage
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import cKDTree
 
@@ -400,7 +391,6 @@ class StatesMixin:
         xr = np.zeros(n)
         for pid, P in self.polities.items():
             if P["ended"] is None:
-                pc[pid], pl[pid] = P["culture"], P["lin"]
                 xr[pid] = EXT_SUBJ * (0.5 + self.eff(P, "hier"))
         pp = np.maximum(pol, 0)
         self.rul_c = np.where(m, pc[pp], -1)

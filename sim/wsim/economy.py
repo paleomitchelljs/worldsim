@@ -1,18 +1,8 @@
 """Resource sites, goods and trade."""
-import argparse
-import importlib
-import csv
 import json
 import math
 import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -124,7 +114,6 @@ class EconomyMixin:
         """Value of each kind of resource to the ruling lineage of pid."""
         L = self.polities[pid]["lin"]
         return (0.5 + self.crafts[L]) * self.Lpref[L] * self.Lapp[L]
-        return (0.5 + self.crafts[L]) * self.Lpref[L]
 
     def goods_worth(self, a, b, prize=False):
         """Worth to state b of what state a holds and b lacks (valued by
@@ -145,9 +134,6 @@ class EconomyMixin:
         if x is None or y is None:
             return 0.0
         return self.goods_worth(a, b) + \
-            ORE_VALUE * len(x["ores"] - y["ores"]) + \
-            max(0.0, x["craft"] - y["craft"]) + len(x["tech"] - y["tech"])
-        return len(x["kinds"] - y["kinds"]) + \
             ORE_VALUE * len(x["ores"] - y["ores"]) + \
             max(0.0, x["craft"] - y["craft"]) + len(x["tech"] - y["tech"])
 

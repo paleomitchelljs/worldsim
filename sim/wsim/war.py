@@ -1,18 +1,6 @@
 """Raids and wars."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -42,9 +30,6 @@ class WarMixin:
         if x is None or y is None:
             return 0.0
         return self.goods_worth(b, a, prize=True) + \
-            ORE_VALUE * len(x["ores_terr"] - y["ores"]) + \
-            max(0.0, x["craft"] - y["craft"]) + len(x["tech"] - y["tech"])
-        return len(x["kinds"] - y["kinds"]) + \
             ORE_VALUE * len(x["ores_terr"] - y["ores"]) + \
             max(0.0, x["craft"] - y["craft"]) + len(x["tech"] - y["tech"])
 
@@ -102,7 +87,6 @@ class WarMixin:
         a, b, ca, cb = a[mix], b[mix], ca[mix], cb[mix]
         if not len(a):
             return
-        kinf = 1.0
         # raids between lineages of one people, less often the more
         # alike they are
         kin = ca == cb
@@ -311,9 +295,8 @@ class WarMixin:
             self.dead("war levies", wc, b_pop - self.pop[wc])
         pairs = sorted(pairs)
         pairs = [pairs[i] for i in rng.permutation(len(pairs))]
-        betray = True
         for k in pairs:
-            if k in self.wars or (k in self.allies and not betray) or \
+            if k in self.wars or \
                     self.truce.get(k, -1) > self.tick or \
                     self.is_vassal_pair(k):
                 continue
@@ -329,7 +312,7 @@ class WarMixin:
                 # worked out in full only when its upper bound could beat
                 # the draw; most pairs are ruled out on the bound alone
                 u = rng.random()
-                bf = BETRAY_K if betray and k in self.allies else 1.0
+                bf = BETRAY_K if k in self.allies else 1.0
                 if u >= min(bf * self.war_bound(A, B, k), 0.5):
                     continue
                 p, motive = self.war_chance(A, B, k, allies)

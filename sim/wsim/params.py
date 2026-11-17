@@ -1,22 +1,9 @@
 """Constants and switches."""
-import argparse
-import importlib
-import csv
-import json
-import math
 import os
-import sqlite3
 import sys
-import time
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
-from peoples import PEOPLES  # noqa: E402
 
 GPKG = os.path.join(HERE, "..", "gis", "world.gpkg")
 NY, NX = 360, 720
@@ -708,14 +695,14 @@ DEV_K, DEV_CITY, DEV_WALL, DEV_TRADE = 0.25, 0.25, 0.5, 0.5
 # EXP_MEM years (war and hardship memory); safety = (1 - m)(1 - h). A rise
 # of trait x at rate r is r (1 - x), a fall r x.
 #   tolerance   + EXP_TRADE v         - EXP_WAR s + EXP_HARD q + EXP_RAID/2 r
-#   trade       + EXP_TRADE/2 v       - EXP_UNUSED (1 - v1)
+#   trade       + EXP_TRADE/2 v       - 0.00005 (1 - v1)
 #   violence    + EXP_WAR s + EXP_RAID r   - EXP_TRADE_V v + EXP_PEACE (1 - m)
 #   cohesion    + EXP_WAR/2 s         - EXP_LUX v1 + EXP_CALM (1 - m)
 #   hierarchy   + EXP_WAR/2 s         - EXP_CALM (1 - m)
 #   conformity  + EXP_WAR/2 s + EXP_HARD q  - EXP_TRADE/2 v1 + EXP_LOOSE safety
 # and administration invention x (1 + EXP_ADMIN s).
 EXP_TRADE, EXP_WAR, EXP_HARD, EXP_PEACE = 0.0005, 0.001, 0.005, 0.0002
-EXP_UNUSED, EXP_LUX, EXP_CALM, EXP_LOOSE = 0.00005, 0.0001, 0.00005, 0.0002
+EXP_LUX, EXP_CALM, EXP_LOOSE = 0.0001, 0.00005, 0.0002
 # Raids count as experience (U, 2026-10-30): r = share of a lineage's
 # people in cells that raided or were raided since the last tick. The
 # peace and trade pulls on violence were halved at the same time (C), and
@@ -735,6 +722,8 @@ EXP_RAID, EXP_TRADE_V = 0.01, 0.00025
 #   trade       falls with war and raids (EXP_DISRUPT x (s + r)) instead
 #               of when unused
 #   superiority no slow fall (EXP_SUP_CALM dropped)
+# (The rows above that causal_exp replaced, and EXP_UNUSED and
+# EXP_SUP_CALM, were removed from the code 2026-11-17.)
 EXP_DISRUPT = 0.0005
 # `kin_raids` (U 2026-11-01: raids happen within peoples too; numbers C):
 # neighbouring cells of different lineages of one people raid each other
@@ -914,9 +903,9 @@ SUP0 = 0.75
 # of tie x (max(0, dev - partner dev) + max(0, craft - partner craft))),
 # and - EXP_SUP_TRADE x the same with the partner ahead (symmetric, U
 # 2026-11-01) (dev: technology level 0-1); a slow fall EXP_SUP_CALM
-# (dropped under causal_exp).
+# 0.00005 was dropped under causal_exp.
 # Pushes as other experience (spiky, trait_path with pivot 0.5).
-EXP_SUP_WAR, EXP_SUP_TRADE, EXP_SUP_CALM = 0.01, 0.0005, 0.00005
+EXP_SUP_WAR, EXP_SUP_TRADE = 0.01, 0.0005
 SKILL_DOWN = 0.25
 SKILLS = ("innovation", "statecraft")
 # Plague: a host people; other peoples take PLAGUE_CROSS of the deaths and

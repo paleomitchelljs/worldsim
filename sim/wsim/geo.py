@@ -1,17 +1,9 @@
 """Geometry, the world grid, small math helpers."""
-import argparse
-import importlib
-import csv
-import json
 import math
 import os
 import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
+from scipy import ndimage, sparse
 from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
@@ -58,24 +50,58 @@ def vary_peoples(peoples, seed, amount):
 
 
 # ---- world ---------------------------------------------------------------
+CELL_COLS = ["row", "col", "lon", "lat", "area_km2", "fic_land",
+             "fic_elev_km", "fic_biome", "fic_soil_bar_value",
+             "syn_relief_km", "syn_discharge_m3s", "syn_river",
+             "syn_lake", "syn_reach_productivity", "syn_dist_copper_km",
+             "syn_dist_tin_km", "syn_dist_iron_km", "syn_surface_lith",
+             "syn_alluvial_fill", "syn_runoff_m_yr", "fid",
+             "syn_flow_to", "syn_basin_id", "syn_wetness",
+             "fic_dist_coast_km"]
+CELL_TEXT = {"fic_biome", "syn_surface_lith"}
+
+
+def load_cells(gpkg):
+    """The cells table's columns as arrays: numbers as float (NULL ->
+    NaN), CELL_TEXT columns as objects (NULL -> None). Turning
+    the SQLite rows into arrays is most of World()'s load time, so the
+    arrays are cached in the runs root (_world_cache.npz), keyed on the
+    world file's path, size and modification time; any change to the file
+    rebuilds the cache."""
+    import runroot
+    st = os.stat(gpkg)
+    key = f"{os.path.abspath(gpkg)}|{st.st_size}|{st.st_mtime_ns}|" + \
+        ",".join(CELL_COLS)
+    path = os.path.join(runroot.root(), "_world_cache.npz")
+    try:
+        with np.load(path) as z:
+            if str(z["key"]) == key:
+                return {c: (np.where(z[c] == "", None, z[c].astype(object))
+                            if c in CELL_TEXT else z[c]) for c in CELL_COLS}
+    except (OSError, KeyError, ValueError):
+        pass
+    con = sqlite3.connect(f"file:{os.path.abspath(gpkg)}?mode=ro", uri=True)
+    rows = con.execute(f"select {','.join(CELL_COLS)} from cells").fetchall()
+    con.close()
+    d = {c: np.array([r[k] for r in rows], object) if c in CELL_TEXT else
+         np.array([np.nan if r[k] is None else r[k] for r in rows], float)
+         for k, c in enumerate(CELL_COLS)}
+    # several runs may start at once: write under a unique name, then rename
+    tmp = f"{path}.{os.getpid()}.tmp"
+    with open(tmp, "wb") as fh:
+        np.savez(fh, key=np.array(key), **{
+            c: np.array(["" if v is None else v for v in a], str)
+            if c in CELL_TEXT else a for c, a in d.items()})
+    os.replace(tmp, path)
+    return d
+
+
 class World:
     def __init__(self, gpkg=GPKG):
-        con = sqlite3.connect(f"file:{os.path.abspath(gpkg)}?mode=ro",
-                              uri=True)
-        cols = ["row", "col", "lon", "lat", "area_km2", "fic_land",
-                "fic_elev_km", "fic_biome", "fic_soil_bar_value",
-                "syn_relief_km", "syn_discharge_m3s", "syn_river",
-                "syn_lake", "syn_reach_productivity", "syn_dist_copper_km",
-                "syn_dist_tin_km", "syn_dist_iron_km", "syn_surface_lith",
-                "syn_alluvial_fill", "syn_runoff_m_yr", "fid",
-                "syn_flow_to", "syn_basin_id", "syn_wetness",
-                "fic_dist_coast_km"]
-        rows = con.execute(f"select {','.join(cols)} from cells").fetchall()
-        con.close()
-        d = {c: [r[k] for r in rows] for k, c in enumerate(cols)}
+        d = load_cells(gpkg)
 
         def num(c, fill=0.0):
-            a = np.array([fill if v is None else v for v in d[c]], float)
+            a = d[c]
             return np.where(np.isfinite(a), a, fill)
 
         row = num("row").astype(int)

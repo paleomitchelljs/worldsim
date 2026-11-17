@@ -1,18 +1,8 @@
 """Maps and plots."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
+from scipy import ndimage
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403

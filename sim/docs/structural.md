@@ -849,7 +849,8 @@ seafaring do they merge." Roster keys `region` and `anywhere`;
 - **What moves superiority** (`sup_exp`, U): winning wars against other
   peoples raises it, losing lowers it; trading with less advanced or
   less crafted peoples raises it. EXP_SUP_WAR 0.01, EXP_SUP_TRADE
-  0.0005, EXP_SUP_CALM 0.00005 (C). Between peoples only; within a
+  0.0005 (C); the slow fall EXP_SUP_CALM 0.00005 went with `causal_exp`
+  (removed from the code 2026-11-17). Between peoples only; within a
   people, conformity does that work (U).
 - **No causeless change** (`causal_exp`, U: remove all secular
   directionality; random noise is fine). Peace, calm and safety pulls

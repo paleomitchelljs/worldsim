@@ -1,18 +1,6 @@
 """Lineages, drift, similarity, experience."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -25,10 +13,6 @@ class CultureMixin:
         y = np.where(y < 0.01, 0.02 - y, y)
         y = np.where(y > 0.99, 1.98 - y, y)
         y = np.clip(y, 0.01, 0.99)
-        return float(y) if n is None else y
-        x = np.clip(x, 0.02, 0.98)
-        z = np.log(x / (1 - x)) + rng.normal(0, 2.5 * sd, n)
-        y = 1 / (1 + np.exp(-z))
         return float(y) if n is None else y
 
     def new_lineage(self, people, parent, how, sd=0.0):
@@ -269,14 +253,10 @@ class CultureMixin:
             self.Lgen_next[A] = nxt
             mult = EXP_BG + (GEN_YEARS * due + yev) / DT
         rv = "revolt_exp" in self.on
-        tp = True
-        ce = True
-        if not ce:
-            order = 1.0
 
         def push(arr, col, up, down, piv=PATH_PIVOT, path=True):
             x = arr[A]
-            if tp and path:
+            if path:
                 g = 1 / (1 + np.exp(-(x - piv) / PATH_PW))
                 up = up * 2 * (PATH_MIN + (1 - PATH_MIN) * g) / (1 + PATH_MIN)
                 down = down * 2 * (PATH_MIN + (1 - PATH_MIN) * (1 - g)) / \
@@ -297,19 +277,19 @@ class CultureMixin:
              EXP_TRADE * v * (1 - phi) + rv * EXP_REVOLT / 2 * u,
              TOL_PIVOT, PATH_TOL > 0)
         push(self.trade, TI["trade"], EXP_TRADE / 2 * v,
-             EXP_DISRUPT * (s + r) if ce else EXP_UNUSED * (1 - v1))
+             EXP_DISRUPT * (s + r))
         # wars and frontier raids harden; trade and peace soften
         push(self.viol, TI["violence"], EXP_WAR * s + EXP_RAID * r +
              rv * EXP_REVOLT * u,
              EXP_TRADE_V * v + EXP_PEACE * order * (1 - m))
         if rv:
             push(self.sep, TI["separation"], EXP_REVOLT / 2 * u,
-                 EXP_CALM * (v1 if ce else (1 - m)))
+                 EXP_CALM * v1)
         # war binds a people; wealth and long peace loosen the bond
         push(self.coh, TI["cohesion"], EXP_WAR / 2 * s,
              EXP_LUX * v1 + EXP_CALM * order * (1 - m))
         push(self.hier, nT + XTRAITS.index("hierarchy"), EXP_WAR / 2 * s,
-             EXP_CALM * ((1 - instate) if ce else (1 - m)))
+             EXP_CALM * (1 - instate))
         cr = self.craft[A]
         tgt = APP0 + APP_K * (cr + self.dev(A) + self.admin[A] +
                               self.viol[A] + v1) / 5
@@ -317,8 +297,7 @@ class CultureMixin:
         # victory and trade with the less advanced breed a sense of
         # superiority; defeat erodes it
         push(self.Lsup, None, EXP_SUP_WAR * win + EXP_SUP_TRADE * adv,
-             EXP_SUP_WAR * loss + EXP_SUP_TRADE * dis +
-             (0.0 if ce else EXP_SUP_CALM))
+             EXP_SUP_WAR * loss + EXP_SUP_TRADE * dis)
         # threat tightens norms; trade and safety loosen them
         push(self.conf, nT + XTRAITS.index("conformity"),
              EXP_WAR / 2 * s + EXP_HARD * q + rv * EXP_REVOLT / 2 * u,

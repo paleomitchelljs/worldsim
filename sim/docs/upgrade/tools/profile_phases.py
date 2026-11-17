@@ -9,7 +9,7 @@ from collections import defaultdict
 
 SIM = sys.argv[1]
 YEARS = int(sys.argv[2])
-OUT = sys.argv[3]
+OUT = os.path.abspath(sys.argv[3])
 sys.path.insert(0, SIM)
 os.chdir(SIM)
 import worldsim  # noqa: E402
@@ -48,6 +48,8 @@ sim, out, t0 = worldsim.make_sim([
     "--vary", "0", "--sites", "sites_v2.json", "--seed", "101",
     "--years", str(YEARS), "--frame-every", "100", "--out", OUT])
 print("setup", round(time.time() - t0, 1), flush=True)
+from wsim.output import Stream, write_outputs  # noqa: E402
+stream = Stream(sim, OUT)
 nt = YEARS // DT
 pr = cProfile.Profile()
 tot = defaultdict(float)
@@ -64,8 +66,9 @@ for i in range(nt):
     tot[era[0]] += time.perf_counter() - t
     if sim.tick % sim.frame_every == 0:
         t = time.perf_counter()
-        simmod.render(sim)
+        img = simmod.render(sim)
         rend += time.perf_counter() - t
+        stream.frame(img)
     if sim.tick % 100 == 0:
         print("yr", sim.year, "cities", len(sim.cities), "states",
               sum(p["ended"] is None for p in sim.polities.values()),
@@ -88,7 +91,7 @@ with open(os.path.join(OUT, "phases.txt"), "w") as fh:
     pstats.Stats(pr, stream=s).sort_stats("cumulative").print_stats(60)
     fh.write(s.getvalue())
 t = time.perf_counter()
-from wsim.output import write_outputs  # noqa: E402
+stream.flush()
 write_outputs(sim, OUT)
 with open(os.path.join(OUT, "phases.txt"), "a") as fh:
     fh.write(f"write_outputs {time.perf_counter() - t:.1f}s\n")

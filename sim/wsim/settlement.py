@@ -1,18 +1,7 @@
 """Founding groups, migration, budding, voyages, minorities."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
+from scipy import ndimage
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -200,7 +189,6 @@ class SettlementMixin:
             wt = self.W.wet[j]
             c = c * (1 - COL_WET * wt * (1 - w)) / (1 - COL_WET * wt)
         return np.minimum(1, c * (1 + IMP_SETTLE * self.imp[j]))
-        return c
 
     def adjacency_by_people(self):
         W = self.W
@@ -474,18 +462,15 @@ class SettlementMixin:
         eat = self.peat[np.maximum(self.cul, 0)]
         cand = np.nonzero((self.lin >= 0) & W.coastal & (self.pop * eat > 400) &
                           (press > 0.5))[0]
-        col = True
 
         def kept(cnd, L):
             """The coast cells cnd colonists of L could take, and their
             natives (food-equivalents)."""
-            if col:
-                nat = self.pop[cnd] * eat[cnd] * (self.lin[cnd] >= 0)
-                keep = (self.lin[cnd] < 0) | (
-                    (self.cul[cnd] != self.Lpeople[L]) &
-                    (self.cell_city[cnd] != cnd) & (nat < COL_THIN))
-                return cnd[keep], nat[keep]
-            return cnd[self.lin[cnd] < 0], None
+            nat = self.pop[cnd] * eat[cnd] * (self.lin[cnd] >= 0)
+            keep = (self.lin[cnd] < 0) | (
+                (self.cul[cnd] != self.Lpeople[L]) &
+                (self.cell_city[cnd] != cnd) & (nat < COL_THIN))
+            return cnd[keep], nat[keep]
 
         for L, src in self.by_lineage(cand):
             D = self.sail_km(L)
@@ -511,22 +496,19 @@ class SettlementMixin:
                     continue
                 wt = Kall[np.searchsorted(allc, cnd)]
                 ok = wt * self.peat[self.Lpeople[L]] > 300
-                cnd, wt = cnd[ok], wt[ok]
-                if col:
-                    nat = nat[ok]
+                cnd, wt, nat = cnd[ok], wt[ok], nat[ok]
                 if not len(cnd):
                     continue
                 wt = wt * np.exp(-gc_km(W.xyz, s, cnd) / D) * self.colon(cnd, L)
-                if col:
-                    wt = np.where(np.isfinite(wt), wt, 0.0)
-                    empty = (nat <= 0) & (wt > 0)
-                    if empty.any():
-                        # settlers take empty coast where they can
-                        wt = np.where(empty, wt, 0.0)
-                    else:
-                        if self.rng.random() >= COL_OCC:
-                            continue
-                        wt = wt * np.exp(-nat / COL_THIN)
+                wt = np.where(np.isfinite(wt), wt, 0.0)
+                empty = (nat <= 0) & (wt > 0)
+                if empty.any():
+                    # settlers take empty coast where they can
+                    wt = np.where(empty, wt, 0.0)
+                else:
+                    if self.rng.random() >= COL_OCC:
+                        continue
+                    wt = wt * np.exp(-nat / COL_THIN)
                 if wt.sum() <= 0:
                     continue
                 t = int(self.rng.choice(cnd, p=wt / wt.sum()))
@@ -534,7 +516,7 @@ class SettlementMixin:
                 self.pop[s] -= mv
                 lm = W.landmass[t]
                 Lt = L
-                sp = int(self.cell_pol[s]) if col else -1
+                sp = int(self.cell_pol[s])
                 if sp >= 0 and self.cell_pol[t] != sp and \
                         lm != W.landmass[s]:
                     Lc = self.colony_lin.get((sp, int(lm)), -1)
@@ -546,7 +528,7 @@ class SettlementMixin:
                         self.colony_lin[(sp, int(lm))] = Lc
                         self.count("colony_state")
                     Lt = Lc
-                if col and self.lin[t] >= 0:
+                if self.lin[t] >= 0:
                     fe_n = self.pop[t] * eat[t]
                     if fe_n < mv * self.peat[self.Lpeople[L]]:
                         # thin natives pushed out

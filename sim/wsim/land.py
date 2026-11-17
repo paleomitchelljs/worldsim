@@ -1,18 +1,7 @@
 """Carrying capacity, climate, land and disasters."""
-import argparse
-import importlib
-import csv
-import json
 import math
-import os
-import sqlite3
-import sys
-import time
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
+from scipy import ndimage, signal
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -492,29 +481,14 @@ class LandMixin:
         np.clip(self.imp, 0, 1, out=self.imp)
 
     def disasters(self):
-        W, rng = self.W, self.rng
+        rng = self.rng
         self.drought += (1 - self.drought) * 0.35
-        no_drought = True   # the climate has its own
         self.imm *= math.exp(-IMM_DECAY * DT)
         if self.cities:
             cc = np.fromiter(self.cities.keys(), int)
             big = cc[self.pop[cc] > 5 * self.pcity[np.maximum(
                 self.cul[cc], 0)]]
             self.imm[big] = np.maximum(self.imm[big], IMM_ENDEMIC)
-        if not no_drought and rng.random() < 0.08:
-            i = int(rng.integers(W.N))
-            rad = rng.uniform(400, 1500)
-            sev = rng.uniform(0.35, 0.7)
-            d = gc_km(W.xyz, i, np.arange(W.N))
-            f = np.clip(1 - d / rad, 0, 1)
-            self.drought = np.minimum(self.drought, 1 - sev * f)
-            if self.cities:
-                cc = np.fromiter(self.cities.keys(), int)
-                self.shock(cc[f[cc] > 0.3], "drought")
-            hit = (self.pop * (f > 0.3)).sum()
-            if hit > 1e6:
-                self.log("drought", f"great drought centred {self.place(i)} "
-                         f"({hit/1e6:.1f}M people affected)")
         urban = sum(self.pop[c] * (self.peat[self.cul[c]] if self.cul[c] >= 0 else 1)
                     for c in self.cities)
         if self.cities and self.tick >= getattr(self, "_plague_next", 0) \
@@ -526,7 +500,6 @@ class LandMixin:
             start = self.cities[o]["polity"]
             if start not in self.polities:
                 return
-            imm_on = True
             host = int(self.cul[o])
             hit = {start}
             frontier = [start]
@@ -539,7 +512,7 @@ class LandMixin:
                             if y in hit:
                                 continue
                             pr = 0.25 + 0.6 * self.ties.get(k, 0)
-                            if imm_on and self.polities[y]["culture"] != host:
+                            if self.polities[y]["culture"] != host:
                                 pr *= PLAGUE_CROSS + 0.4
                             if rng.random() < pr:
                                 hit.add(y)
@@ -551,32 +524,23 @@ class LandMixin:
             for x in hit:
                 self.shock(list(self.polities[x]["cities"]), "plague")
                 self.spike(x)
-            if imm_on:
-                # the host people dies at full rate, others at a fraction;
-                # survivors of a recent plague, and the people of large
-                # cities where it is endemic, are partly immune
-                f = mort * (1 - IMM_PROTECT * self.imm) * mask
-                fm = f * np.where(self.mcul == host, 1, PLAGUE_CROSS)
-                f = f * np.where(self.cul == host, 1, PLAGUE_CROSS)
-                dead = (self.pop * f).sum() + (self.mpop * fm).sum()
-                b_pop, b_mpop = self.pop.copy(), self.mpop.copy()
-                self.pop *= 1 - f
-                self.mpop *= 1 - fm
-                for x in hit:
-                    for c in self.polities[x]["cities"]:
-                        self.pop[c] *= 1 - 0.3 * f[c]
-                self.dead("plague", None, b_pop - self.pop)
-                self.dead("plague", None, b_mpop - self.mpop, minority=True)
-                self.imm[mask] = np.maximum(self.imm[mask], IMM_HIT)
-            else:
-                dead = (self.pop * mask).sum() * mort
-                b_pop = self.pop.copy()
-                self.pop[mask] *= 1 - mort
-                for x in hit:
-                    for c in self.polities[x]["cities"]:
-                        self.pop[c] *= 1 - 0.3 * mort
-                self.dead("plague", None, b_pop - self.pop)
+            # the host people dies at full rate, others at a fraction;
+            # survivors of a recent plague, and the people of large
+            # cities where it is endemic, are partly immune
+            f = mort * (1 - IMM_PROTECT * self.imm) * mask
+            fm = f * np.where(self.mcul == host, 1, PLAGUE_CROSS)
+            f = f * np.where(self.cul == host, 1, PLAGUE_CROSS)
+            dead = (self.pop * f).sum() + (self.mpop * fm).sum()
+            b_pop, b_mpop = self.pop.copy(), self.mpop.copy()
+            self.pop *= 1 - f
+            self.mpop *= 1 - fm
+            for x in hit:
+                for c in self.polities[x]["cities"]:
+                    self.pop[c] *= 1 - 0.3 * f[c]
+            self.dead("plague", None, b_pop - self.pop)
+            self.dead("plague", None, b_mpop - self.mpop, minority=True)
+            self.imm[mask] = np.maximum(self.imm[mask], IMM_HIT)
             if dead > 2e5:
                 self.log("plague", f"plague from {self.place(o)} through "
                          f"{len(hit)} states, ~{dead/1e6:.2f}M dead"
-                         + (f" (host: {self.keys[host]})" if imm_on else ""))
+                         f" (host: {self.keys[host]})")
