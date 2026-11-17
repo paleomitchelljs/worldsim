@@ -391,6 +391,7 @@ class StatesMixin:
         xr = np.zeros(n)
         for pid, P in self.polities.items():
             if P["ended"] is None:
+                pc[pid], pl[pid] = P["culture"], P["lin"]
                 xr[pid] = EXT_SUBJ * (0.5 + self.eff(P, "hier"))
         pp = np.maximum(pol, 0)
         self.rul_c = np.where(m, pc[pp], -1)
