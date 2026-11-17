@@ -90,6 +90,23 @@ def write_checks(sim, path):
         fh.write("\n".join(lines) + "\n")
 
 
+
+def constants_used():
+    """Every numeric constant in wsim.params as the run used it (after
+    --set and the other command-line overrides), for run.json."""
+    from . import params
+
+    def numeric(v):
+        if isinstance(v, (bool, int, float, np.number)):
+            return True
+        if isinstance(v, (list, tuple)):
+            return len(v) > 0 and all(numeric(x) for x in v)
+        if isinstance(v, dict):
+            return len(v) > 0 and all(numeric(x) for x in v.values())
+        return False
+    return {k: v for k, v in sorted(vars(params).items())
+            if k.isupper() and numeric(v)}
+
 def write_outputs(sim, out):
     os.makedirs(out, exist_ok=True)
     fr = sim.frames
@@ -315,8 +332,13 @@ def write_outputs(sim, out):
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
+    man = getattr(sim, "manifest", {})
     with open(os.path.join(out, "run.json"), "w") as fh:
         json.dump(dict(seed=sim.seed, years=sim.years, dt=DT,
+                       code=man.get("code"), command=man.get("command"),
+                       python=man.get("python"), numpy=man.get("numpy"),
+                       wall_seconds=round(time.time() - man["t0"], 1)
+                       if "t0" in man else None,
                        overrides=getattr(sim, "overrides", []),
                        peoples=sim.P, vary=sim.vary, starts=sim.starts,
                        start_vary=sim.start_vary, drift=sim.drift,
@@ -328,7 +350,8 @@ def write_outputs(sim, out):
                        wander_steps=sim.wander_steps,
                        city_cap=(CITY_CAP0, CITY_CAP1) if CITY_CAP else None,
                        dragon_penalty=DRAGON_PEN, dragon_shun=DRAGON_SHUN,
-                       features=sorted(sim.on)), fh, indent=1,
+                       features=sorted(sim.on),
+                       constants=constants_used()), fh, indent=1,
                   default=str)
     with open(os.path.join(out, "posts.csv"), "w", newline="") as fh:
         w = csv.writer(fh)

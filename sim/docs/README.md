@@ -82,8 +82,10 @@ Code (split into modules 2026-11-02; the single-file v1 is in
 | `../wsim/diagnostics.py` | records, Price decomposition |
 | `../wsim/render.py`, `../wsim/output.py` | maps, plots, output files |
 
-Rosters: `../peoples*.py`. `--set NAME=VALUE` overrides a constant in
-every module. Every number quoted in these docs is a constant or roster value;
+Rosters: `../peoples*.py`. `--set NAME=VALUE` overrides a numeric constant:
+`worldsim.py` writes it into `wsim/params.py`'s namespace before any other
+`wsim` module is imported, so every module and every default argument sees
+it (2026-11-17), and `run.json` records all constants as used. Every number quoted in these docs is a constant or roster value;
 if they disagree, the code wins and the doc needs fixing.
 
 Provenance marks used throughout: **U** = specified by the user;

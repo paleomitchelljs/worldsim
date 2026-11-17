@@ -105,7 +105,7 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 | `lineages.csv` | every lineage, with parent, origin, traits and the technology stage reached |
 | `cities.csv`, `polities.csv` | lon/lat, founding and end years, peaks, rulers, peoples ruled (loads into QGIS) |
 | `timeseries.csv`, `final_state.npz` | per-tick statistics; final per-cell grid (row/col match `cells`), including roads, improvements, land condition, rivers and the drainage network as it ended |
-| `run.json` | the settings of the run, including the mechanics switched on |
+| `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the run's end, before the figures), and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides |
 | `price.csv` | Price-equation decomposition of each cultural trait, per century, per people and world-wide ([diagnostics.md](diagnostics.md)) |
 | `dragons.csv` | every dragon: birth, first home, end, fate, ally (with `dragons`) |
 | `relations.csv` | every pair of neighbouring live states on each frame tick: similarity, enmity and faith motives both ways, trade tie, war, alliance, truce, and `similarity_lin` (the ruling lineages'). From 2026-11-07 similarity and motives are those the war rule reads (the states' cultures under `city_culture`); before, they were always the ruling lineages', so they did not show what drove wars |

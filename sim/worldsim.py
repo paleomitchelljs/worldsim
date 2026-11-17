@@ -41,34 +41,56 @@ Out:  <runs root>/seed<N>/, or --out (runroot.py; root is $WORLDSIM_RUNS
 """
 import argparse
 import importlib
-import csv
-import json
-import math
 import os
-import sqlite3
+import platform
+import shlex
+import subprocess
 import sys
 import time
+
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy import ndimage, signal, sparse
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial import cKDTree
 
 import runroot
 from wsim import params
-from wsim.params import *  # noqa: F401,F403
-from wsim.geo import World, gc_km, unit_xyz, vary_peoples  # noqa: F401
-from wsim.render import font  # noqa: F401
-from wsim.sim import Sim
-from wsim.output import write_outputs
+
+# Only wsim.params is imported here. The command line writes its overrides
+# into params before any other wsim module loads (make_sim), so every module
+# that does `from .params import *`, and every default argument bound to a
+# constant at import, sees the value as set.
+
+
+def __getattr__(name):
+    """Library use (worldsim.World, worldsim.font, constants such as
+    worldsim.NY): load the wsim modules on first use."""
+    from wsim import geo, output, render, sim
+    for m in (params, geo, render, sim, output):
+        if hasattr(m, name):
+            return getattr(m, name)
+    raise AttributeError(f"module 'worldsim' has no attribute {name!r}")
 
 
 def setp(name, value):
-    """Override a constant in every wsim module that uses it."""
+    """Override a constant in wsim.params and in every wsim module already
+    loaded (snapcheck.py changes constants on a loaded state)."""
     for m in list(sys.modules.values()):
         if getattr(m, "__name__", "").startswith("wsim") and \
                 hasattr(m, name):
             setattr(m, name, value)
+
+
+def code_version():
+    """Git commit of this folder and whether tracked files differ from it
+    (None when git is unavailable)."""
+    def git(*a):
+        return subprocess.run(["git", "-C", runroot.HERE, *a],
+                              capture_output=True, text=True,
+                              timeout=20).stdout.strip()
+    try:
+        commit = git("rev-parse", "HEAD") or None
+        dirty = bool(git("status", "--porcelain", "--untracked-files=no"))
+    except (OSError, subprocess.SubprocessError):
+        return dict(commit=None, dirty=None)
+    return dict(commit=commit, dirty=dirty if commit else None)
 
 
 def make_sim(argv=None):
@@ -109,7 +131,7 @@ def make_sim(argv=None):
                     default="kleiber",
                     help="kleiber: each head eats size**0.75 humans' food, "
                     "so large peoples live sparser")
-    ap.add_argument("--city-pop", type=float, default=CITY_POP,
+    ap.add_argument("--city-pop", type=float, default=params.CITY_POP,
                     help="food-equivalent cell population that founds a "
                     "city (a roster `city` factor scales it per people)")
     ap.add_argument("--city-cap", type=float, nargs=2, default=None,
@@ -121,15 +143,15 @@ def make_sim(argv=None):
                     help="wander: founders random-walk toward suitable land "
                     "before the run; score: pick sites by suitability")
     ap.add_argument("--wander-steps", type=int, default=2000)
-    ap.add_argument("--dragon-shun", type=float, default=DRAGON_SHUN,
+    ap.add_argument("--dragon-shun", type=float, default=params.DRAGON_SHUN,
                     help="dragons do not settle near cells holding this "
                     "share of their ward size (0 = off)")
-    ap.add_argument("--dragon-penalty", type=float, default=DRAGON_PEN,
+    ap.add_argument("--dragon-penalty", type=float, default=params.DRAGON_PEN,
                     help="cut in the yearly growth rate per unit of dragon "
                     "hazard at the worst group size (dragons feature)")
     ap.add_argument("--off", default="",
                     help="structural mechanics to switch off, comma-"
-                    "separated, or 'all': " + ",".join(FEATURES))
+                    "separated, or 'all': " + ",".join(params.FEATURES))
     ap.add_argument("--set", action="append", default=[],
                     metavar="NAME=VALUE",
                     help="override a numeric constant (repeatable)")
@@ -149,9 +171,9 @@ def make_sim(argv=None):
         if k not in g or not isinstance(g[k], (int, float)):
             ap.error(f"--set: no numeric constant {k}")
         setp(k, type(g[k])(float(v)) if isinstance(g[k], float) else int(v))
-    off = FEATURES if a.off == "all" else \
+    off = params.FEATURES if a.off == "all" else \
         [x for x in a.off.split(",") if x]
-    bad = set(off) - set(FEATURES)
+    bad = set(off) - set(params.FEATURES)
     if bad:
         ap.error(f"unknown feature(s): {', '.join(sorted(bad))}")
     setp("CITY_POP", a.city_pop)
@@ -161,8 +183,11 @@ def make_sim(argv=None):
         setp("CITY_CAP", True)
         setp("CITY_CAP0", a.city_cap[0])
         setp("CITY_CAP1", a.city_cap[1])
+    from wsim.geo import World, vary_peoples
+    from wsim.sim import Sim
     out = runroot.path(a.out or f"seed{a.seed}")
     t0 = time.time()
+    code = code_version()
     world = World()
     print(f"world: {world.N} land cells, loaded in {time.time()-t0:.1f}s")
     sim = Sim(world, seed=a.seed, years=a.years,
@@ -177,15 +202,22 @@ def make_sim(argv=None):
               shuffle_sites=a.shuffle_sites, sites=a.sites)
     sim.vary = a.vary
     sim.overrides = a.set
+    sim.manifest = dict(
+        code=code,
+        command=shlex.join(sys.argv if argv is None
+                           else ["worldsim.py", *argv]),
+        python=platform.python_version(), numpy=np.__version__,
+        t0=t0)
     for p in sim.P:
         print(f"  {p['key']} {p['label']:16s} r={p['r']:.4f} " +
-              " ".join(f"{t[:4]}={p.get(t, 0.5):.2f}" for t in TRAITS))
+              " ".join(f"{t[:4]}={p.get(t, 0.5):.2f}" for t in params.TRAITS))
     return sim, out, t0
 
 
 def main():
     sim, out, t0 = make_sim()
     sim.run()
+    from wsim.output import write_outputs
     write_outputs(sim, out)
     print(f"done in {time.time()-t0:.0f}s -> {out}")
 
