@@ -19,7 +19,7 @@ what an entry holds.
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
 | 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
-| 2 | D GIS export | done | 2026-11-17 | (this commit) |
+| 2 | D GIS export | done | 2026-11-17 | 3b8fe04 |
 | 3 | A snapshots | not started | | |
 | 3 | B renderer and projection | not started | | |
 | 3 | C state colours and change layers | not started | | |
@@ -655,7 +655,7 @@ states were remade under the default, from runs `wp1g_states_seed101` and
 **Next.** WP2 stage D (GIS export), which needs U on D4 (`xarray`,
 `netCDF4`, `geopandas`).
 
-### WP2 stage D: GIS export (2026-11-17)
+### WP2 stage D: GIS export (2026-11-17, 3b8fe04)
 
 D4 (U, 2026-11-17): yes. Installed xarray, netCDF4 (with cftime),
 geopandas, shapely and pyogrio. numpy did not change (2.5.4). The
