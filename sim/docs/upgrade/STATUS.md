@@ -14,7 +14,7 @@ what an entry holds.
 | 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
 | 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
 | 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
-| 1 | E branching from a saved state | done | 2026-11-17 | see entry |
+| 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | not started | | |
 | 2 | A structured events | not started | | |
 | 2 | B run loader and metrics | not started | | |
@@ -398,7 +398,7 @@ Documented in `structural.md` and `model-description.md`.
 At year 3,000 it had 29.3M people, 37 cities, 36 states and all ten
 peoples; `wp0b_sanity_seed101` had 28.3M, 43 and 39.
 
-### WP1 stage E: branching from a saved state (2026-11-17)
+### WP1 stage E: branching from a saved state (2026-11-17, 8aba7b8)
 
 **Done.**
 - `worldsim.py --save-state YEAR PATH` (repeatable) pickles the Sim after
