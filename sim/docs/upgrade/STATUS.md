@@ -1279,7 +1279,7 @@ adjacency is in scope; drop persistent borders.
 **Next.** Stage C (time constants in years) needs no decision. Stage D
 waits on the batch, per open-questions.md.
 
-### WP5 stage B addendum: site defence, ruler generalship (2026-11-18, HASH)
+### WP5 stage B addendum: site defence, ruler generalship (2026-11-18, c87fa80)
 
 **Asked by U (2026-11-18).**
 - Each city gets a random defence boost: most alike, a few vulnerable,
