@@ -20,7 +20,7 @@ what an entry holds.
 | 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
 | 2 | D GIS export | done | 2026-11-17 | 3b8fe04 |
-| 3 | A snapshots | done | 2026-11-17 | AHASH |
+| 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
 | 3 | B renderer and projection | not started | | |
 | 3 | C state colours and change layers | not started | | |
 | 3 | D video and viewer | not started | | |
@@ -748,7 +748,7 @@ Documented in `docs/rules/colonization.md`.
   `runio` before `load_history` was added to it (WP3 stage A was being
   edited during the run).
 
-### WP3 stage A: snapshots (2026-11-17, AHASH)
+### WP3 stage A: snapshots (2026-11-17, 5bf9a66)
 
 **Done.**
 - `--hist-every` (ticks). The default HIST_EVERY is now 5, or 25
