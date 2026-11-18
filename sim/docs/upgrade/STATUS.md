@@ -23,7 +23,7 @@ what an entry holds.
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
-| 3 | D video and viewer | video done; viewer not asked yet | 2026-11-17 | DHASH |
+| 3 | D video and viewer | video done; viewer not asked yet | 2026-11-17 | 42d3a85 |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
@@ -883,7 +883,7 @@ lineage counts or technology stages.
 **Next.** Stage D (video layouts; the HTML viewer is optional and needs
 U).
 
-### WP3 stage D: video (2026-11-17, DHASH)
+### WP3 stage D: video (2026-11-17, 42d3a85)
 
 **Done.**
 - `render_run.make()` is callable from code. MP4 is H.264, yuv420p,
