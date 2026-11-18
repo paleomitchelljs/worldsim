@@ -993,7 +993,9 @@ the first side at random:
 tributary or be a sack that leaves the city to it; see
 [rules/war.md](rules/war.md) and [structural.md](structural.md). Food
 flows `[food_flow]` (rent, tax, carriage, trade food) are described there
-too.
+too, and `[trade_debit]` (WP4 stage B, 2026-11-17, off unless `--on
+trade_debit`), under which trade food is debited from the exporting
+state's surplus cells and loses carriage on the way.
 
 - `[improvements]` the city's hinterland improvements × (1 − 0.3 ×
   violence), the city's × (1 − 0.6 × violence).

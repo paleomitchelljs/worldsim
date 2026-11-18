@@ -76,8 +76,8 @@ Recommendations are mine (C). Record answers here with the date.
 | D2 | Where runs live | `~/worldsim_runs` (outside Dropbox), with `WORLDSIM_RUNS` to override; keep only `metrics.json`, `run.json` and chosen figures in Dropbox | 2026-11-17 (U): `sim/runs/` in the project (git-ignored), `WORLDSIM_RUNS` overrides |
 | D3 | What to do with the ~900 existing run folders | keep the batches the run log cites; delete or archive the rest to an external disk | 2026-11-17 (U): leave all 446 in the old Dropbox folder untouched; read them by full path |
 | D4 | New Python packages in `~/.venvs/worldsim` (xarray + netCDF4, geopandas, SALib) | yes; pin in a `requirements.txt` | 2026-11-17 (U): yes to xarray + netCDF4 and geopandas (+ shapely, pyogrio); installed and pinned in `sim/requirements.txt`. SALib not yet asked for (WP9) |
-| D5 | Trade food must come from somewhere, and world population will fall when it does | accept the fall; do not retune to restore city sizes | |
-| D6 | Keep the base city-cell boost (1.5 x development), which also adds capacity from nothing | keep, but show it as its own ledger line | |
+| D5 | Trade food must come from somewhere, and world population will fall when it does | accept the fall; do not retune to restore city sizes | 2026-11-17 (U): accept the fall |
+| D6 | Keep the base city-cell boost (1.5 x development), which also adds capacity from nothing | keep, but show it as its own ledger line | 2026-11-17 (U): keep, as recommended (shown as `produced_boost` in `food.csv`) |
 | D7 | Lower growth rates, which stretches the early timeline (first cities arrive later) | try a few settings first; decide on the results | |
 | D8 | Cityless polities (tribes, confederations, herder states) | build, as "camp" seats | |
 | D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | |

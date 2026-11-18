@@ -520,3 +520,23 @@ blend. Not fixed: stage A changes no mechanics.
 
 A smaller leak: food sent to a capital cell where no ruling people
 live feeds nobody (`cap_unused`, 1.1% of capital food over the run).
+
+## Make `trade_debit` the default? (2026-11-17, WP4 stage B; needs U)
+
+Comparison table: run-log.md, "WP4 stage B". With trade food debited:
+- population falls by 11% (D5 accepted that);
+- urban share falls by a third;
+- the largest city loses 30-45%, and largest / 10th falls from 2.3-3.2
+  to 1.7-2.6;
+- the overall rank-size slope steepens a little;
+- states and wars fall by a fifth to a third.
+
+Trade then feeds 3-4% of city food, against about 40%.
+- My recommendation (C): make it the default, since it removes food made
+  from nothing.
+- Do not raise FF_TRADE or TRADE_SURPLUS to restore the top cities
+  (GUIDE.md: no targets). The brief's remedies are mechanisms: WP5's
+  tribute and conquest income, and WP8's water transport of bulk food.
+- One form question first: carriage is now measured capital to capital.
+  Most of the traded food (63%) is lost. A port-to-port distance would
+  lose less on sea routes.

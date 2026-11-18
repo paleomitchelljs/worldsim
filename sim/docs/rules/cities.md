@@ -80,7 +80,10 @@ Until then it was 0.08 x the city cell + 0.04 x its hinterland, kept as
 the state's trade)) x (1 + DEV_CITY x development). Under `food_flow`
 (2026-11-09) the trade term goes and the city's people receive rent,
 provincial tax spending and trade food instead, and the ruling people the
-state's take at the capital ([structural.md](../structural.md)).
+state's take at the capital ([structural.md](../structural.md)). Under
+`trade_debit` (WP4 stage B, off by default) trade food is sold from
+another state's surplus instead of being created; the base boost stays
+(D6, U 2026-11-17) and shows in `food.csv` as `produced_boost`.
 
 ## Justifications
 

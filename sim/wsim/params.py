@@ -79,6 +79,9 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city"]
+# Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
+# from FEATURES so that "--off all" and old states are unchanged.
+OPTIONAL = ["trade_debit"]
 # Trait costs. Cohesion slows borrowing from outsiders; statecraft's
 # extraction raises unrest when the state is underfed; violence raises the
 # chance of a succession crisis; expansion leaves thin frontier cells more
@@ -220,6 +223,10 @@ FF_KM, FF_RIVER, FF_SEA = 250.0, 0.15, 0.04
 # into the top ranks; at 0.12 and 0.003 rent and the state's take are
 # half, the largest cities are capitals, urban share 0.11 (was 0.17).
 FF_VASSAL, FF_TRADE = 0.3, 0.003
+# `trade_debit` (WP4 stage B, C): the share of a cell's marketable surplus
+# (raw capacity beyond what its people eat and the state takes) that its
+# farmers will sell
+TRADE_SURPLUS = 0.5
 FF_LIMIT = 4.0              # food distance searched, x FF_CAP_KM
 # Capital levers (2026-11-09, U: try them; C). FF_CAP_KM: e-fold of the
 # capital's take over the food graph (a state's carriage of tax grain may

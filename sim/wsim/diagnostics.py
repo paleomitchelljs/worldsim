@@ -305,8 +305,8 @@ class DiagnosticsMixin:
                "taken_rent", "taken_tax", "taken_tribute", "lost_eff",
                "received_local", "received_capital", "created_trade",
                "city_food", "cap_unused", "received_smoothed",
-               "taken_capacity"]
-    FL_STATE = ["lost_vassal", "received_vassal", "unplaced"]
+               "taken_capacity", "trade_out", "trade_in"]
+    FL_STATE = ["lost_vassal", "received_vassal", "unplaced", "lost_trade"]
 
     def food_ledger(self, f):
         """Records (WP4 stage A): one tick's food account, in
@@ -335,9 +335,10 @@ class DiagnosticsMixin:
         city = np.zeros(N, bool)
         city[cc] = True
         recv = f["loc"] + f["cap"]
+        made = 0 * Q if self.td_on else f["trade"]
         cols = [Q, Q - boost, boost, fe + mfe, f["rent"], f["tax"],
                 f["trib"], (1 - EXT_EFF) * T, f["loc"], f["cap"],
-                f["trade"], (Q + recv + f["trade"]) * city,
+                made, (Q + recv + f["trade"]) * city,
                 f["cap"] * (self.cul != self.rul_c),
                 self.ext_in + self.loc_in]
         # what the rates Kf applies remove from capacity: the main
@@ -345,19 +346,19 @@ class DiagnosticsMixin:
         # blend that T is worked out with; a minority pays on its own K
         m = pol >= 0
         own = self.cul == self.rul_c
-        tc = Q * np.where(own, self.ff_xo, self.ext_x) * m
+        tc = Q * (np.where(own, self.ff_xo, self.ext_x) + self.tr_x) * m
         mo = np.nonzero(mok & m)[0]
         if len(mo):
             Km = self.Kf(self.mlin[mo], mo, raw=True) * eat[self.mcul[mo]]
             tc[mo] += Km * np.where(self.mcul[mo] == self.rul_c[mo],
                                     self.ff_xo[mo], self.ext_x[mo])
-        cols.append(tc)
+        cols += [tc, f["give"], f["trade"] - made]
         C = np.vstack(cols)
         pc = np.maximum(self.ptab()[1], 0)
         placed = np.bincount(np.maximum(pol[cc], 0), weights=f["cap"][cc],
                              minlength=n) if len(cc) else np.zeros(n)
         S = np.vstack([f["vs"] - f["va"], f["va"],
-                       np.maximum(f["to_cap"] - placed, 0)])
+                       np.maximum(f["to_cap"] - placed, 0), f["tlost"]])
         nP = self.nP
         # world
         w = np.concatenate([C.sum(1), S.sum(1)])
@@ -406,6 +407,8 @@ class DiagnosticsMixin:
             out.update(taken=round(taken), lost=round(lost),
                        received=round(recv), created=round(made),
                        gap=round(taken - recv - lost),
+                       gap_trade=round(d["trade_out"] - d["trade_in"] -
+                                       d["lost_trade"]),
                        created_share=round(made / max(d["produced"], 1e-9),
                                            5),
                        created_share_city=round(

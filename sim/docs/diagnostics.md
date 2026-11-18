@@ -120,7 +120,7 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | `sieges` | share taken; terms; win probability at launch (`odds`): n, median, share under 0.1, for all and by `side` (`att` the attacker's sieges, `dfn` counter-offensives) |
 | `war_time` | share of 2+ city states at war, over the run and by millennium |
 | `food` | shares of city food from trade, rent, provincial spending, capital (last `cityfood.csv` year) |
-| `food_ledger` | from `food.csv`, by millennium: created food (trade food and the city boost) over produced and over city food; trade's share of created; eaten and taken over produced. Over the run: the gap and the unplaced take over the take; capital food that reached no ruling people |
+| `food_ledger` | from `food.csv`, by millennium: created food (trade food and the city boost) over produced and over city food; trade's share of created; eaten and taken over produced. Over the run: the gap and the unplaced take over the take; capital food that reached no ruling people. Under `trade_debit`: trade sold over produced and the share lost in carriage, by millennium |
 | `deaths` | deaths by cause, shares |
 | `settlement` | population against land share by coast, river, alluvial fill, latitude band, biome; density percentiles; population, land area and land cells inside states |
 | `turnover` | per 500 years: share of cells whose people changed; occupied cells inside a state; cells emptied |

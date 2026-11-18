@@ -161,6 +161,9 @@ def make_sim(argv=None):
     ap.add_argument("--off", default="",
                     help="structural mechanics to switch off, comma-"
                     "separated, or 'all': " + ",".join(params.FEATURES))
+    ap.add_argument("--on", default="",
+                    help="optional mechanics to switch on, comma-"
+                    "separated: " + ",".join(params.OPTIONAL))
     ap.add_argument("--set", action="append", default=[],
                     metavar="NAME=VALUE",
                     help="override a numeric constant (repeatable)")
@@ -206,9 +209,13 @@ def make_sim(argv=None):
         setp(k, type(g[k])(float(v)) if isinstance(g[k], float) else int(v))
     off = params.FEATURES if a.off == "all" else \
         [x for x in a.off.split(",") if x]
-    bad = set(off) - set(params.FEATURES)
+    bad = set(off) - set(params.FEATURES) - set(params.OPTIONAL)
     if bad:
         ap.error(f"unknown feature(s): {', '.join(sorted(bad))}")
+    on = [x for x in a.on.split(",") if x]
+    bad = set(on) - set(params.OPTIONAL)
+    if bad:
+        ap.error(f"--on: not an optional mechanic: {', '.join(sorted(bad))}")
     setp("CITY_POP", a.city_pop)
     setp("DRAGON_PEN", a.dragon_penalty)
     setp("DRAGON_SHUN", a.dragon_shun)
@@ -238,7 +245,7 @@ def make_sim(argv=None):
               cluster_km=a.cluster_km, settle_drift=a.settle_drift,
               size_food=a.size_food, start_mode=a.start_mode,
               wander_steps=a.wander_steps, off=off,
-              shuffle_sites=a.shuffle_sites, sites=a.sites)
+              shuffle_sites=a.shuffle_sites, sites=a.sites, on=on)
     sim.vary = a.vary
     if a.hist_every is not None:
         sim.hist_every = a.hist_every
@@ -271,7 +278,7 @@ def branch(a, ap, off, saves, code, t0, argv):
     base = getattr(sim, "state_info", None) or run_info(sim)
     year0 = sim.year
     was_off = sorted(set(params.FEATURES) - sim.on)
-    sim.on -= set(off)
+    sim.on = (sim.on - set(off)) | {x for x in a.on.split(",") if x}
     sim.flags()
     if a.branch_seed is not None:
         sim.reseed(a.branch_seed)
@@ -302,7 +309,7 @@ def branch(a, ap, off, saves, code, t0, argv):
         python=platform.python_version(), numpy=np.__version__, t0=t0,
         branch=dict(
             state=src, year=year0, state_run=base,
-            set=a.set, off=sorted(set(off) - set(was_off)),
+            set=a.set, off=sorted(set(off) - set(was_off)), on=a.on,
             seed=a.branch_seed,
             constants_changed={k: [old.get(k), v] for k, v in now.items()
                                if old.get(k) != v},

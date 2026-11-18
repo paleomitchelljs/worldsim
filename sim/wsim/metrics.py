@@ -470,7 +470,8 @@ def food_ledger(run):
     from the century means: food created (trade food and the city boost)
     as a share of food produced and of food in cities; the account's gap
     (taken - received - lost) and the take with no city to arrive in, as
-    shares of the take; capital food that reached no ruling people."""
+    shares of the take; capital food that reached no ruling people;
+    under `trade_debit`, food sold and the share lost on the way."""
     f = run.food
     w = f[f.scope == "world"]
     m = {}
@@ -485,6 +486,10 @@ def food_ledger(run):
         m[f"trade / created, {t}"] = s.created_trade / max(s.created, 1e-9)
         m[f"eaten / produced, {t}"] = s.eaten / s.produced
         m[f"taken / produced, {t}"] = s.taken / s.produced
+        if "trade_out" in s:          # from WP4 stage B
+            m[f"trade out / produced, {t}"] = s.trade_out / s.produced
+            m[f"trade lost / trade out, {t}"] = \
+                s.lost_trade / max(s.trade_out, 1e-9)
     s = w.sum(numeric_only=True)
     tk = max(s.taken, 1e-9)
     m["gap / taken, run"] = s.gap / tk

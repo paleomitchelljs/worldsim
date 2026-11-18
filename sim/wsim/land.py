@@ -96,7 +96,12 @@ class LandMixin:
             # local spending and trade food that reach their city
             c = self.Lpeople[L]
             own = c == self.rul_c[j]
-            K = K * (1 - np.where(own, self.ff_xo[j], self.ext_x[j])) + \
+            x = np.where(own, self.ff_xo[j], self.ext_x[j])
+            if self.td_on:
+                # `trade_debit`: the cell's main lineage sells part of
+                # its surplus
+                x = x + self.tr_x[j] * (L == self.lin[j])
+            K = K * (1 - x) + \
                 (own * self.ext_in[j] + (c == self.city_c[j]) *
                  self.loc_in[j]) / self.peat[c]
         elif self.dom_on and not raw:

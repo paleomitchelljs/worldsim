@@ -95,3 +95,13 @@ made to remove. You accepted that mean reversion for rulers knowingly,
 but the decision rested on my wrong premise. **Decided (U,
 2026-11-02): rulers draw in trait units** with reflection, like
 `flat_drift`. Open: the same for city δ (C: yes, for consistency).
+
+## Optional switches (off unless named in `--on`)
+
+From WP4 stage B (2026-11-17), `params.OPTIONAL` lists mechanics that
+are off by default and switched on with `worldsim.py --on NAME`.
+`--off all` leaves them as they are.
+
+| Switch | Since | What it does |
+|---|---|---|
+| `trade_debit` | 2026-11-17 (WP4 B) | Trade food is sold from the exporter's surplus cells (TRADE_SURPLUS, C: 0.5) and arrives less carriage, instead of being created ([structural.md](structural.md)). Needs `food_flow`. Whether it becomes the default is for U |

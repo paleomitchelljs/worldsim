@@ -25,7 +25,7 @@ what an entry holds.
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
-| 4 | B debited trade | not started | | |
+| 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | HASHB |
 | 4 | C deaths and growth account | not started | | |
 | 5 | A diagnosis | not started | | |
 | 5 | B odds-gated war | not started | | |
@@ -995,3 +995,67 @@ shown.
 fall. D6: keep the city boost ("city limit") with the modifications.
 U also asked for stages B and C to follow tonight, with provisional
 decisions marked for review.
+
+### WP4 stage B: debited trade (2026-11-17, HASHB)
+
+D5 and D6 answered by U (above). U asked for B and C to follow tonight,
+with provisional decisions marked for review in the morning.
+
+**Done.**
+- New switch `trade_debit`. It is the first entry of a new
+  `params.OPTIONAL` list, switched on by `worldsim.py --on trade_debit`
+  (also on a branch).
+- **Provisional (C): off by default.** "Done when" puts the default to
+  U, and every other switch is on by default, so a separate list was
+  needed. `--off all` and old states are unchanged.
+- `states.debit_trade`: surplus = TRADE_SURPLUS (0.5, C) x max(0,
+  produced - eaten - taken).
+  - The flow per tie is today's gravity term, one way, from more to
+    less surplus per head.
+  - It is scaled to the exporter's surplus and debited across its
+    surplus cells as `tr_x` (main lineage only) in `Kf`, smoothed at
+    FISC_EMA like `loc_in`.
+  - It arrives at the importer less exp(-d / FF_CAP_KM).
+- Provisional choices (C):
+  - d is capital to capital (`food_dist` exists only from capitals);
+  - pairs beyond the food graph's reach do not trade food;
+  - each tie carries one term one way, half of what was created before;
+  - an exporter's flows are scaled together, so they do not depend on
+    tie order.
+- Ledger: `trade_out`, `trade_in`, `lost_trade`, `gap_trade`.
+  `created_trade` is 0 under the switch. The metric gains trade sold
+  and lost by millennium.
+- Docs: structural.md (new section), model-description.md,
+  rules/cities.md, switch-inventory.md (an "Optional switches" table),
+  running.md (`--on`, columns), diagnostics.md, run-log.md,
+  open-questions.md (the default decision, with the table).
+
+**Runs.**
+- `wp4b_smoke`: a branch from 5,000 to 5,300 with the switch on.
+- `wp4b_{on,off}_seed{101,103}`: 8,000 years, `--no-video`, 530-680 s
+  each, two at a time.
+- With the switch on:
+  - population -11% in both seeds;
+  - urban share down a third;
+  - largest city -45% and -31%; largest / 10th 2.34 -> 1.70 and
+    3.22 -> 2.61;
+  - rank-size slope steeper, not flatter (-0.36 -> -0.42, -0.35 -> -0.43);
+  - trade feeds 3-4% of city food instead of about 40%; 63% of traded
+    food is lost in carriage;
+  - net exporters are smaller states with spare land;
+  - states -20% and wars -30%, which the brief did not predict.
+- `gap_trade` is 0. `final_maps.png` of `wp4b_on_seed101` looks normal:
+  ten peoples, 190 states, 729 cities.
+
+**The brief's stop rule.** "If the city hierarchy flattens again, report
+it and stop." The overall slope did not flatten; the top did (largest /
+10th). I read this as not triggering the stop. Since the switch is off
+by default, nothing in the default model changed. Review this.
+
+**Surprise.** `wp4a_seed101` and `wp4b_off_seed101` run the same
+mechanics. They differ only in summation order inside `food_flows`,
+yet end at 126M and 156M. Single-seed differences under about 20% are
+noise.
+
+**Not done.** Making the switch the default (U). Port-to-port carriage.
+The minority leak from stage A (open-questions).

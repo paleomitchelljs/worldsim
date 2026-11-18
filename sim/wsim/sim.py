@@ -25,9 +25,9 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                  starts=3, start_vary=0.05, drift=0.06, cluster_km=0.0,
                  settle_drift=0.03, size_food="kleiber", start_mode="wander",
                  wander_steps=2000, off=(), shuffle_sites=False,
-                 sites="sites.json"):
+                 sites="sites.json", on=()):
         self.W = W = world
-        self.on = set(FEATURES) - set(off)
+        self.on = (set(FEATURES) - set(off)) | set(on)
         self.homelands = homelands
         self.start_pool = start_pool
         self.starts = starts
@@ -277,6 +277,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         on an older state."""
         self.fl_rows = []                 # food.csv
         self.fl_new()
+        self.tr_x = np.zeros(self.W.N)    # `trade_debit`: rate sold
 
     def R(self, name):
         """The run's random stream `name` (geo.stream), made when first
@@ -299,6 +300,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.dom_on = "dominion" in self.on
         # `food_flow` works through dominion's extraction
         self.ff_on = self.dom_on and "food_flow" in self.on
+        self.td_on = self.ff_on and "trade_debit" in self.on
         self.uc_on = "urban_city" in self.on
         self.ca_on = self.cc_on and "city_admin" in self.on
         self.rt = "ruler_traits" in self.on and "rulers" in self.on
@@ -335,6 +337,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v2()
         if not hasattr(self, "fl_rows"):
             self.new_state_v3()
+        if not hasattr(self, "td_on"):
+            self.td_on = False
         if not hasattr(self, "uc_on"):
             self.uc_on = "urban_city" in self.on
         if not hasattr(self, "lver"):

@@ -597,13 +597,8 @@ class StatesMixin:
         # trade: a gravity form over trade ties, into each state's cities
         # by size and waterside
         FE = np.bincount(pol[m], weights=need[m], minlength=n)
-        V = np.zeros(n)
-        for (a, b), t in self.ties.items():
-            if t > 0 and FE[a] > 0 and FE[b] > 0 and self.live((a, b)):
-                g = t * math.sqrt(FE[a] * FE[b])
-                V[a] += g
-                V[b] += g
         new_trade = np.zeros(N)
+        ws = np.zeros(n)
         if len(cc):
             cp = np.array([self.cities[c]["polity"] for c in cc])
             okc = cp >= 0
@@ -611,8 +606,22 @@ class StatesMixin:
             wc = (0.5 + 0.5 * np.maximum(W.coastal[c2], W.river[c2])) * \
                 need[c2]
             ws = np.bincount(p2, weights=wc, minlength=n)
-            new_trade[c2] = FF_TRADE * V[p2] * wc / np.maximum(ws[p2], 1e-9)
+        give, tlost = np.zeros(N), np.zeros(n)
+        if self.td_on:
+            give, V, tlost = self.debit_trade(Q, need, T, FE, ws, n)
+        else:
+            V = np.zeros(n)
+            for (a, b), t in self.ties.items():
+                if t > 0 and FE[a] > 0 and FE[b] > 0 and self.live((a, b)):
+                    g = FF_TRADE * t * math.sqrt(FE[a] * FE[b])
+                    V[a] += g
+                    V[b] += g
+        if len(cc):
+            new_trade[c2] = V[p2] * wc / np.maximum(ws[p2], 1e-9)
         a = FISC_EMA
+        if self.td_on:
+            tr = give / np.maximum(Q, 1e-9)
+            self.tr_x += a * (tr - self.tr_x)
         self.ext_in += a * (new_cap - self.ext_in)
         self.loc_in += a * (new_loc + new_trade - self.loc_in)
         # records
@@ -626,13 +635,57 @@ class StatesMixin:
         trib = Ts * (1 - rs)
         self.food_ledger(dict(
             Q=Q, rent=rent, tax=tax - trib, trib=trib, to_cap=to_cap,
-            vs=vs, va=va, loc=new_loc, cap=new_cap, trade=new_trade, cc=cc))
+            vs=vs, va=va, loc=new_loc, cap=new_cap, trade=new_trade, cc=cc,
+            give=give, tlost=tlost))
         for pid in live:
             self.polities[pid]["extract"] = float(to_cap[pid])
         self.count("ext_food", float(T.sum()))
         self.count("ff_rent", float(rent.sum()))
         self.count("ff_tax", float(tax.sum()))
         self.count("ff_trade", float(new_trade.sum()))
+
+    def debit_trade(self, Q, need, T, FE, ws, n):
+        """`trade_debit` (WP4 stage B; C): trade food that some cell grew.
+        Each tie carries today's gravity flow, FF_TRADE x tie x
+        sqrt(FE_a x FE_b), one way: from the state with more marketable
+        surplus per head (TRADE_SURPLUS of what its cells grow beyond
+        what their people eat and the state takes) to the one with less.
+        An exporter's flows are scaled down together to its surplus, and
+        debited from its cells in proportion to their surplus, so selling
+        cannot make the sellers hungry. What leaves arrives at the
+        importer, less carriage over the food graph between the two
+        capitals (exp(-d / FF_CAP_KM), as tax); a pair beyond the food
+        graph's reach does not trade food. Returns the debit per cell,
+        the food arriving per state and the food lost per exporter."""
+        pol = self.cell_pol
+        m = pol >= 0
+        s = np.maximum(Q - need - T, 0) * TRADE_SURPLUS * m
+        S = np.bincount(pol[m], weights=s[m], minlength=n)
+        per = S / np.maximum(FE, 1e-9)
+        flows, want = [], np.zeros(n)
+        for (a, b), t in self.ties.items():
+            if t <= 0 or FE[a] <= 0 or FE[b] <= 0 or per[a] == per[b] or \
+                    not self.live((a, b)):
+                continue
+            x, y = (a, b) if per[a] > per[b] else (b, a)
+            if ws[y] <= 0:
+                continue                  # no city to arrive in
+            d = float(self.food_dist(self.polities[x])[
+                self.polities[y]["capital"]])
+            if not math.isfinite(d):
+                continue
+            g = FF_TRADE * t * math.sqrt(FE[a] * FE[b])
+            flows.append((x, y, g, math.exp(-d / FF_CAP_KM)))
+            want[x] += g
+        scale = np.minimum(1.0, S / np.maximum(want, 1e-12))
+        out, arr, lost = np.zeros(n), np.zeros(n), np.zeros(n)
+        for x, y, g, e in flows:
+            f = g * scale[x]
+            out[x] += f
+            arr[y] += f * e
+            lost[x] += f * (1 - e)
+        give = s * (out / np.maximum(S, 1e-12))[np.maximum(pol, 0)] * m
+        return give, arr, lost
 
     def state_room(self, n):
         """Room of each state: settleable empty cells along its edge."""

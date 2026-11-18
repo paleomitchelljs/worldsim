@@ -1344,3 +1344,69 @@ people's rent that goes to the capital with the tax (default 0; tried
 Check: with `urban_city` off and the levers at their defaults, 20 ticks
 from a year-5000 state with `food_flow` and `war_terms` on are identical
 to the realism batch's code in every part of the state but the records.
+
+## 2026-11-17: debited trade food (`trade_debit`, WP4 stage B; off by default)
+
+Forms and numbers are C unless marked. D5 (U, 2026-11-17): accept the
+population fall. D6 (U): keep the base city boost and show it in the
+ledger.
+
+Under `food_flow`, trade food was created: FF_TRADE x V arrived in each
+state's cities and no cell was debited. `trade_debit` moves it from
+somewhere instead (`states.debit_trade`).
+- **Marketable surplus** of a ruled cell: TRADE_SURPLUS (0.5) x max(0,
+  raw capacity x food per head - what its people eat - what the state
+  takes). Farmers sell part of a surplus, not all. A state's surplus is
+  its cells' sum.
+- **Flows.** Each live trade tie carries today's gravity term,
+  FF_TRADE x tie x sqrt(FE_a x FE_b), one way. It runs from the state
+  with more surplus per food-equivalent to the one with less. Before,
+  each side received the term, so the wanted volume is half of what was
+  created.
+- An exporter's flows are scaled down together to its surplus. They
+  are debited from its cells in proportion to their surplus, as a rate
+  `tr_x` that Kf takes from the cell's main lineage alongside rent and
+  tax. Because the flow is capped at surplus, selling does not starve
+  the sellers.
+- **Carriage.** Food arrives in the importer's cities (weights as
+  before) x exp(-d / FF_CAP_KM). Here d is the food distance from the
+  exporter's capital to the importer's capital. A pair beyond the food
+  graph's reach (FF_LIMIT x FF_CAP_KM) trades no food. Capitals stand in
+  for the brief's "nearest ports or capitals", because `food_dist` is
+  computed only from capitals.
+- **Smoothing.** Both sides at FISC_EMA: `tr_x` is smoothed as `loc_in`
+  is.
+- The base city boost is unchanged (D6).
+- `food.csv` gains `trade_out`, `trade_in`, `lost_trade` and
+  `gap_trade`. Under the switch `created_trade` is 0, so created food
+  is the boost alone.
+
+**Seeds 101 and 103, 8,000 years, on against off** (run-log.md):
+- **Population at 8,000.** 139M against 156M (101) and 147M against
+  166M (103): -11% both times.
+- **Urban share.** 0.055 against 0.090, and 0.065 against 0.097.
+- **Largest city.** 69k against 126k fe, and 122k against 176k.
+- **Top of the hierarchy flattens:** largest / 10th city falls from
+  2.34 to 1.70 and from 3.22 to 2.61.
+- **The rank-size slope does not flatten.** It steepens (-0.36 to
+  -0.42, and -0.35 to -0.43), because the loss falls on the largest few
+  cities and small towns lose less.
+- **Trade food is now 3-4% of city food** (it was 39-43%). Rent rises
+  to 51-52%, provincial spending to 24-25% and the capital's take to
+  20-21%.
+- Trade sold is 0.5-0.6% of production in the last millennium, and
+  54-63% of it is lost in carriage. Distant ties carry little that
+  arrives.
+- **Who exports.** Net exporters are smaller states with spare land
+  (median food-equivalents 49-72k against 102-109k for importers).
+  Trade mostly runs within a people: Elves, Dwarves, Humans and Snake
+  folk in 101; mostly Elves in 103.
+- **Fewer states and wars.** States: -18% and -21%. Wars: -30% and
+  -35%. The largest state is smaller: 5.9 against 8.3M km2, and 5.6
+  against 7.8.
+
+Caution on noise: `wp4a_seed101` has the same mechanics as the off run
+of seed 101. It differs only in the order of a floating-point sum, and
+it ended at 126M, not 156M. A seed's history therefore moves by about
+20% from rounding alone. The on/off differences point the same way in
+both seeds, but two seeds do not give a size for them.

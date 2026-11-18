@@ -1494,3 +1494,32 @@ Records only. `wp4a_seed101` (seed 101, standard settings, 8,000 years,
 `taken_capacity` column. It shows that minorities pay 3.7-4.8% more
 than the take counts, and that this food vanishes
 ([open-questions](open-questions.md)).
+
+### 2026-11-17 WP4 stage B: debited trade (`wp4b_{on,off}_seed{101,103}`)
+
+Standard settings, 8,000 years, `--no-video`; "on" is
+`--on trade_debit`. Full description in structural.md (2026-11-17).
+
+| Measure | off 101 | on 101 | off 103 | on 103 |
+|---|---|---|---|---|
+| population at 8,000 (M) | 156 | 139 | 166 | 147 |
+| population at 6,000 (M) | 77.5 | 67.9 | 115 | 92.1 |
+| urban share, end | 0.090 | 0.055 | 0.097 | 0.065 |
+| largest city (k fe) | 126 | 69 | 176 | 122 |
+| largest / 10th city | 2.34 | 1.70 | 3.22 | 2.61 |
+| rank-size slope 6,000 / 8,000 | -0.49 / -0.36 | -0.59 / -0.42 | -0.38 / -0.35 | -0.50 / -0.43 |
+| city food from trade | 0.43 | 0.03 | 0.39 | 0.04 |
+| created / city food, 7,000-8,000 | 0.44 | 0.35 | 0.44 | 0.34 |
+| trade sold / produced, 7,000-8,000 | - | 0.0055 | - | 0.0058 |
+| trade lost in carriage, 7,000-8,000 | - | 0.63 | - | 0.63 |
+| polities | 5,371 | 4,400 | 6,722 | 5,317 |
+| wars | 6,656 | 4,657 | 8,454 | 5,493 |
+| largest state (M km2) | 8.3 | 5.9 | 7.8 | 5.6 |
+
+- What was expected happened: population fell, cities shrank, and the
+  largest shrank most.
+- The overall rank-size slope steepened rather than flattened. The top
+  flattened (largest / 10th).
+- Not expected: fewer states and wars.
+- Noise: `wp4a_seed101` (off, same mechanics, a different floating-point
+  order in one sum) ended at 126M against `wp4b_off_seed101`'s 156M.
