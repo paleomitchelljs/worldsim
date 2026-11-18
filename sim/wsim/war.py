@@ -320,7 +320,9 @@ class WarMixin:
         at = {x for kk in self.wars for x in kk}
         at |= {q for w in self.wars.values()
                for q in w.get("joined", ())}
-        if at:
+        if "army" in self.on:
+            self.army_step(at)
+        elif at:
             wc = np.nonzero(np.isin(self.cell_pol, list(at)))[0]
             b_pop = self.pop[wc]
             self.pop[wc] *= 1 - self.dtp * WAR_COST * self.hardy(wc)
@@ -395,7 +397,8 @@ class WarMixin:
                 # a weaker defender may cede the goal rather than fight
                 # (`war_odds`: but not its last city, which would end it)
                 g = w["goal"]
-                ra = self.projected(A, g) * self.offense(A) / max(
+                ra = self.projected(A, g) * self.offense(A) * \
+                    self.field(A) / max(
                     1.4 * self.city_def(g) * self.projected(B, g), 1e-9)
                 if rng.random() < over(WAR_CEDE * min(
                         1.0, max(0.0, ra - 1)), self.dtp):
@@ -427,7 +430,14 @@ class WarMixin:
                 self.truce[k] = self.year + TRUCE_WAR
                 continue
             # (the chance per SPAN years, made the chance this step below)
-            pend = WAR_END0 + WAR_END_K * (self.year - w["start"])
+            if "army" in self.on:
+                # `army`: worn out by the soldiers lost, not by time
+                ls = w.get("lost", {})
+                pend = WAR_END0 + EXH_K * max(
+                    ls.get(P["id"], 0.0) / max(P.get("pop", 0.0), 1.0)
+                    for P in (A, B))
+            else:
+                pend = WAR_END0 + WAR_END_K * (self.year - w["start"])
             # supply lines let a campaign go on
             pend *= 1 - LOG_END * self.logi(A) / 1.5
             if w.get("done"):
@@ -473,6 +483,8 @@ class WarMixin:
             (1.25 if t == B["capital"] else 1)
         # walls and works
         PB *= 1 + DEV_WALL * self.dev(B["lin"])
+        PA *= self.field(A)
+        PB *= self.garrison(B)
         return PA, PB, PA ** 2 / (PA ** 2 + PB ** 2 + 1e-9)
 
     def sieges_open(self, k, w, A, B):
@@ -570,8 +582,8 @@ class WarMixin:
             A, B = X, Y
             PX, PY, pw = self.siege_odds(w, A, B, t)
         else:
-            PX = self.projected(X, t) * self.offense(X)
-            PY = self.defence_at(Y, X, t)
+            PX = self.projected(X, t) * self.offense(X) * self.field(X)
+            PY = self.defence_at(Y, X, t) * self.garrison(Y)
             pw = PX ** 2 / (PX ** 2 + PY ** 2 + 1e-9)
         if toll:
             b_pop = self.pop[t]
@@ -582,6 +594,9 @@ class WarMixin:
         self.devastate(t, Y["id"])
         fe = self.city_fe(t)
         won = rng.random() < pw
+        if "army" in self.on:
+            self.army_loss(w, X, ARMY_WON if won else ARMY_LOST)
+            self.army_loss(w, Y, ARMY_LOST if won else ARMY_WON)
         w["sieges"] = w.get("sieges", 0) + 1
         cap_t = int(t == Y["capital"])
         rec = (self.year, w.get("id", -1), s["side"], int(t), round(fe),
@@ -705,13 +720,91 @@ class WarMixin:
             pool = lost or pool
             t = pool[int(np.argmin(gc_km(self.W.xyz, B["capital"],
                                          np.array(pool))))]
-            PB = self.projected(B, t) * self.offense(B)
-            PA = self.defence_at(A, B, t)
+            PB = self.projected(B, t) * self.offense(B) * self.field(B)
+            PA = self.defence_at(A, B, t) * self.garrison(A)
             pw = PB ** 2 / (PB ** 2 + PA ** 2 + 1e-9)
             if "war_odds" in self.on and pw < SIEGE_MIN:
                 break               # too long odds: no siege
             if self.siege_start(k, w, "dfn", t, B, A) == "stop":
                 break
+
+    def field(self, P):
+        """`army`: the share of its full levy (ARMY_SHARE x its people)
+        that state P has in the field, 0-1; 1 without the switch."""
+        if "army" not in self.on:
+            return 1.0
+        full = ARMY_SHARE * P.get("pop", 0.0)
+        return min(1.0, P.get("army", 0.0) / full) if full > 0 else 0.0
+
+    def garrison(self, P):
+        """`army`: what P's field army adds to the defence of its cities
+        (walls and townsmen hold ARMY_GARRISON without one)."""
+        if "army" not in self.on:
+            return 1.0
+        return ARMY_GARRISON + (1 - ARMY_GARRISON) * self.field(P)
+
+    def army_dead(self, P, heads):
+        """Records soldiers of state P killed (cause "battle")."""
+        c = P["culture"]
+        acc = self.deaths.get("battle")
+        if acc is None:
+            acc = self.deaths["battle"] = np.zeros(self.nP)
+        acc[c] += heads
+        self.ac_dead[c] += heads
+
+    def army_loss(self, w, P, share):
+        """State P loses `share` of its army in a decided siege; the war
+        keeps the count for exhaustion."""
+        a = P.get("army", 0.0)
+        if a <= 0 or share <= 0:
+            return
+        heads = a * share
+        P["army"] = a - heads
+        self.army_dead(P, heads)
+        ls = w.setdefault("lost", {})
+        ls[P["id"]] = ls.get(P["id"], 0.0) + heads
+
+    def army_step(self, at):
+        """`army`: states at war (set `at`) raise toward ARMY_SHARE of
+        their people, closing dtp / ARMY_RAISE of the gap, from their own
+        people's cells; the rest send their soldiers home to those cells.
+        An ended state's army is lost. Sets army_x, the share of each
+        own-people cell's capacity the army eats (read by Kf)."""
+        N, n = self.W.N, self.next_pid
+        pol, pc = self.cell_pol, self.ptab()[1]
+        own = (pol >= 0) & (self.cul >= 0) & \
+            (self.cul == pc[np.maximum(pol, 0)])
+        oc = np.nonzero(own)[0]
+        opop = np.bincount(pol[oc], weights=self.pop[oc], minlength=n)
+        rate = min(1.0, self.dtp / ARMY_RAISE)
+        delta = np.zeros(n)
+        share = np.zeros(n)
+        for pid, P in self.polities.items():
+            a = P.get("army", 0.0)
+            if P["ended"] is not None:
+                if a > 0:
+                    self.army_dead(P, a)
+                    P["army"] = 0.0
+                continue
+            want = ARMY_SHARE * P.get("pop", 0.0) if pid in at else 0.0
+            if want <= 0 and a <= 0:
+                continue
+            d = (want - a) * rate if want > a else want - a
+            if d > 0:
+                d = min(d, 0.5 * opop[pid])
+            elif opop[pid] <= 0:
+                # no home cells left: the soldiers stay under arms
+                d = 0.0
+            P["army"] = a + d
+            delta[pid] = d
+            if P["army"] > 0:
+                share[pid] = P["army"] / max(P.get("K_own", 0.0), 1.0)
+        f = delta[pol[oc]] / np.maximum(opop[pol[oc]], 1e-9)
+        # raising takes a share of every own cell; going home returns
+        # the soldiers in proportion to the cells' people
+        self.pop[oc] *= 1 - np.minimum(f, 0.5)
+        self.army_x = np.zeros(N)
+        self.army_x[oc] = np.minimum(ARMY_X_MAX, share[pol[oc]])
 
     def ravage(self, w, A, B, t):
         """`war_odds`: A, too weak to besiege city t, lays waste B's land
@@ -984,6 +1077,15 @@ class WarMixin:
             return
         f = self.pfort[self.cities[t]["culture"]]
         if f <= 0:
+            return
+        if "army" in self.on:
+            # `army`: the besiegers who fall are soldiers
+            heads = min(P.get("army", 0.0), FORT_SIEGE * f * self.pop[t])
+            if heads > 0:
+                P["army"] -= heads
+                self.army_dead(P, heads)
+                self.count("fortress_toll")
+                self.count("fortress_heads", int(heads))
             return
         m = np.nonzero((self.cell_pol == P["id"]) & (self.lin >= 0))[0]
         tot = self.pop[m].sum()

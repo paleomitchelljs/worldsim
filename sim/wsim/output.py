@@ -181,7 +181,10 @@ class Stream:
             with open(os.path.join(out, name), "a" if n else "w",
                       newline="") as fh:
                 if head is None:
-                    w = csv.DictWriter(fh, fieldnames=list(rows[0]))
+                    # every key in order of first sight (a branch's rows
+                    # may gain a column, e.g. food.csv taken_army)
+                    w = csv.DictWriter(fh, fieldnames=list(dict.fromkeys(
+                        k for r in rows for k in r)), restval="")
                     if not n:
                         w.writeheader()
                 else:

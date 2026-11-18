@@ -1001,6 +1001,16 @@ the first side at random:
   cities. After a year in which a city changed hands territory is
   redrawn and strength scaled by the change in weighted population.
 
+- `[army]` (WP5 E, 2026-11-18, C) states at war raise a field army
+  toward 4% of their people, closing dtp / 2 of the gap a year, from
+  their own people's cells; the army eats from those cells' capacity
+  (at most half; `taken_army`); in peace survivors return. Field share
+  f = army / (0.04 × people): siege and cession strength × f, city
+  defence × (0.5 + 0.5 f). A decided siege kills 20% of the loser's
+  army and 5% of the winner's ("battle"). Ending chance per 5 years =
+  0.12 + 25 × max over sides of soldiers lost / people (instead of
+  0.006 × years). No WAR_COST.
+
 ### 13.2a Counteroffensives `[two_sided]`
 
 - In each 5 years of a war the defender strikes back with chance 0.5 ×

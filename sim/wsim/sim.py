@@ -238,6 +238,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.truce = {}             # (lo, hi) -> year until
         self.clock_years = True     # truces, wars, plague gap in years
         self.dtp = DT               # years in the political (sub-)step
+        self.army_x = np.zeros(self.W.N)  # capacity share armies eat
         self.ties = {}              # (lo, hi) -> trade strength 0..1
         self.allies = {}            # (lo, hi) -> year formed
         self.ally_kind = {}         # (lo, hi) -> "affinity" | "balance"
@@ -401,6 +402,13 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.W.food_graph()
         if not hasattr(self, "dtp"):
             self.dtp = DT
+        if not hasattr(self, "army_x"):
+            self.army_x = np.zeros(self.W.N)
+        if hasattr(self, "fl_acc") and len(self.fl_acc["world"]) != \
+                len(self.FL_CELL) + len(self.FL_STATE):
+            # a ledger line was added (WP5 E, taken_army): the century
+            # under way starts afresh (records only)
+            self.fl_new()
         if not hasattr(self, "clock_years"):
             # before WP5 stage C: truces, war starts and last sieges, and
             # the plague gap were held in ticks

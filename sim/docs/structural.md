@@ -1555,3 +1555,21 @@ U (2026-11-18): build stage D, with sieges that have a length. Numbers C.
   before.
 - **Not converted.** One sack per war per step; the cultural spike, the
   `revolted` and `sup_*` accumulators, per tick.
+
+## 2026-11-18: field armies (`army`, WP5 E)
+
+Forms from the review (four points: raise and feed an army, sieges use
+it, projected strength is the army's, exhaustion by losses); numbers C.
+- `WarMixin.army_step` (start of each `wars_step`) moves each state's
+  `P["army"]` toward ARMY_SHARE x people if it is at war, to 0 if not,
+  taking heads from or returning them to its own people's cells. It sets
+  `Sim.army_x`, which `Kf` adds to the ruling people's removal rate and
+  `food_ledger` reports as `taken_army` (and inside `taken_capacity`).
+- `field(P)` and `garrison(P)` scale the odds in `siege_odds`,
+  `siege_end` and `counteroffensive`, and the cession test.
+- `army_loss` at each decided siege; `w["lost"]` keeps the heads lost
+  per side for the exhaustion term. Deaths "battle" are booked per
+  people directly (soldiers have no cell). `heads()` counts soldiers,
+  so the people account stays closed.
+- `polity_stats` records `K_own`, the capacity of a state's own people,
+  for the army's food share.

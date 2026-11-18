@@ -323,8 +323,13 @@ class DiagnosticsMixin:
         n = self.nP
         a = self.cul >= 0
         b = self.mlin >= 0
-        return np.bincount(self.cul[a], weights=self.pop[a], minlength=n) + \
+        h = np.bincount(self.cul[a], weights=self.pop[a], minlength=n) + \
             np.bincount(self.mcul[b], weights=self.mpop[b], minlength=n)
+        for P in self.polities.values():
+            # soldiers under arms (`army`) are out of their cells
+            if P.get("army", 0.0) > 0:
+                h[P["culture"]] += P["army"]
+        return h
 
     def acct_mark(self, phase):
         """Records (WP4 stage C): the change in heads per people since the
@@ -379,7 +384,8 @@ class DiagnosticsMixin:
             r.update(nets)
             for c in ("hunger", "feud", "raid", "war levies", "siege",
                       "sack", "clearance", "plague", "dragon attack",
-                      "displaced", "expelled", "dwindled", "ravage"):
+                      "displaced", "expelled", "dwindled", "ravage",
+                      "battle"):
                 r[f"dead_{c.replace(' ', '_')}"] = dd.get(c, 0.0)
             if i is not None and r["pop_start"] <= 0 and r["pop_end"] <= 0:
                 continue
@@ -402,7 +408,7 @@ class DiagnosticsMixin:
                "taken_rent", "taken_tax", "taken_tribute", "lost_eff",
                "received_local", "received_capital", "created_trade",
                "city_food", "cap_unused", "received_smoothed",
-               "taken_capacity", "trade_out", "trade_in"]
+               "taken_capacity", "trade_out", "trade_in", "taken_army"]
     FL_STATE = ["lost_vassal", "received_vassal", "unplaced", "lost_trade"]
 
     def food_ledger(self, f):
@@ -449,13 +455,14 @@ class DiagnosticsMixin:
         Qa = np.zeros(N)
         oa = np.nonzero(occ & m)[0]
         Qa[oa] = self.Kf(self.lin[oa], oa, raw=True) * eat[self.cul[oa]]
-        tc = Qa * np.where(own, self.ff_xo, self.ext_x) * m
+        tc = Qa * np.where(own, self.ff_xo + self.army_x, self.ext_x) * m
         mo = np.nonzero(mok & m)[0]
         if len(mo):
             Km = self.Kf(self.mlin[mo], mo, raw=True) * eat[self.mcul[mo]]
             tc[mo] += Km * np.where(self.mcul[mo] == self.rul_c[mo],
                                     self.ff_xo[mo], self.ext_x[mo])
-        cols += [tc, f["give"], f["trade"] - made]
+        cols += [tc, f["give"], f["trade"] - made,
+                 Qa * self.army_x * own * m]
         C = np.vstack(cols)
         pc = np.maximum(self.ptab()[1], 0)
         placed = np.bincount(np.maximum(pol[cc], 0), weights=f["cap"][cc],

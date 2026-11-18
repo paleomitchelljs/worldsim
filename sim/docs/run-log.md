@@ -1919,3 +1919,40 @@ change from the rest. Standard settings, 8,000 years. Seed 101 / 103;
   to 16.0M; 103: 248.8 to 326.1M), which follows the run's path. One
   seed each, so I cannot say whether this is the change or the path.
 - Cost: -8% / +16% run time.
+
+### 2026-11-18 WP5 stage E: field armies (`wp5e_seed101`, `wp5e_seed103`)
+
+`army` on with every other default switch; standard settings, 8,000
+years. Against `wp5d_*`. Seed 101 / 103.
+
+| Measure | wp5d | wp5e |
+|---|---|---|
+| population at 8,000 (M) | 64.1 / 125 | 83.4 / 128 |
+| wars | 1,939 / 7,147 | 3,964 / 8,626 |
+| sieges per war | 1.01 / 0.86 | 0.73 / 0.72 |
+| wars with 3+ sieges | 0.117 / 0.086 | 0.068 / 0.065 |
+| wars with 0-1 sieges | 0.78 / 0.81 | 0.83 / 0.85 |
+| median / 90th pct war length (yr) | 5, 15 / 4, 15 | 5, 15 / 4, 15 |
+| sieges taken | 0.44 / 0.57 | 0.50 / 0.55 |
+| peer wars, share | 0.003 / 0.019 | 0.007 / 0.013 |
+| states at war, mean | 0.044 / 0.078 | 0.075 / 0.083 |
+| war ends: submitted / tributary | 0.13, 0.12 / 0.22, 0.09 | 0.17, 0.09 / 0.21, 0.07 |
+| war deaths: levies / battle (M) | 7.2, - / 81.5, - | -, 22.4 / -, 93.8 |
+| largest state (M km2) | 2.1 / 8.5 | 3.1 / 6.6 |
+| vassals standing, mean 4000+ | 6.8 / 38.8 | 14.2 / 48.9 |
+
+- **Campaigns did not lengthen.** Sieges per war fell to 0.7 and wars of
+  3+ sieges to 6.5-7%. At the start of a war neither side has an army.
+  The attacker's field share starts at 0, so for its first year or two
+  its odds are below SIEGE_MIN and it ravages or sits. Exhaustion did
+  not replace the age term's effect on length: the 90th percentile is
+  still 15 years (WAR_STALL).
+- **Battle deaths are as large as the levy deaths they replace**: 22M /
+  94M over the run against 7M / 82M. A 400-year branch had suggested
+  far fewer.
+- Population rose in seed 101 and held in 103; wars doubled in 101 and
+  rose 21% in 103. Single seeds, as before; seed 101's war count has
+  moved by a factor of 1.7 between near-identical runs (stage C).
+- A possible change, not made: let a state that declares start with
+  part of its army raised (it chose the war), so the muster delay falls
+  on the defender. The brief kept stage E to four points.

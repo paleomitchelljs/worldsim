@@ -130,6 +130,32 @@ U: build it, with sieges that take time. Numbers C.
   slot now falls free every 2-4 years, not every 5, a war has more such
   draws and more sieges in the same time.
 
+## Field armies (`army`, WP5 stage E, 2026-11-18)
+
+Forms from the review; numbers C.
+- A state at war, or an ally that joined one, raises a field army
+  toward ARMY_SHARE (4%) of its people. Each year it closes half the gap
+  (ARMY_RAISE 2 years). The soldiers leave their own people's cells, in
+  proportion to the cells' people. In peace the survivors go home the
+  same way.
+- The army eats from its people's harvest. Their capacity falls by the
+  army's heads over their capacity, at most half (`food.csv`
+  `taken_army`). Soldiers out of their cells do not breed.
+- The field share f = army / (4% of the people), 0-1, multiplies the
+  strength the state brings to its sieges and counter-offensives, and
+  to pressing a cession. A city's defence takes 0.5 + 0.5 f (walls and
+  townsmen hold half without a field army). Declaring still reads the
+  whole state's strength.
+- A decided siege costs the side that lost it 20% of its army and the
+  side that won 5% (deaths "battle"). At a fortress people's city the
+  besieger's fortress toll falls on its army.
+- Exhaustion: the chance of ending per 5 years is 0.12 + 25 x the
+  larger of the two sides' soldiers lost over its people, instead of
+  rising with the war's age. A side that has lost 2% of its people in
+  soldiers ends its war with chance about 0.6 per 5 years.
+- It replaces the flat WAR_COST on everyone in a state at war.
+- An army whose state ends is lost.
+
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 
 The winner chooses (U: built now; form and numbers C; structural.md,

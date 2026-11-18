@@ -317,6 +317,8 @@ class StatesMixin:
                                minlength=n) / np.maximum(pop_by, 1)
         herd_by = np.bincount(pol[mo], weights=pw * self.herding[mo],
                               minlength=n) / np.maximum(pop_by, 1)
+        kown_by = np.bincount(pol[mo], weights=K * (
+            self.cul[mo] == pc[pol[mo]]), minlength=n)
         kd_by = np.bincount(pol[mo], weights=K * self.peat[
             self.cul[mo]], minlength=n) / np.maximum(
             np.bincount(pol[mo], weights=W.area[mo], minlength=n), 1)
@@ -375,6 +377,7 @@ class StatesMixin:
                 p["crowd"] += over(FISC_EMA) * (crowd_by[pid] - p["crowd"])
                 p["herd"] = float(herd_by[pid])
                 p["kdens"] = float(kd_by[pid])
+                p["K_own"] = float(kown_by[pid])
             # armies are paid from the harvest, not from head count
             p["strength"] *= 0.4 + 0.6 * p["fed"]
             nd = self.d_by_pid.get(pid, 0)

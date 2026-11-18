@@ -95,7 +95,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
-            "war_odds", "site_defence", "ruler_mil", "pol_step"]
+            "war_odds", "site_defence", "ruler_mil", "pol_step",
+            "army"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -921,6 +922,22 @@ SIEGE_TOLL, SIEGE_COH = 0.03, 0.02
 # (1 + floor(LOG_SIEGE x G), as before). Without the switch a siege is
 # decided when it is laid, as before.
 DT_POL, SIEGE_YEARS, SIEGE_MAX = 1.0, 1.0, 8
+# Field armies (`army`, WP5 stage E, 2026-11-18; forms from the review,
+# numbers C). A state at war (or helping an ally at war) raises toward
+# ARMY_SHARE of its people: each year it closes 1 / ARMY_RAISE of the
+# gap, taking the heads from its own people's cells. Out of peace it
+# sends all the survivors home. Its field share f = army / (ARMY_SHARE x
+# people), 0-1, multiplies the strength it brings to its sieges, and its
+# defence of a city by ARMY_GARRISON + (1 - ARMY_GARRISON) x f (walls and
+# townsmen hold without a field army). A decided siege costs the side
+# that lost it ARMY_LOST and the side that won ARMY_WON of its army. The
+# army eats from its own people's harvest: their capacity falls by the
+# army's heads / their capacity (at most ARMY_X_MAX), the ledger line
+# `taken_army`. Exhaustion: the war's ending chance (per 5 years) is
+# WAR_END0 + EXH_K x the larger side's soldiers lost / its people,
+# instead of rising with the war's age. Replaces WAR_COST.
+ARMY_SHARE, ARMY_RAISE, ARMY_GARRISON = 0.04, 2.0, 0.5
+ARMY_WON, ARMY_LOST, ARMY_X_MAX, EXH_K = 0.05, 0.2, 0.5, 25.0
 # Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18; U: build it; forms
 # from the review, numbers C). Declaring: the deterrence factor becomes
 # floor + (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W), with

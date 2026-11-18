@@ -31,8 +31,8 @@ what an entry holds.
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
-| 5 | E army stock | not started | | |
-| 5 | F cityless polities | not started | | |
+| 5 | E army stock | done (on by default) | 2026-11-18 | ECOMMIT |
+| 5 | F cityless polities | design note, needs U | 2026-11-18 | |
 | 6 | A experiment batch | not started | | |
 | 6 | B adopt | not started | | |
 | 7 | A design note | not started | | |
@@ -1446,3 +1446,46 @@ scratchpad, for branch tests), `wp5d_seed103`. Table in run-log.md.
 
 **Next.** Stage E. It replaces the age term of the ending rule with
 exhaustion, which may let campaigns run to several sieges.
+
+### WP5 stage E: armies as a stock (2026-11-18, ECOMMIT)
+
+**Done** (switch `army`, on by default; forms from the brief's four
+points, numbers C):
+- `army_step`: states at war (and allies who joined) raise toward
+  ARMY_SHARE 0.04 of their people, closing dtp / ARMY_RAISE (2 yr) of
+  the gap, from their own people's cells. Survivors go home in peace;
+  an ended state's army is lost.
+- Food: `Sim.army_x` adds to the ruling people's removal rate in `Kf`,
+  the army's heads over their capacity (`K_own`), at most 0.5. New
+  `food.csv` line `taken_army`, also inside `taken_capacity`.
+- Field share f scales siege, counter-offensive and cession strength;
+  city defence x (0.5 + 0.5 f). Declaring still reads whole strength.
+- A decided siege kills 20% of the loser's army and 5% of the winner's
+  (deaths "battle", `growth.csv` `dead_battle`). The fortress toll
+  falls on the army.
+- Ending per 5 years: WAR_END0 + EXH_K 25 x the larger side's soldiers
+  lost / people (replaces the age term). Replaces WAR_COST.
+- `heads()` counts soldiers, so the people account stays closed
+  (residual 0 in the branch test).
+- Fixes needed for branching: `upgrade()` restarts the food-ledger
+  accumulator when its length changes; streamed CSV headers are the
+  union of row keys.
+- Docs: rules/war.md, model-description.md, structural.md,
+  switch-inventory.md, running.md, run-log.md.
+
+**Runs.** Branch test from `wp5d_seed101`'s year-5,000 state (400 yr,
+deleted); `wp5e_seed101`, `wp5e_seed103`. Table in run-log.md.
+
+**Results.**
+- Sieges per war 0.73 / 0.72 (from 1.0 / 0.86); wars of 3+ sieges
+  6.5-7%. The muster delay leaves a new war's attacker below SIEGE_MIN.
+- War length unchanged (median 4-5 yr, 90th percentile 15).
+- Battle deaths 22M / 94M, larger than the levies they replace.
+- Population 83.4M / 128M (from 64.1M / 125M); wars up 104% / 21%.
+
+**For U.** The campaigns of several sieges the brief expected have not
+come from D or E. The likely lever is the muster: an attacker that
+chose its war could start with its army partly raised. Not built.
+
+**Stage F.** Design note `WP5F-camps-design.md`, with three decisions
+for U. No code.
