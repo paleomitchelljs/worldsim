@@ -21,8 +21,8 @@ what an entry holds.
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
 | 2 | D GIS export | done | 2026-11-17 | 3b8fe04 |
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
-| 3 | B renderer and projection | done | 2026-11-17 | BCHASH |
-| 3 | C state colours and change layers | done | 2026-11-17 | BCHASH |
+| 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
+| 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | not started | | |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
@@ -796,7 +796,7 @@ gives 126.34M people and 644 cities at the end, the same as
 **Next.** Stage B (offline renderer, Mollweide). It is mostly written in
 the working tree and not committed; see its entry.
 
-### WP3 stages B and C: offline renderer, Mollweide, state colours, change layers (2026-11-17, BCHASH)
+### WP3 stages B and C: offline renderer, Mollweide, state colours, change layers (2026-11-17, 1149de9)
 
 One commit for both. The offline renderer needed state colours from
 polity ids, which is stage C's first item, so I wrote that directly
