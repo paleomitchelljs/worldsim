@@ -138,9 +138,11 @@ CLIM_PARTS = [              # (kind, period yrs, damping yrs, variance share)
 CLIM_W = dict(world=0.35, latitude=0.25, inland=0.25, regional=0.35,
               local=0.45)           # weights of the patterns (normalized)
 CLIM_REGIONAL, CLIM_REG_SIGMA, CLIM_LOCAL_SIGMA = 4, 20, 6   # fields, cells
-CLIM_LOCAL_COARSE = 2       # local field drawn on every 2nd row and column
-                            # (a quarter of the cells), sigma in fine cells
-                            # kept, interpolated to the land cells (speed)
+CLIM_LOCAL_COARSE = 1       # >1: local field drawn on every k-th row and
+                            # column, sigma in fine cells kept, interpolated
+                            # to the land cells (speed). 1 (the full grid)
+                            # since 2026-11-17 (U): 2 may have lowered
+                            # population (open-questions.md)
 ABRUPT_RATE = 1 / 2000      # abrupt dry events per year (8.2/4.2/3.2 ka-like)
 ABRUPT_YEARS, ABRUPT_AMP = (150, 400), (1.5, 2.5)   # length, depth in sd
 ABRUPT_RAMP = (25, 75)      # years to set in, years to lift

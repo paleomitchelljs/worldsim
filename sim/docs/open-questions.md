@@ -502,5 +502,6 @@ people (86-164M). The same five seeds with the full-resolution field ended
 at 147M (108-178M); rank-sum p about 0.15. Urban share, cities ended and
 the dragon share of deaths move back with it; all follow population. The field's statistics, and the
 drought shares they produce, match. Most likely seed noise, but unresolved.
+The default went back to 1 (U, 2026-11-17).
 Recheck with a larger batch once WP2's metrics exist (`run-log.md`,
 2026-11-17 WP1 stage F).

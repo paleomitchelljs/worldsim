@@ -250,6 +250,8 @@ class LandMixin:
         ny, nx = NY // f, NX // f
         g = ndimage.gaussian_filter(rng.normal(size=(ny, nx)),
                                     CLIM_LOCAL_SIGMA / f, mode="wrap")
+        if f == 1:
+            return g[W.row, W.col]
         # fine cell centres in coarse cell coordinates
         y = np.clip((W.row + 0.5) / f - 0.5, 0, ny - 1)
         x = (W.col + 0.5) / f - 0.5
