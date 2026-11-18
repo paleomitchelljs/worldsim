@@ -17,7 +17,7 @@ what an entry holds.
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
-| 2 | B run loader and metrics | done | 2026-11-17 | see entry |
+| 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
 | 2 | C tidy tables | not started | | |
 | 2 | D GIS export | not started | | |
 | 3 | A snapshots | not started | | |
@@ -545,7 +545,7 @@ states were remade under the default, from runs `wp1g_states_seed101` and
 
 **Next.** WP2 stage B (run loader and metrics).
 
-### WP2 stage B: run loader and metrics (2026-11-17)
+### WP2 stage B: run loader and metrics (2026-11-17, 8b516c7)
 
 **Done.**
 - `wsim/runio.py`: `Run(name or path)` reads each table on first use and
