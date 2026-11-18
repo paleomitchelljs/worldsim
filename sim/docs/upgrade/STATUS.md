@@ -27,7 +27,7 @@ what an entry holds.
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
-| 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | HASH |
+| 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | not started | | |
 | 5 | C time constants in years | not started | | |
 | 5 | D yearly political step | not started | | |
@@ -1160,7 +1160,7 @@ trading food. Say if you want the strict form.
 
 WP4 is complete. Nothing pending for U from WP4 beyond the check above.
 
-### WP5 stage A: diagnosis (2026-11-18, HASH)
+### WP5 stage A: diagnosis (2026-11-18, 75c481c)
 
 **Done.**
 - Records (no effect on the run: seed 101 ends at 105.45M, as
