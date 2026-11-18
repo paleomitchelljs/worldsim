@@ -23,7 +23,7 @@ what an entry holds.
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
-| 3 | D video and viewer | done | 2026-11-17 | 42d3a85, VHASH |
+| 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
@@ -909,7 +909,7 @@ U).
 **Not done.** The optional HTML viewer (item 3). The brief says to ask
 U first.
 
-### WP3 stage D: HTML viewer; history.gif dropped (2026-11-17, VHASH)
+### WP3 stage D: HTML viewer; history.gif dropped (2026-11-17, 374139a)
 
 U, 2026-11-17: yes to the viewer, and `history.gif` is not needed.
 
