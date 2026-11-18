@@ -12,8 +12,11 @@ step. One frame per kept snapshot (`--every N`: every Nth); `--layer`
 takes one or more of states, peoples, density, lineages, state_age
 (years since each cell last changed state), people_age (years since its
 people last changed), stacked top to bottom. With states or state_age,
-a strip under the map shows turnover by landmass group (--no-strip). Writes <run>/render/<layers>_<proj>.<format>; png writes the
-frames into a folder of that name.
+a strip under the map shows turnover by landmass group (--no-strip).
+`--landmass W` draws only that group's part of the map, at scale 4.
+Writes <run>/render/<layers>_<proj>[_<landmass>].<format>; png writes
+the frames into a folder of that name. Each finished run also writes
+history.mp4 this way (states above peoples, Mollweide).
 
 Runs before WP3 stage A have no city or lineage snapshots: their frames
 have no city dots, and the lineages layer is not available.
@@ -157,6 +160,68 @@ def encode(frames_dir, n, path, fmt, fps):
                 duration=int(1000 / fps), loop=0)
 
 
+def group_box(W, proj, group, margin=24):
+    """Pixel box (left, top, right, bottom) around a landmass group's
+    cells (landmasses.py: S, W, N, E, X, or one code such as W1)."""
+    import landmasses as LM
+    ids = list(LM.ids(group))
+    m = np.isin(W.landmass, ids)
+    if not m.any():
+        raise ValueError(f"no cells on landmass {group}")
+    x, y = proj.fwd(W.lon[m], W.lat[m])
+    w, h = proj.size
+    return (max(0, int(x.min()) - margin), max(0, int(y.min()) - margin),
+            min(w, int(x.max()) + margin), min(h, int(y.max()) + margin))
+
+
+def make(run, layers=("states", "peoples"), proj="mollweide", fmt="mp4",
+         every=1, scale=2, fps=8, from_year=None, to_year=None, strip=True,
+         landmass=None, path=None, verbose=True):
+    """Draw run's snapshots and write them as fmt; returns the path
+    written (a folder of frames for png). landmass: draw only that
+    group's box (best with a larger scale)."""
+    hist = History(run)
+    layers = list(layers)
+    for ly in layers:
+        if ly not in maps.LAYERS:
+            raise ValueError(f"layer {ly} (one of {', '.join(maps.LAYERS)})")
+    if "lineages" in layers and not hist.has_lineage:
+        raise ValueError("this run's history.npz has no lineages (runs "
+                         "before WP3 stage A)")
+    P = maps.Proj(run.W, proj, scale)
+    crop = group_box(run.W, P, landmass) if landmass else None
+    if strip and {"states", "state_age"} & set(layers):
+        hist.turnover(run.W)
+    y = hist.year
+    ts = [t for t in range(0, len(y), every)
+          if (from_year is None or y[t] >= from_year) and
+          (to_year is None or y[t] <= to_year)]
+    name = f"{'+'.join(layers)}_{proj}" + (f"_{landmass}" if landmass
+                                           else "")
+    out = os.path.join(run.dir, "render")
+    os.makedirs(out, exist_ok=True)
+    if path is None:
+        path = os.path.join(out, name if fmt == "png" else
+                            f"{name}.{fmt}")
+    fdir = path if fmt == "png" else \
+        tempfile.mkdtemp(prefix="frames_", dir=out)
+    os.makedirs(fdir, exist_ok=True)
+    for i, t in enumerate(ts):
+        hist.advance(t)
+        img = maps.frame(run.W, hist.snap(t), P, layers, crop=crop)
+        img.save(os.path.join(fdir, f"f{i:05d}.png"))
+        if verbose and i % 50 == 0:
+            print(f"  frame {i + 1}/{len(ts)}, year {int(y[t])}", flush=True)
+    if fmt != "png":
+        encode(fdir, len(ts), path, fmt, fps)
+        shutil.rmtree(fdir)
+        if not os.listdir(out):
+            os.rmdir(out)
+    if verbose:
+        print(f"{len(ts)} frames -> {path}")
+    return path
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("run")
@@ -166,48 +231,25 @@ def main():
     ap.add_argument("--proj", default="mollweide",
                     choices=["mollweide", "platecarree"])
     ap.add_argument("--format", default="mp4", choices=["mp4", "gif", "png"])
-    ap.add_argument("--scale", type=int, default=2)
+    ap.add_argument("--scale", type=int, default=None,
+                    help="pixels per grid cell across (default 2; 4 with "
+                    "--landmass)")
     ap.add_argument("--fps", type=float, default=8)
     ap.add_argument("--from-year", type=int, default=None)
     ap.add_argument("--to-year", type=int, default=None)
+    ap.add_argument("--landmass", default=None,
+                    help="draw only this landmass group or code "
+                    "(landmasses.py: S, W, N, E, X, W1, ...)")
     ap.add_argument("--no-strip", action="store_true",
                     help="leave out the turnover strip under the map")
     a = ap.parse_args()
-    run = Run(a.run)
-    hist = History(run)
-    layers = a.layer.split(",")
-    for ly in layers:
-        if ly not in maps.LAYERS:
-            ap.error(f"--layer: {ly} (one of {', '.join(maps.LAYERS)})")
-    if "lineages" in layers and not hist.has_lineage:
-        ap.error("--layer lineages: this run's history.npz has no lineages "
-                 "(runs before WP3 stage A)")
-    proj = maps.Proj(run.W, a.proj, a.scale)
-    if not a.no_strip and {"states", "state_age"} & set(layers):
-        hist.turnover(run.W)
-    y = hist.year
-    ts = [t for t in range(0, len(y), a.every)
-          if (a.from_year is None or y[t] >= a.from_year) and
-          (a.to_year is None or y[t] <= a.to_year)]
-    name = f"{'+'.join(layers)}_{a.proj}"
-    out = os.path.join(run.dir, "render")
-    os.makedirs(out, exist_ok=True)
-    fdir = os.path.join(out, name) if a.format == "png" else \
-        tempfile.mkdtemp(prefix="frames_", dir=out)
-    os.makedirs(fdir, exist_ok=True)
-    for i, t in enumerate(ts):
-        hist.advance(t)
-        img = maps.frame(run.W, hist.snap(t), proj, layers)
-        img.save(os.path.join(fdir, f"f{i:05d}.png"))
-        if i % 50 == 0:
-            print(f"  frame {i + 1}/{len(ts)}, year {int(y[t])}", flush=True)
-    if a.format == "png":
-        print(f"{len(ts)} frames -> {fdir}")
-        return
-    path = os.path.join(out, f"{name}.{a.format}")
-    encode(fdir, len(ts), path, a.format, a.fps)
-    shutil.rmtree(fdir)
-    print(f"{len(ts)} frames -> {path}")
+    scale = a.scale or (4 if a.landmass else 2)
+    try:
+        make(Run(a.run), a.layer.split(","), a.proj, a.format, a.every,
+             scale, a.fps, a.from_year, a.to_year, not a.no_strip,
+             a.landmass)
+    except ValueError as e:
+        ap.error(str(e))
 
 
 if __name__ == "__main__":

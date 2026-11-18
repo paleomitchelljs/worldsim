@@ -23,7 +23,7 @@ what an entry holds.
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
-| 3 | D video and viewer | not started | | |
+| 3 | D video and viewer | video done; viewer not asked yet | 2026-11-17 | DHASH |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
@@ -882,4 +882,30 @@ lineage counts or technology stages.
 
 **Next.** Stage D (video layouts; the HTML viewer is optional and needs
 U).
+
+### WP3 stage D: video (2026-11-17, DHASH)
+
+**Done.**
+- `render_run.make()` is callable from code. MP4 is H.264, yuv420p,
+  8 frames a second, as stage B set it up. The GIF option stays.
+- Each finished run writes `history.mp4`: states above peoples,
+  Mollweide, one frame per snapshot, with the turnover strip.
+  `write_outputs` calls `render_run.make` after the metrics, and a
+  failure there loses nothing else. `worldsim.py --no-video` skips it.
+  `history.gif` from the in-run frames is still written: dropping it
+  would change what the user is used to, so that is U's call.
+- `render_run.py --landmass G`: only that group's (or code's) box, at
+  scale 4 by default. `maps.frame(crop=)` crops each panel, and the
+  header's legend wraps to the width.
+
+**Runs.**
+- `wp3d_sanity_seed101` (3,000 years, 113 s against 103 s without the
+  video): 29.0M people, 41 cities, 38 states. `history.mp4` has 120
+  frames (1440 x 1280) at 1.1 MB.
+- `render_run.py wp3a_seed101 --landmass W --layer states` at year
+  7,000: a 737 x 1038 frame of the western group, with legend in two
+  columns and the strip.
+
+**Not done.** The optional HTML viewer (item 3). The brief says to ask
+U first.
 

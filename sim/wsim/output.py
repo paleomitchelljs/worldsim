@@ -534,6 +534,17 @@ def write_outputs(sim, out):
             write_checks(m, os.path.join(out, "checks.txt"))
     except Exception as e:  # noqa: BLE001
         print(f"metrics failed ({e!r})")
+    if getattr(sim, "video", True) and sim.hist:
+        # history.mp4 (WP3 stage D): states above peoples, one frame per
+        # snapshot, Mollweide; a failure must not lose the other outputs
+        try:
+            import render_run
+            from .runio import Run
+            render_run.make(Run(out, W=sim.W),
+                            path=os.path.join(out, "history.mp4"),
+                            verbose=False)
+        except Exception as e:  # noqa: BLE001
+            print(f"history.mp4 failed ({e!r})")
     if files:
         # 2x2 final.png and wars.png (figures.py); a failure there must
         # not lose the run's other outputs

@@ -404,14 +404,18 @@ def draw_strip(snap, width):
 
 # ------------------------------------------------------------------ frame
 
-def frame(W, snap, proj, layers=("states", "peoples")):
+def frame(W, snap, proj, layers=("states", "peoples"), crop=None):
     """Panels stacked under a header: the year, each people's colour,
     name and line of figures (snap.legend, else its population), and
-    snap.lines on the left; the turnover strip last, if snap has one."""
+    snap.lines on the left; the turnover strip last, if snap has one.
+    crop: (left, top, right, bottom) pixel box of each panel to keep."""
     panels = [panel(W, snap, proj, ly) for ly in layers]
+    if crop is not None:
+        panels = [P.crop(crop) for P in panels]
     w = panels[0].size[0]
     nP = len(snap.keys)
-    rows = (nP + 4) // 5
+    ncol = max(1, min(5, (w - 150) // 225))
+    rows = (nP + ncol - 1) // ncol
     hdr = 14 + 38 * rows
     if snap.strip is not None:
         panels.append(draw_strip(snap, w))
@@ -430,8 +434,8 @@ def frame(W, snap, proj, layers=("states", "peoples")):
                          minlength=nP)
         legend = [f"{pp[i] / 1e6:5.2f}M" for i in range(nP)]
     for i in range(nP):
-        x = 150 + 225 * (i % 5)
-        y0 = 38 * (i // 5)
+        x = 150 + 225 * (i % ncol)
+        y0 = 38 * (i // ncol)
         d.rectangle([x, 12 + y0, x + 14, 26 + y0],
                     fill=tuple(int(v) for v in snap.colors[i]))
         d.text((x + 20, 8 + y0), snap.labels[i], fill=(230, 230, 230),

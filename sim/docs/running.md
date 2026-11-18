@@ -124,6 +124,7 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
 | `--years` | 6000 | length; use 6400 with `peoples_headstart` so latecomers get 6000 |
 | `--frame-every` | 20 | ticks between animation frames |
 | `--hist-every` | 5 | ticks between `history.npz` snapshots (WP3 stage A; was 20) |
+| `--no-video` | off | do not draw `history.mp4` at the end |
 | `--peoples` | `peoples` | roster module ([scenarios.md](scenarios.md)) |
 | `--vary` | 0 | per-run jitter of each people's cultural traits ([startup.md](startup.md)) |
 | `--starts` | 3 | founding groups per people |
@@ -171,6 +172,7 @@ figures.
 
 | File | What |
 |---|---|
+| `history.mp4` | the run as video (WP3 stage D, 2026-11-17): states above peoples, Mollweide, one frame per `history.npz` snapshot (25 years), 8 frames a second, with the turnover strip; drawn by `render_run.py` at the end of the run (about 10 s for 3,000 years, 30 s for 8,000). `--no-video` skips it |
 | `history.gif`, `frames/`, `final_maps.png` | animation and last frame. The top panel shows states, the bottom peoples by density (red dots: dragons). Dots are cities; ringed dots are capitals. |
 | `final.png` | 2x2 summary (`figures.py`, 2026-11-01): states; peoples by density; peoples in flat colours with trading posts standing at the end (stars, in the merchants' colour) and the 12 strongest trade links between (landmass, people) groups at the last frame (width = summed trade tie; arrowhead from the merchants' home to the host where posts show a direction); major wars per 250 years by landmass group |
 | `wars.png` | major wars per 250 years on each landmass (S, W1, W2, W3-W5, N1, N2-N4, E1), one line per pair of peoples (top 4 per panel), with large states that collapsed in revolt as triangles. Major war (C): both sides held 5+ cities at the start and 2+ cities were taken, or a side holding 10+ cities fell; placed at the defender's capital. Revolt collapse (C): a state loses 5+ cities and 40%+ of its cities to revolts in one tick |
@@ -234,13 +236,14 @@ takes about 30 s: 320 frames, a 3.4 MB MP4.
 | `--format` | `mp4` | `mp4` (H.264, yuv420p), `gif`, or `png` frames in a folder |
 | `--every` | 1 | snapshots between frames |
 | `--from-year`, `--to-year` | all | the span drawn |
-| `--scale`, `--fps` | 2, 8 | pixels per grid cell (across); frames per second |
+| `--scale`, `--fps` | 2 (4 with `--landmass`), 8 | pixels per grid cell (across); frames per second |
+| `--landmass` | whole map | only one landmass group or code (`landmasses.py`: S, W, N, E, X, or W1, ...), cropped to its box; a group across the date line gets the whole width |
 
 The ten largest states (150+ cells) are labelled at the centre of their
 largest piece, not at the capital. A label that would overlap one
 already placed is left out. The live frames do the same.
 
-It writes `<run>/render/<layers>_<proj>.<format>`. States are coloured
+It writes `<run>/render/<layers>_<proj>[_<landmass>].<format>`. States are coloured
 by `wsim/colors.py`. Each state keeps one colour for its whole life, in
 its people's family of hues, and differs from every state it ever
 borders and from its parent. The live frames (`history.gif`,

@@ -107,6 +107,9 @@ def make_sim(argv=None):
     ap.add_argument("--hist-every", type=int, default=None,
                     help="ticks between history.npz snapshots (default "
                     "HIST_EVERY = 5; with --from-state, the state's own)")
+    ap.add_argument("--no-video", action="store_true",
+                    help="skip history.mp4 at the end (render_run.py "
+                    "can draw it later from history.npz)")
     ap.add_argument("--homelands", choices=["continents", "anywhere"],
                     default="continents",
                     help="continents: founders start on the two large "
@@ -239,6 +242,7 @@ def make_sim(argv=None):
     sim.vary = a.vary
     if a.hist_every is not None:
         sim.hist_every = a.hist_every
+    sim.video = not a.no_video
     sim.overrides = a.set
     sim.manifest = dict(
         code=code,
@@ -283,6 +287,7 @@ def branch(a, ap, off, saves, code, t0, argv):
         sim.frame_every = a.frame_every
     if a.hist_every is not None:
         sim.hist_every = a.hist_every
+    sim.video = not a.no_video
     if saves and min(saves) <= year0:
         ap.error(f"--save-state: the state is already at year {year0}")
     sim.out = out = runroot.path(a.out or f"branch{year0}")
