@@ -506,7 +506,12 @@ The default went back to 1 (U, 2026-11-17).
 Recheck with a larger batch once WP2's metrics exist (`run-log.md`,
 2026-11-17 WP1 stage F).
 
-## Food taken from minorities vanishes (2026-11-17, WP4 stage A)
+## Food taken from minorities vanishes (2026-11-17, WP4 stage A; fixed WP4 D)
+
+**Fixed (U, 2026-11-18, WP4 D):** `T` is now worked out per lineage as
+proposed below; `taken_capacity` equals `taken`. The text below is as
+found.
+
 
 `Kf` debits a minority's capacity at the rate its people pay (`ff_xo` or
 `ext_x`), but `food_flows` works out the take `T` from the main
@@ -521,7 +526,11 @@ blend. Not fixed: stage A changes no mechanics.
 A smaller leak: food sent to a capital cell where no ruling people
 live feeds nobody (`cap_unused`, 1.1% of capital food over the run).
 
-## Make `trade_debit` the default? (2026-11-17, WP4 stage B; needs U)
+## Make `trade_debit` the default? (2026-11-17, WP4 stage B; decided)
+
+**Decided (U, 2026-11-18):** yes, and carriage port to port. Both done in
+WP4 D (structural.md, run-log.md). The text below is as it stood.
+
 
 Comparison table: run-log.md, "WP4 stage B". With trade food debited:
 - population falls by 11% (D5 accepted that);

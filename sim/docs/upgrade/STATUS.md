@@ -1121,3 +1121,41 @@ The minority leak from stage A (open-questions).
    capital.
 3. Fix the minority leak in the take, from stage A
    (open-questions.md)?
+
+### WP4 D: the three morning decisions (2026-11-18, HASH)
+
+**Decisions (U, 2026-11-18):** make `trade_debit` the default; carry
+traded food port to port; fix the minority leak from stage A.
+
+**Done.**
+- `trade_debit` moved from `OPTIONAL` (now empty) to `FEATURES`.
+  `--on` also accepts defaults, so a branch from an older state can turn
+  it on (old states keep their own switches, as before).
+- Carriage between the nearest pair of the two states' cities
+  (`states.trade_dist`, multi-source Dijkstra over the food graph from
+  the exporter's cities, cached; entries of ended states pruned).
+- The take is worked out per lineage: own and subject groups each pay
+  their rate on their own capacity, "peasants eat first" per group.
+  `ff_xo`/`ext_x` are the groups' effective rates. The trade debit
+  `tr_x` is now charged to both lineages. `produced` includes the
+  minority's harvest.
+- Docs: structural.md (new section), run-log.md, open-questions.md
+  (both questions marked decided/fixed), switch-inventory.md,
+  running.md, model-description.md, rules/cities.md.
+
+**Choice to check (C).** "Port to port" is implemented as the nearest
+city pair. Over water that is port to port, because sea edges are cheap;
+between land neighbours it is border town to border town. A strict
+ports-only rule would have stopped land neighbours without ports from
+trading food. Say if you want the strict form.
+
+**Runs.** `wp4d_smoke` (branch, 300 years), `wp4d_seed101`,
+`wp4d_seed103` (8,000 years). Table in run-log.md.
+- `taken_capacity` = `taken` exactly; ledger gaps and growth residual 0.
+- Carriage loss 63% -> 20-25%. Traded food 3-4% of city food.
+- Population at 8,000: 106M (101) and 166M (103), against 109M and 161M
+  with created trade food (stage C code). B's -11% fall did not recur;
+  two seeds and three simultaneous changes cannot say why. Within noise.
+- Largest city 68k and 106k fe (92k and 125k with created trade food).
+
+WP4 is complete. Nothing pending for U from WP4 beyond the check above.

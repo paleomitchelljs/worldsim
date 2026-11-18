@@ -162,8 +162,9 @@ def make_sim(argv=None):
                     help="structural mechanics to switch off, comma-"
                     "separated, or 'all': " + ",".join(params.FEATURES))
     ap.add_argument("--on", default="",
-                    help="optional mechanics to switch on, comma-"
-                    "separated: " + ",".join(params.OPTIONAL))
+                    help="mechanics to switch on, comma-separated: an "
+                    "optional one, or (with --from-state) a default that "
+                    "the saved state predates, such as trade_debit")
     ap.add_argument("--set", action="append", default=[],
                     metavar="NAME=VALUE",
                     help="override a numeric constant (repeatable)")
@@ -213,9 +214,9 @@ def make_sim(argv=None):
     if bad:
         ap.error(f"unknown feature(s): {', '.join(sorted(bad))}")
     on = [x for x in a.on.split(",") if x]
-    bad = set(on) - set(params.OPTIONAL)
+    bad = set(on) - set(params.OPTIONAL) - set(params.FEATURES)
     if bad:
-        ap.error(f"--on: not an optional mechanic: {', '.join(sorted(bad))}")
+        ap.error(f"--on: unknown mechanic(s): {', '.join(sorted(bad))}")
     setp("CITY_POP", a.city_pop)
     setp("DRAGON_PEN", a.dragon_penalty)
     setp("DRAGON_SHUN", a.dragon_shun)

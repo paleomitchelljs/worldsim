@@ -476,6 +476,30 @@ class StatesMixin:
         self.ext_in += FISC_EMA * (new - self.ext_in)
         self.count("ext_food", float(take.sum()))
 
+    def city_cells(self, pid):
+        """Cells of state pid's cities."""
+        return np.array([c for c in self.polities[pid]["cities"]
+                         if c in self.cities], dtype=int)
+
+    def trade_dist(self, pid):
+        """`trade_debit`: food distance (cost-km) from the nearest of
+        state pid's cities to every cell, over the food graph; inf beyond
+        FF_LIMIT x FF_CAP_KM. Cached on the cities and the graph's
+        version."""
+        W = self.W
+        cs = self.city_cells(pid)
+        key = (tuple(sorted(cs.tolist())), W.fver)
+        c = self.fdist.get((pid, "cities"))
+        if c is None or c[0] != key:
+            if len(cs):
+                d = dijkstra(W.Gf, indices=cs, min_only=True,
+                             limit=FF_LIMIT * FF_CAP_KM).astype(np.float32)
+            else:
+                d = np.full(W.N, np.inf, np.float32)
+            c = (key, d)
+            self.fdist[(pid, "cities")] = c
+        return c[1]
+
     def food_dist(self, P):
         """`food_flow`: food distance (cost-km) from state P's capital to
         every cell, over the food graph; inf beyond FF_LIMIT x FF_CAP_KM.
@@ -527,25 +551,34 @@ class StatesMixin:
         # what the land yields and what its people eat (food-equivalents)
         eat = self.peat
         o = np.nonzero(m & (self.lin >= 0))[0]
-        Q = np.zeros(N)
-        Q[o] = self.Kf(self.lin[o], o, raw=True) * eat[self.cul[o]]
+        Qa = np.zeros(N)                          # main lineage
+        Qa[o] = self.Kf(self.lin[o], o, raw=True) * eat[self.cul[o]]
+        Qb = np.zeros(N)                          # minority
+        mo = np.nonzero(m & (self.mlin >= 0))[0]
+        Qb[mo] = self.Kf(self.mlin[mo], mo, raw=True) * eat[self.mcul[mo]]
+        Q = Qa + Qb
         fe = self.pop * eat[np.maximum(self.cul, 0)] * (self.lin >= 0)
         mfe = self.mpop * eat[np.maximum(self.mcul, 0)] * (self.mlin >= 0)
-        own_fe = fe * (self.cul == self.rul_c) + \
-            mfe * (self.mcul == self.rul_c)
+        own_a = self.cul == self.rul_c
+        own_b = self.mcul == self.rul_c
+        own_fe = fe * own_a + mfe * own_b
         need = fe + mfe
         sub_fe = need - own_fe
-        wo = own_fe / np.maximum(need, 1e-9)
-        x = xo_n * wo + xs_n * (1 - wo)
+        # each lineage pays its own people's rate on its own capacity
+        # (WP4 D: before, one blended rate on the main lineage's capacity
+        # alone, and a minority's payment was lost)
+        Qo = Qa * own_a + Qb * own_b
+        Qs = Q - Qo
         # peasants eat first: FF_FORCE of the nominal take comes whatever
         # the harvest, the rest only from what is left after they eat
-        nom = x * Q
-        T = FF_FORCE * nom + (1 - FF_FORCE) * np.clip(Q - need, 0, nom)
-        f = np.where(nom > 0, T / np.maximum(nom, 1e-12), 1.0)
-        self.ff_xo = xo_n * f
-        self.ext_x = xs_n * f
-        To = T * wo
-        Ts = T - To
+        nom_o, nom_s = xo_n * Qo, xs_n * Qs
+        To = FF_FORCE * nom_o + (1 - FF_FORCE) * \
+            np.clip(Qo - own_fe, 0, nom_o)
+        Ts = FF_FORCE * nom_s + (1 - FF_FORCE) * \
+            np.clip(Qs - sub_fe, 0, nom_s)
+        T = To + Ts
+        self.ff_xo = np.where(nom_o > 0, To / np.maximum(Qo, 1e-12), xo_n)
+        self.ext_x = np.where(nom_s > 0, Ts / np.maximum(Qs, 1e-12), xs_n)
         rent = To * ro + Ts * rs
         tax = T - rent
         # absentee landlords: part of the ruling people's rent goes to the
@@ -620,7 +653,7 @@ class StatesMixin:
             new_trade[c2] = V[p2] * wc / np.maximum(ws[p2], 1e-9)
         a = FISC_EMA
         if self.td_on:
-            tr = give / np.maximum(Q, 1e-9)
+            tr = give / np.maximum(Q, 1e-9)     # on both lineages
             self.tr_x += a * (tr - self.tr_x)
         self.ext_in += a * (new_cap - self.ext_in)
         self.loc_in += a * (new_loc + new_trade - self.loc_in)
@@ -653,12 +686,17 @@ class StatesMixin:
         An exporter's flows are scaled down together to its surplus, and
         debited from its cells in proportion to their surplus, so selling
         cannot make the sellers hungry. What leaves arrives at the
-        importer, less carriage over the food graph between the two
-        capitals (exp(-d / FF_CAP_KM), as tax); a pair beyond the food
-        graph's reach does not trade food. Returns the debit per cell,
+        importer, less carriage over the food graph between the nearest
+        pair of their cities (exp(-d / FF_CAP_KM), as tax; WP4 D, U: port
+        to port, where before it was capital to capital). Over water the
+        nearest pair are ports, since the food graph's sea edges are
+        cheap. A pair beyond the food graph's reach does not trade food. Returns the debit per cell,
         the food arriving per state and the food lost per exporter."""
         pol = self.cell_pol
         m = pol >= 0
+        for k in [k for k in self.fdist if isinstance(k, tuple) and
+                  self.polities.get(k[0], {}).get("ended", 1) is not None]:
+            del self.fdist[k]
         s = np.maximum(Q - need - T, 0) * TRADE_SURPLUS * m
         S = np.bincount(pol[m], weights=s[m], minlength=n)
         per = S / np.maximum(FE, 1e-9)
@@ -670,8 +708,10 @@ class StatesMixin:
             x, y = (a, b) if per[a] > per[b] else (b, a)
             if ws[y] <= 0:
                 continue                  # no city to arrive in
-            d = float(self.food_dist(self.polities[x])[
-                self.polities[y]["capital"]])
+            yc = self.city_cells(y)
+            if not len(yc):
+                continue
+            d = float(self.trade_dist(x)[yc].min())
             if not math.isfinite(d):
                 continue
             g = FF_TRADE * t * math.sqrt(FE[a] * FE[b])

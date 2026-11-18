@@ -100,8 +100,10 @@ but the decision rested on my wrong premise. **Decided (U,
 
 From WP4 stage B (2026-11-17), `params.OPTIONAL` lists mechanics that
 are off by default and switched on with `worldsim.py --on NAME`.
-`--off all` leaves them as they are.
+`--off all` leaves them as they are. The list is empty since WP4 D.
+`--on` also takes a default switch, so that a branch from a state saved
+before that switch became a default can turn it on.
 
 | Switch | Since | What it does |
 |---|---|---|
-| `trade_debit` | 2026-11-17 (WP4 B) | Trade food is sold from the exporter's surplus cells (TRADE_SURPLUS, C: 0.5) and arrives less carriage, instead of being created ([structural.md](structural.md)). Needs `food_flow`. Whether it becomes the default is for U |
+| `trade_debit` | 2026-11-17 (WP4 B); default since 2026-11-18 (WP4 D, U) | Trade food is sold from the exporter's surplus cells (TRADE_SURPLUS, C: 0.5) and arrives less carriage between the two states' nearest cities, instead of being created ([structural.md](structural.md)). Needs `food_flow`. Now in `FEATURES`, so `--off trade_debit` turns it off. A state saved before WP4 D keeps it off unless the branch names `--on trade_debit` |

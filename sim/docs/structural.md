@@ -1345,7 +1345,7 @@ Check: with `urban_city` off and the levers at their defaults, 20 ticks
 from a year-5000 state with `food_flow` and `war_terms` on are identical
 to the realism batch's code in every part of the state but the records.
 
-## 2026-11-17: debited trade food (`trade_debit`, WP4 stage B; off by default)
+## 2026-11-17: debited trade food (`trade_debit`, WP4 stage B; off by default until WP4 D)
 
 Forms and numbers are C unless marked. D5 (U, 2026-11-17): accept the
 population fall. D6 (U): keep the base city boost and show it in the
@@ -1432,3 +1432,47 @@ Records, and two small fixes to the bookkeeping. Forms are in
   quarters, trading posts, garrisons. They are an existing rule (C),
   now visible: 8M over 8,000 years of seed 101, mostly Dwarves and Snake
   folk, against 1,153M natural increase.
+
+## 2026-11-18: trade_debit the default, carriage between nearest cities, the take per lineage (WP4 D)
+
+Decisions U (2026-11-18), on the three questions left by WP4 A-C: make
+`trade_debit` the default, carry traded food port to port, and fix the
+minority leak. Forms C.
+- **`trade_debit` is a default.** It moves from `params.OPTIONAL` to
+  `FEATURES`, so `--off trade_debit` restores created trade food. A
+  state saved before WP4 D keeps its own switches; a branch from it
+  names `--on trade_debit` to turn it on (`--on` now takes defaults
+  too).
+- **Carriage between the nearest cities.** Traded food is carried over
+  the food graph between the nearest pair of the two states' cities
+  (`trade_dist`: one multi-source search from all of the exporter's
+  cities, cached on its cities and the graph's version). Before, it was
+  capital to capital. Over water the nearest pair are ports, since sea
+  edges cost FF_SEA (0.04) per km against about 1 on land; between land
+  neighbours it is the two border towns. This is wider than "port to
+  port" in the strict sense (C): a strict rule would have stopped land
+  neighbours without ports from trading food, or needed a second rule
+  for them. Arrivals are spread over the importer's cities by size and
+  waterside, as before.
+- **The take per lineage** (the stage A leak). The main lineage and the
+  minority now each pay their own people's rate on their own capacity:
+  T = T_own + T_subject, each with "peasants eat first" applied to that
+  group's capacity and needs. Before, one rate blended by the two
+  peoples' shares was applied to the main lineage's capacity alone, while
+  `Kf` debited the minority as well, and that payment went nowhere.
+  `ff_xo` and `ext_x` are now the effective rates of the two groups, so
+  what `Kf` removes equals T (`taken_capacity` = `taken`).
+- **Trade debit on both lineages.** `tr_x` is now charged to every
+  lineage in a cell in proportion to its capacity, since the cell's
+  surplus now counts the minority's harvest. Before, the main lineage
+  alone sold.
+- `food.csv` `produced` now includes the minority's harvest.
+
+**Seeds 101 and 103, 8,000 years** (run-log.md, 2026-11-18):
+- `taken_capacity` = `taken` in every century; ledger gaps and the
+  growth residual are 0.
+- Carriage loss on traded food falls from 63% to 20-25%; traded food is
+  3-4% of city food in the last millennium.
+- Population at 8,000 against stage C with trade food created: -3% and
+  +3%, inside seed noise. B's -11% did not recur; the runs do not
+  separate the three changes.

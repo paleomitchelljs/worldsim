@@ -78,10 +78,11 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "revolt_viol", "fortress", "diagnostics", "city_culture",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
-            "food_flow", "war_terms", "urban_city"]
+            "food_flow", "war_terms", "urban_city", "trade_debit"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
-# from FEATURES so that "--off all" and old states are unchanged.
-OPTIONAL = ["trade_debit"]
+# from FEATURES so that "--off all" and old states are unchanged. Empty
+# since `trade_debit` became a default (WP4 D, U 2026-11-18).
+OPTIONAL = []
 # Trait costs. Cohesion slows borrowing from outsiders; statecraft's
 # extraction raises unrest when the state is underfed; violence raises the
 # chance of a succession crisis; expansion leaves thin frontier cells more

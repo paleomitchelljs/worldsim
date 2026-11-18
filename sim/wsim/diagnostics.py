@@ -410,8 +410,8 @@ class DiagnosticsMixin:
         food-equivalents, from food_flows' unsmoothed flows (f), summed
         for the world, per people and per state into fl_acc; record()
         writes the century means to food.csv. Produced is the raw
-        capacity of every occupied cell (the main lineage's), split into
-        land and the city boost; eaten is what its people and minority
+        capacity of every occupied cell (main lineage and minority),
+        split into land and the city boost; eaten is what its people and minority
         need; taken is rent, tax and tribute; lost is the 1 - EXT_EFF
         share and a vassal's carriage to its lord; received is what
         reaches cities and capitals; unplaced is a capital's take that
@@ -423,6 +423,10 @@ class DiagnosticsMixin:
         un = np.nonzero(occ & (pol < 0))[0]
         if len(un):
             Q[un] = self.Kf(self.lin[un], un, raw=True) * eat[self.cul[un]]
+        un = np.nonzero((self.mlin >= 0) & (pol < 0))[0]
+        if len(un):
+            Q[un] += self.Kf(self.mlin[un], un, raw=True) * \
+                eat[self.mcul[un]]
         boost = Q * (1 - 1 / self.cboost)
         fe = self.pop * eat[np.maximum(self.cul, 0)] * occ
         mok = self.mlin >= 0
@@ -438,12 +442,14 @@ class DiagnosticsMixin:
                 made, (Q + recv + f["trade"]) * city,
                 f["cap"] * (self.cul != self.rul_c),
                 self.ext_in + self.loc_in]
-        # what the rates Kf applies remove from capacity: the main
-        # lineage pays the ruling or the subject rate in full, not the
-        # blend that T is worked out with; a minority pays on its own K
+        # what the rates Kf applies remove from capacity, lineage by
+        # lineage; matches taken (and trade_out) when nothing leaks
         m = pol >= 0
         own = self.cul == self.rul_c
-        tc = Q * (np.where(own, self.ff_xo, self.ext_x) + self.tr_x) * m
+        Qa = np.zeros(N)
+        oa = np.nonzero(occ & m)[0]
+        Qa[oa] = self.Kf(self.lin[oa], oa, raw=True) * eat[self.cul[oa]]
+        tc = Qa * np.where(own, self.ff_xo, self.ext_x) * m
         mo = np.nonzero(mok & m)[0]
         if len(mo):
             Km = self.Kf(self.mlin[mo], mo, raw=True) * eat[self.mcul[mo]]

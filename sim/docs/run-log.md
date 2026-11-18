@@ -1557,3 +1557,44 @@ Standard settings, 8,000 years, `--no-video`, default switches.
     against 7.8M km2.
   - So the drop in seed 101 is within the rounding noise those two
     runs show; seed 103 barely moved.
+
+### 2026-11-18 WP4 D: trade_debit default, nearest-city carriage, take per lineage (`wp4d_smoke`, `wp4d_seed101`, `wp4d_seed103`)
+
+Standard settings, 8,000 years, `--no-video`, default switches (now
+including `trade_debit`). "C off" is `wp4c_seed*` (stage C code, created
+trade food); "B on" is `wp4b_on_seed*` (debited, capital to capital,
+minority leak, before stage C's fixes); "D" is this code. D differs from
+B on in three changes plus stage C's fixes, so the columns do not
+isolate any one of them. Trade share of city food here is `trade_in`
+(or `created_trade`) over `city_food` for 7,000-8,000, a different
+measure from the B table's.
+
+| Measure | C off 101 | B on 101 | D 101 | C off 103 | B on 103 | D 103 |
+|---|---|---|---|---|---|---|
+| population at 6,000 (M) | 55.3 | 68.1 | 60.7 | 108 | 92.7 | 119 |
+| population at 8,000 (M) | 109 | 139 | 106 | 161 | 147 | 166 |
+| urban share, end | 0.074 | 0.055 | 0.064 | 0.097 | 0.064 | 0.078 |
+| largest city (k fe) | 92 | 69 | 68 | 125 | 122 | 106 |
+| largest / 10th city | 2.25 | 1.70 | 1.89 | 1.79 | 2.61 | 1.72 |
+| rank-size slope 6,000 / 8,000 | -0.56 / -0.42 | -0.59 / -0.42 | -0.65 / -0.44 | -0.41 / -0.39 | -0.49 / -0.42 | -0.44 / -0.39 |
+| trade / city food, 7,000-8,000 | 0.090 | 0.009 | 0.026 | 0.140 | 0.010 | 0.038 |
+| created / city food, 7,000-8,000 | 0.40 | 0.35 | 0.35 | 0.44 | 0.34 | 0.34 |
+| trade sold / produced, 7,000-8,000 | - | 0.0055 | 0.0069 | - | 0.0058 | 0.0139 |
+| trade lost in carriage, 7,000-8,000 | - | 0.63 | 0.20 | - | 0.63 | 0.25 |
+| taken_capacity / taken, 7,000-8,000 | 1.06 | 1.14 | 1.00 | 1.05 | 1.12 | 1.00 |
+| polities | 3,398 | 4,400 | 3,736 | 6,166 | 5,317 | 6,385 |
+| wars | 2,989 | 4,657 | 3,707 | 7,384 | 5,493 | 7,772 |
+| largest state (M km2) | 3.4 | 5.9 | 5.0 | 8.0 | 5.6 | 6.9 |
+
+- **The leak is closed.** `taken_capacity` = `taken` in every century
+  (before, the excess was the minority's lost payment and, under B, the
+  trade debit). `gap`, `gap_trade` and the growth residual are 0.
+- **Carriage loss falls from 63% to 20-25%.** Traded food arriving is
+  3-4x B's share of city food, still a small part of it (3-4%).
+- **Population.** D against C off: -3% (101) and +3% (103), where B on
+  against B off was -11% in both seeds. Within the ~20% rounding noise
+  seen in stage A; a batch would be needed to say more. One plausible
+  cause of the smaller fall: the leak fix stops minorities losing about
+  4% of the take to nowhere.
+- `wp4d_smoke` (branch from `wp1f_s101_y5000.pkl` to 5,300 with
+  `--on trade_debit`): exercises the branch path; loss 22-23%.

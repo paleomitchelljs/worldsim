@@ -98,9 +98,9 @@ class LandMixin:
             own = c == self.rul_c[j]
             x = np.where(own, self.ff_xo[j], self.ext_x[j])
             if self.td_on:
-                # `trade_debit`: the cell's main lineage sells part of
-                # its surplus
-                x = x + self.tr_x[j] * (L == self.lin[j])
+                # `trade_debit`: the cell's lineages sell part of their
+                # surplus, each in proportion to its capacity
+                x = x + self.tr_x[j]
             K = K * (1 - x) + \
                 (own * self.ext_in[j] + (c == self.city_c[j]) *
                  self.loc_in[j]) / self.peat[c]
