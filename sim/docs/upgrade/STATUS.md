@@ -486,8 +486,11 @@ and the old code; it now points to the new batch. Recomputing those
 sections is WP2 stage B's job.
 
 **WP1 summary.** Stages A, B, D and E are done, C was measured and not
-adopted, and F is done. On seed 101, phase time over 6,000 years fell
-from 392 s (WP0 E, profile pair of 2026-11-17) to about 292 s before the
-streams. A full 8,000-year run now takes about 8 minutes.
+adopted, and F is done. Within-pair speed-ups on seed 101, 6,000 years:
+-8% (A+B, 392 -> 362 s) and -7% (D, 315 -> 292 s). The pairs ran under
+different loads, so their absolute times do not chain. The `lterms` and
+budding edits had no profile pair of their own. A full 8,000-year run now
+takes about 8 minutes on a lightly loaded machine; the guide's figure was
+about 14.
 
 **Next.** WP2 stage A (structured events), as `README.md` orders it.
