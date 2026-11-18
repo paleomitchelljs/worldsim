@@ -335,11 +335,11 @@ ids match across tables. Population counts are of two kinds:
 |---|---|---|
 | `timeseries.csv` | tick | `year`; world measures; per-people columns `<variable>_<key>` and world means `<variable>_world`; `n_<counter>`: events of that kind during the tick. Meanings in [diagnostics.md](diagnostics.md#extra-timeseriescsv-columns-always-written) |
 | `timeseries_long.csv` | tick x column | `year, people, variable, value` (see above) |
-| `polities.csv` | state | `id`; `people` (the ruling people), `lineage` (`L<id>`, at the end), `peoples_ruled`; `founded`, `ended` (blank if alive), `years`; `parent` (state it broke from, if any); `peak_cells`, `peak_km2`, `peak_year`, `peak_cities`, `peak_pop` (heads); `capital_lon`, `capital_lat`, `capital_cell` (the last capital); `peak_foreign_share` (share of heads not of the ruling people); `origin`, `end_reason`, `ended_by` (below); from 2026-11-18 (WP5 stage A) `nb_land_mean`, `nb_sea_mean` (mean count of states it bordered by land, and of those it reached only by sea, per tick alive: the pairs `wars_step` may draw from), `nb_max` (most at once), `nb_none_years` (years with none). Blank for states that ended before a branch |
+| `polities.csv` | state | `id`; `people` (the ruling people), `lineage` (`L<id>`, at the end), `peoples_ruled`; `founded`, `ended` (blank if alive), `years`; `parent` (state it broke from, if any); `peak_cells`, `peak_km2`, `peak_year`, `peak_cities`, `peak_pop` (heads); `capital_lon`, `capital_lat`, `capital_cell` (the last capital); `peak_foreign_share` (share of heads not of the ruling people); `origin`, `end_reason`, `ended_by` (below); from 2026-11-18 (WP5 stage A) `nb_land_mean`, `nb_sea_mean` (mean count of states it bordered by land, and of those it reached only by sea, per tick alive: the pairs `wars_step` may draw from), `nb_max` (most at once), `nb_none_years` (years with none). Blank for states that ended before a branch. From WP5 F, `camp_years` (years as a camp polity; `capital_cell` is then the camp's seat) |
 | `cities.csv` | city ever founded | `id, cell, lon, lat, people, founded, ended`; `end_reason` (text), `cause`; `years`; `peak_size` (fe), `peak_year`; `n_sacks, n_rulers`; `prev_city`, `refounded`, `successor` (city ids and the year a ruin was resettled); `ruin_years, ruin_empty_years`; `rulers` (state ids in order); `minority_peoples, minority_peak_share, minority_years, majority_changes` |
 | `city_sizes.csv` | city or ruin, every 25 yr | `year, city_id, cell, status` (`city`, `ruin, settled`, `ruin, empty`); `size` (fe), `cell_pop` (heads), `size_old` (fe); `people, polity` (-1 none); `minority`, `minority_share` |
 | `cityfood.csv` | city, every 25 yr | `year, city_id, cell, people, polity, capital, coastal, river`; `cell_pop`, `hinter_pop` (heads), `hinter_cells`; `k_rural` (what the cell's land feeds), `urban`, `from_trade, from_rent, from_prov, from_capital` (fe); `main_source` |
-| `wars.csv` | war | `id, start, end, years, att, dfn`; peoples, landmasses, cities and `strength` (model units: the state's weighted population x military x (0.3 + 0.7 cohesion), `states.py`) of each side at the start; `goal, goal_city, goal_met, why` (how it ended, `ongoing` if alive); `sieges, captures, recaptures, moved, moved_back, helpers, sacks`; `ravages` (from 2026-11-18, `war_odds`: steps in which the attacker laid waste instead of besieging); under `pol_step` `start` and `end` fall on any year, not only on multiples of 5. `why` gains `abandoned` (no siege for WAR_STALL years) |
+| `wars.csv` | war | `id, start, end, years, att, dfn`; peoples, landmasses, cities and `strength` (model units: the state's weighted population x military x (0.3 + 0.7 cohesion), `states.py`) of each side at the start; `goal, goal_city, goal_met, why` (how it ended, `ongoing` if alive); `sieges, captures, recaptures, moved, moved_back, helpers, sacks`; `ravages` (from 2026-11-18, `war_odds`: steps in which the attacker laid waste instead of besieging); under `pol_step` `start` and `end` fall on any year, not only on multiples of 5; from WP5 F `battles` (battles against a camp polity's seat) and `why` `camp scattered`. `why` gains `abandoned` (no siege for WAR_STALL years) |
 | `sieges.csv` | siege | `year, war, side` (`att`: the attacker's siege; `dfn`: a counter-offensive), `city, city_fe` (fe), `capital`, `besieger, holder`, `P_besieger, P_holder` (strength brought), `odds` (win probability at launch), `taken`, `terms`; from 2026-11-18 `cities_besieger, cities_holder` (cities each held when the siege began; blank in rows carried from an older saved state); from 2026-11-18 (WP5 D) `siege_years` (the siege's length in years, 0 when decided as laid without `pol_step`); under `pol_step` `year` and `odds` are those at the siege's end, when it is decided |
 | `revolts.csv` | revolt | `year, state, new_state, people_ruler, people_rebels, kind` (secession, kin, ethnic, pretender), `cities_taken, cities_left, landmass, lon, lat` |
 | `relations.csv` | neighbouring pair of live states, every frame tick | ids, peoples, landmasses and cities of `a` and `b`; `similarity`, `similarity_lin` (0-1); `enmity_ab, enmity_ba, faith_ab, faith_ba`; `tie` (trade); `war, allied, truce` (0/1) |
@@ -362,13 +362,16 @@ began. `city_outside`: a city founded outside any state.
 state. `revolt_secession`, `revolt_kin`, `revolt_ethnic`,
 `revolt_pretender`: a breakaway (the kinds of `revolts.csv`).
 `partition`: an heir's share of a divided realm. `shatter`: a city left
-on its own when its state shattered after losing its capital. Blank for
+on its own when its state shattered after losing its capital. `camp`
+(WP5 F, `camps`): a camp polity formed on stateless land. Blank for
 runs before 2026-11-17.
 
 **`end_reason`**: `lost_last_city` (its last city depopulated, abandoned or taken over by another people), `ceded`,
 `conquered`, `absorbed` (a same-people state of 3 or fewer cities taken
 whole), `shattered`, `annexed` (by its lord), `fusion` (with another
-people's state), `union` (with its own people's). **`ended_by`**: the
+people's state), `union` (with its own people's), `dispersed` (a camp
+polity whose people fell under the threshold), `scattered` (a camp
+polity defeated in battle). **`ended_by`**: the
 state that ended it, where there is one. The full text of each fall is in
 `events.jsonl` (kind `fall`, for states of 3+ cities or 150+ cells).
 

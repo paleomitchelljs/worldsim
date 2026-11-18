@@ -1573,3 +1573,23 @@ it, projected strength is the army's, exhaustion by losses); numbers C.
   so the people account stays closed.
 - `polity_stats` records `K_own`, the capacity of a state's own people,
   for the army's food share.
+
+## 2026-11-18: camp polities (`camps`, WP5 F)
+
+U (2026-11-18): camps outside the city table; defeat scatters or makes a
+vassal; threshold from one run's distribution. Numbers C.
+- A camp polity has `P["camp"]` = its seat cell (also `P["capital"]`)
+  and an empty `P["cities"]`. `territory` adds camp seats as Dijkstra
+  sources; their cells get `cell_pol` but not `cell_city`.
+- `camps_step` (after `update_cities`) moves seats, disperses weak
+  camps and forms new ones. `decamp` turns a camp holding a city into a
+  state, after each political sub-step and each tick.
+- `seated(P)` replaces "has cities" in `war_bound`, `war_chance` and
+  the war loop. `deter` reads a camp's seat. `sieges_open` and
+  `counteroffensive` send a camp opponent to `camp_battle`. `set_goal`
+  falls back to the capital.
+- `reach(P)` for a camp: CAMP_REACH x cohesion x (1 + CAMP_HERD x
+  herd). `food_flows` gives camp-ruled cells no rates.
+- `len(P["cities"])` thresholds see a camp as 0 cities, so it gets no
+  provinces, steel or partition. Succession runs for camps as for
+  states.

@@ -1956,3 +1956,52 @@ years. Against `wp5d_*`. Seed 101 / 103.
 - A possible change, not made: let a state that declares start with
   part of its army raised (it chose the war), so the muster delay falls
   on the defender. The brief kept stage E to four points.
+
+### 2026-11-18 WP5 stage F: camp polities (`wp5f_seed101`, `wp5f_seed103`; first form `wp5f1_*`)
+
+`camps` on with every other default switch; standard settings, 8,000
+years. Against `wp5e_*`. Seed 101 / 103.
+
+**First form (`wp5f1_*`), replaced.** A camp formed when its lineage
+scored CAMP_N within 500 km, but it then ruled only out to its reach
+(about 180 cost-km). It scored low in its own land at once: 5,968 /
+5,462 camps, three in four dispersed, median life 75 years. The adopted
+form scores the cells within a new camp's reach as well. This is a fix
+to the mechanism (the area scored is the area ruled), not a retuning.
+CAMP_N is unchanged.
+
+| Measure | wp5e | wp5f |
+|---|---|---|
+| population at 8,000 (M) | 83.4 / 128 | 82.7 / 136 |
+| polities | 3,403 / 5,353 | 3,231 / 5,082 |
+| camp polities | - | 487 / 527 |
+| land cells in a state, share (end) | 0.139 / 0.295 | 0.147 / 0.257 |
+| land area in a state, share (end) | 0.22 / 0.47 | 0.23 / 0.41 |
+| states with 3+ cities | 242 / 769 | 185 / 656 |
+| 3+ city states over 1,000 yr | 27 / 48 | 31 / 33 |
+| largest state (M km2) | 3.1 / 6.6 | 3.9 / 8.1 |
+| wars | 3,964 / 8,626 | 3,684 / 8,168 |
+| states at war, mean | 0.075 / 0.083 | 0.061 / 0.101 |
+
+Camps (seed 101 / 103):
+- first at year 550 / 525, before most cities;
+- median life 275 / 263 yr (90th percentile about 1,000); median peak
+  28 / 26 cells;
+- ends: dispersed 162 / 221, scattered in battle 100 / 128, lost the
+  city they took 117 / 88, union 39 / 20, alive at the end 42 / 31;
+- took a city: 152 (31%) / 129 (24%). Only 5 / 2 reached 3+ cities,
+  the largest 6 / 4. One Dwarf camp of year 2,450 became a 6-city state
+  that lasted 5,550 years;
+- peoples: Dwarves 186, Goblins 132, Humans 69, Lizardfolk 64 (101);
+  Goblins 257, Dwarves 124, Frogloks 46 (103). The largest camps by land
+  in seed 103 were Goblin camps of about 300,000 km2 that never took a
+  city.
+
+- **Stateless land did not shrink at the end of the run.** Land cells in
+  a state rose by 0.008 in seed 101 and fell by 0.04 in seed 103. Only
+  31-42 camps are alive at year 8,000, and there are fewer 3+ city
+  states (-24% / -15%). One possible cause, not traced: camps hold land
+  next to city states (`territory` gives a cell to its nearest seat), so
+  city states have less room. One seed each.
+- **No herder path to large states.** Camps take cities, but stay small.
+- No people floods the map; minority shares and population moved little.

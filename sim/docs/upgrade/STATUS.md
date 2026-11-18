@@ -32,7 +32,7 @@ what an entry holds.
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
-| 5 | F cityless polities | design note, needs U | 2026-11-18 | |
+| 5 | F cityless polities | done (on by default) | 2026-11-18 | FCOMMIT |
 | 6 | A experiment batch | not started | | |
 | 6 | B adopt | not started | | |
 | 7 | A design note | not started | | |
@@ -1489,3 +1489,56 @@ chose its war could start with its army partly raised. Not built.
 
 **Stage F.** Design note `WP5F-camps-design.md`, with three decisions
 for U. No code.
+
+### WP5 stage F: polities without cities (2026-11-18, FCOMMIT)
+
+**Decisions (U, 2026-11-18):** camps outside the city table; a defeated
+camp scatters or becomes a vassal; no number in mind for the threshold.
+
+**Done** (switch `camps`, on by default; numbers C; design note
+`WP5F-camps-design.md`, with the two departures marked):
+- A camp polity has `P["camp"]` (seat, also the capital) and no cities.
+  `territory` adds camp seats as sources; reach = CAMP_REACH 300 x
+  cohesion x (1 + 1.5 x herding share). No rent, tax or tribute.
+  Successions as for states.
+- `camps_step`, every 25 years: per lineage, score the stateless cells
+  near its densest one (heads x cohesion trait x (0.5 + hierarchy)). At
+  CAMP_N or more, with chance 0.2, score the cells within a new camp's
+  reach; at CAMP_N a camp forms. A camp disperses under CAMP_N / 3. The
+  seat moves every 10 years.
+- CAMP_N = 2.1e4: the median one-city state's own lineage's score in
+  its land (`wp5d_seed101`, year 5,000).
+- War: `seated()` gates declaring. A camp cannot be besieged;
+  `camp_battle` once a year at the seat (camp strength x 1.5). Won:
+  vassal with chance (0.5 + dominance) / 2, else scattered. `decamp`
+  makes a camp holding a city an ordinary state.
+- Records: `polities.csv` `camp_years`, origin `camp`, ends `dispersed`
+  and `scattered`; `wars.csv` `battles`, why `camp scattered`; events of
+  kind `camp`.
+- Docs: rules/states.md, model-description.md (13.4), structural.md,
+  switch-inventory.md, running.md, run-log.md.
+
+**Departures from the design note.**
+- Reach base CAMP_REACH 300, not REACH0 120. REACH0 gave a camp one
+  cell.
+- Formation scored on the land the camp would rule, not 500 km. The
+  first form (`wp5f1_*`) made about 6,000 short-lived camps per run.
+
+**Runs.** Branch tests from the year-5,000 state (deleted);
+`wp5f1_seed101`, `103` (first form); `wp5f_seed101`, `103`. Table in
+run-log.md.
+
+**Results** (seed 101 / 103):
+- 487 / 527 camps; median life about 270 years; 24-31% take a city;
+  almost none grow past 3 cities.
+- Land in a state at the end did not grow: +0.008 / -0.04 of land
+  cells. 3+ city states -24% / -15%.
+- Population and minority shares about as before.
+
+**For U.**
+- The brief's hoped-for herder route to large states is not there.
+  Camps that take a city become one-city states with the usual odds.
+- Camps may crowd city states out of land; untraced.
+- WP5 is now complete in its stages. The 5-seed batch suggested since
+  stage B would settle which of B-F's population and war-count shifts
+  are real.

@@ -502,6 +502,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.acct_mark("wars")
             self.rebellions()
             self.acct_mark("rebellions")
+            if "camps" in self.on:
+                self.decamp()
             if i < n - 1 and held != [c["polity"]
                                       for c in self.cities.values()]:
                 self.pol_refresh()
@@ -529,6 +531,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.acct_mark("raids")
         self.tidy()
         self.update_cities()
+        self.camps_step()
         self.territory()
         if self.year % ROAD_EVERY == 0:
             self.name_seats()

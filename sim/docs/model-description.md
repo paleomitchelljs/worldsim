@@ -1055,6 +1055,22 @@ states' nearest cities.
 
 ---
 
+### 13.4 Camp polities `[camps]`
+
+(WP5 F, 2026-11-18; U: build, outside the city table; C numbers.)
+- Every 25 years per lineage: stateless cells within 500 km of its
+  densest stateless cell; score = heads × cohesion trait × (0.5 +
+  hierarchy); score ≥ 2.1×10⁴ → a camp polity at that cell with chance
+  0.2. Every 25 years a camp disperses if its lineage's score in its
+  land < 7,000.
+- Seat moves every 10 years to its lineage's densest cell in its land.
+  Reach 300 × S × (1 + 1.5 × herding share). No rent, tax or tribute.
+  Successions as for states.
+- Not besieged: a battle at the seat, once a year, at odds ≥ 0.15, the
+  camp's strength × 1.5; won: vassal with chance (0.5 + dominance) / 2,
+  else scattered. Lost: the attacker's cohesion as for a failed siege.
+- Holding a city makes it an ordinary state (capital: its largest city).
+
 ## 14. Rebellion and succession
 
 ### 14.1 Revolts

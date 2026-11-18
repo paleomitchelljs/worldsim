@@ -56,3 +56,31 @@ ruling lineage at 0.8% x (0.5 + statecraft) per year.
   - same people with 3 or fewer cities left: it is absorbed;
   - otherwise, 40% of the time it shatters into city-states;
   - otherwise it moves its capital.
+
+## Polities without cities (`camps`, WP5 stage F, 2026-11-18)
+
+U (2026-11-18): build them as camps kept outside the city table; a
+defeated camp scatters or becomes a vassal. Numbers C; the design note
+is `docs/upgrade/WP5F-camps-design.md`.
+- **Forming.** Every 25 years, for each lineage with stateless cells,
+  take those within 500 km of its densest stateless cell. Score them:
+  heads x cohesion trait x (0.5 + hierarchy). At 21,000 or more a camp
+  polity forms at the densest cell, with chance 0.2 per check. The
+  threshold is the score the median one-city state's own lineage has
+  in its land (`wp5d_seed101` at year 5,000).
+- **The camp.** A seat cell, not a city. Its people's land is its
+  territory, out to a reach of 300 x cohesion x (1 + 1.5 x herding
+  share) cost-km. Every 10 years the seat moves to the densest cell of
+  its lineage in its land. It takes no rent, tax or tribute. Its
+  strength is reckoned as for any state. It has successions.
+- **War.** A camp declares war as any state does and besieges cities.
+  It cannot be besieged. Each year an attacker (or a defender striking
+  back) at odds of 0.15 or more fights a battle at the seat, where the
+  camp's strength counts 1.5 times. A won battle makes the camp a
+  vassal with chance (0.5 + the victor's dominance) / 2; otherwise the
+  camp scatters and its land is stateless again.
+- **A city.** A camp polity that takes a city, is ceded one, or has one
+  founded and joining in its land becomes an ordinary state with that
+  city as capital.
+- **Ending.** Every 25 years, a camp whose own lineage scores under a
+  third of the threshold in its land disperses.

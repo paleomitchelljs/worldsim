@@ -37,7 +37,7 @@ class WarMixin:
     def deter(self, A, B, allies):
         """Strength A projects to B's city nearest A's capital over B's
         defence there (with allies, terrain and walls); and that city."""
-        cc = list(B["cities"])
+        cc = list(B["cities"]) or [B["capital"]]     # a camp: its seat
         t = cc[int(np.argmin(gc_km(self.W.xyz, A["capital"], np.array(cc))))]
         PA = self.projected(A, t)
         PB = self.projected(B, t)
@@ -244,7 +244,7 @@ class WarMixin:
         pairs out: deterrence at its full 1 and the motive term at its cap
         (WAR_GAIN_CAP; every motive is >= 0). A hair above, so rounding
         can never put p over it."""
-        if not A["cities"] or not B["cities"]:
+        if not self.seated(A) or not self.seated(B):
             return 0.0
         if DET_K < 0:
             return math.inf
@@ -258,7 +258,7 @@ class WarMixin:
         """Chance per political step that A declares war on B (`war_v2`),
         and its motives with the motivated share."""
         La, Lb = A["lin"], B["lin"]
-        if not A["cities"] or not B["cities"]:
+        if not self.seated(A) or not self.seated(B):
             return 0.0, None
         R, _ = self.deter(A, B, allies)
         d = self.eff(A, "dom")
@@ -385,8 +385,8 @@ class WarMixin:
                 continue
             A, B = self.polities.get(w["att"]), self.polities.get(w["dfn"])
             if not A or not B or A["ended"] is not None or \
-                    B["ended"] is not None or not B["cities"] \
-                    or not A["cities"]:
+                    B["ended"] is not None or not self.seated(B) \
+                    or not self.seated(A):
                 self.war_close(self.wars.pop(k, None), "side ended")
                 continue
             if w["goal"] is not None and \
@@ -418,7 +418,7 @@ class WarMixin:
             if w.get("submitted") or k not in self.wars:
                 continue
             if A["ended"] is None and B["ended"] is None and \
-                    A["cities"] and B["cities"]:
+                    self.seated(A) and self.seated(B):
                 self.counteroffensive(k, w, A, B)
                 if k not in self.wars:
                     continue
@@ -494,6 +494,10 @@ class WarMixin:
         at too long odds the attacker ravages or sits."""
         rng = self.R("war")
         odds = "war_odds" in self.on
+        if not B["cities"]:
+            # `camps`: a camp cannot be besieged; it is brought to battle
+            self.camp_battle(k, w, A, B)
+            return
         # logistics: a well-run state keeps more sieges going at once
         ns = 1 + int(LOG_SIEGE * self.logi(A))
         free = ns - sum(1 for s in w["on"] if s["side"] == "att")
@@ -705,6 +709,10 @@ class WarMixin:
         if rng.random() >= over(COUNTER_K * R * R / (1 + R * R),
                                 self.dtp):
             return
+        if not A["cities"]:
+            # `camps`: the defender brings a camp attacker to battle
+            self.camp_battle(k, w, B, A)
+            return
         ns = 1 + int(LOG_SIEGE * self.logi(B))
         free = ns - sum(1 for s in w["on"] if s["side"] == "dfn")
         for _ in range(free):
@@ -727,6 +735,46 @@ class WarMixin:
                 break               # too long odds: no siege
             if self.siege_start(k, w, "dfn", t, B, A) == "stop":
                 break
+
+    def camp_battle(self, k, w, X, Y):
+        """`camps`: X brings camp polity Y to battle at its seat, at most
+        once a step, at odds >= SIEGE_MIN: Y's strength there x
+        CAMP_EVADE (it can melt away). Won: Y submits with chance (0.5 +
+        X's dominance) / 2, else scatters (ends); the war ends. Lost: X
+        loses cohesion as after a failed siege. Under `army` losses are
+        as in a decided siege."""
+        if w.get("battle_year") == self.year:
+            return
+        w["battle_year"] = self.year
+        rng = self.R("war")
+        t = Y["capital"]
+        PX = self.projected(X, t) * self.offense(X) * self.field(X)
+        PY = self.projected(Y, t) * CAMP_EVADE * self.garrison(Y)
+        pw = PX ** 2 / (PX ** 2 + PY ** 2 + 1e-9)
+        if "war_odds" in self.on and pw < SIEGE_MIN:
+            return
+        w["last_siege"] = self.year
+        w["battles"] = w.get("battles", 0) + 1
+        won = rng.random() < pw
+        if "army" in self.on:
+            self.army_loss(w, X, ARMY_WON if won else ARMY_LOST)
+            self.army_loss(w, Y, ARMY_LOST if won else ARMY_WON)
+        if not won:
+            X["cohesion"] *= 1 - SIEGE_COH * (1.5 - self.logi(X) / 1.5)
+            return
+        x, y = X["id"], Y["id"]
+        if y not in self.vassal and \
+                rng.random() < (0.5 + self.eff(X, "dom")) / 2:
+            self.count("camp_vassal")
+            self.submit(y, x)
+            self.war_close(self.wars.pop(k, None), "submitted")
+            self.truce[k] = self.year + TRUCE_WAR
+            w["submitted"] = True
+        else:
+            self.count("camp_scattered")
+            self.war_close(self.wars.pop(k, None), "camp scattered")
+            self.kill_polity(y, f"scattered by {self.pname(x)}", by=x,
+                             code="scattered")
 
     def field(self, P):
         """`army`: the share of its full levy (ARMY_SHARE x its people)
@@ -859,7 +907,8 @@ class WarMixin:
                  moved_back=round(w.get("moved_back", 0.0)),
                  helpers=" ".join(str(x) for x in
                                   sorted(w.get("helpers", ()))),
-                 sacks=w.get("sacks", 0), ravages=w.get("ravages", 0))
+                 sacks=w.get("sacks", 0), ravages=w.get("ravages", 0),
+                 battles=w.get("battles", 0))
 
     def set_goal(self, w, A, B, gains):
         """The goal of a motivated war: its largest motive."""
@@ -870,7 +919,7 @@ class WarMixin:
                     self.cities[c]["owners"][:-1]]
             if lost:
                 goal = lost[0]
-        elif kind in ("land", "prey", "enmity"):
+        elif kind in ("land", "prey", "enmity") and B["cities"]:
             cc = list(B["cities"])
             goal = cc[int(np.argmin(gc_km(self.W.xyz, A["capital"],
                                           np.array(cc))))]

@@ -96,7 +96,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
-            "army"]
+            "army", "camps"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -938,6 +938,30 @@ DT_POL, SIEGE_YEARS, SIEGE_MAX = 1.0, 1.0, 8
 # instead of rising with the war's age. Replaces WAR_COST.
 ARMY_SHARE, ARMY_RAISE, ARMY_GARRISON = 0.04, 2.0, 0.5
 ARMY_WON, ARMY_LOST, ARMY_X_MAX, EXH_K = 0.05, 0.2, 0.5, 25.0
+# Camp polities (`camps`, WP5 stage F, 2026-11-18; U: build as camps kept
+# outside the city table; a defeated camp scatters or becomes a vassal;
+# numbers C; docs/upgrade/WP5F-camps-design.md). Every CAMP_EVERY years
+# each lineage's stateless cells within CAMP_R km of its densest
+# stateless cell are scored: heads x cohesion trait x (0.5 + hierarchy);
+# at CAMP_N or more, with chance CAMP_P, the cells within a new camp's
+# reach (cohesion 0.6) are scored again, and at CAMP_N a camp polity
+# forms there (first form, 500 km alone: three in four camps dispersed
+# at the next check, their land being smaller than the area scored). Its seat
+# moves every CAMP_MOVE years to the densest cell of its lineage in its
+# land. Reach = CAMP_REACH x cohesion x (1 + CAMP_HERD x herding share)
+# (CAMP_REACH: about a one-city state's reach, 120 + 900 x admin 0.2; the
+# design note's REACH0 gave one cell). A
+# camp takes no rent, tax or tribute (no city to receive it). It cannot
+# be besieged: an attacker fights a battle at the seat each year, the
+# camp's strength x CAMP_EVADE; a won battle makes it a vassal with
+# chance (0.5 + dominance) / 2, else scatters it. It ends "dispersed"
+# when its own lineage's score in its land falls under CAMP_N x
+# CAMP_END. Taking or founding a city makes it an ordinary state.
+# CAMP_N: set from wp5d_seed101's state at year 5,000, where the median
+# one-city state's own lineage scores 2.1e4 in its land (run-log.md).
+CAMP_EVERY, CAMP_MOVE, CAMP_R, CAMP_P = 25, 10, 500.0, 0.2
+CAMP_N, CAMP_END, CAMP_HERD, CAMP_EVADE = 2.1e4, 1 / 3, 1.5, 1.5
+CAMP_REACH = 300.0
 # Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18; U: build it; forms
 # from the review, numbers C). Declaring: the deterrence factor becomes
 # floor + (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W), with

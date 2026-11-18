@@ -36,7 +36,7 @@ class StatesMixin:
         return np.where(pl >= 0, self.admin[np.maximum(pl, 0)], 0.0)
 
     def new_polity(self, L, capital, cohesion=0.6, parent=None,
-                   origin=""):
+                   origin="", camp=False):
         """A new state of lineage L seated at `capital`. origin (a record,
         WP2 stage C): city_outside, city_inside (founded inside a state it
         did not join), colony (a colonist lineage's city that did not join
@@ -53,8 +53,11 @@ class StatesMixin:
                                   next_succ=self.year + SUCC_GEN * (
                                       self.plife[c] if "rulers" in self.on
                                       else 1),
-                                  cities={capital}, peak_cells=0,
-                                  peak_year=self.year, peak_cities=1,
+                                  cities=set() if camp else {capital},
+                                  camp=capital if camp else None,
+                                  peak_cells=0,
+                                  peak_year=self.year,
+                                  peak_cities=0 if camp else 1,
                                   peak_pop=0, peak_mask=None, peoples=set(),
                                   parent=parent, origin=origin,
                                   end_reason="", ended_by=None,
@@ -243,13 +246,18 @@ class StatesMixin:
         W = self.W
         self.cell_pol[:] = -1
         self.cell_city[:] = -1
-        if not self.cities:
+        # `camps`: camp seats rule land too, but are no city
+        camps = {P["camp"]: P for P in self.polities.values()
+                 if P.get("camp") is not None and P["ended"] is None and
+                 P["camp"] not in self.cities}
+        if not self.cities and not camps:
             return
-        cc = np.fromiter(self.cities.keys(), int)
+        cc = np.array(list(self.cities.keys()) + list(camps), int)
         creach = np.zeros(W.N)
         creach[cc] = [self.reach(self.polities[self.cities[c]["polity"]])
                       if self.cities[c]["polity"] in self.polities else REACH0
-                      for c in cc]
+                      for c in self.cities] + \
+            [self.reach(P) for P in camps.values()]
         dist, _, src = dijkstra(W.G, indices=cc, min_only=True,
                                 return_predecessors=True,
                                 limit=max(1.5 * (REACH0 + REACH1),
@@ -257,10 +265,14 @@ class StatesMixin:
         ok = src >= 0
         si = np.where(ok, src, 0)
         cpol = np.full(W.N, -1)
-        cpol[cc] = [self.cities[c]["polity"] for c in cc]
+        cpol[cc] = [self.cities[c]["polity"] for c in self.cities] + \
+            [P["id"] for P in camps.values()]
+        iscity = np.zeros(W.N, bool)
+        iscity[list(self.cities)] = True
         ok &= dist <= creach[si]
-        self.cell_city[ok] = src[ok]
         self.cell_pol[ok] = cpol[src[ok]]
+        ok &= iscity[si]
+        self.cell_city[ok] = src[ok]
         # travel cost from each ruled cell to its city (`food_flow`)
         self.cdist = np.where(ok, dist, np.inf)
 
@@ -416,6 +428,8 @@ class StatesMixin:
                 if p["n_cells"] >= 120:
                     p["peak_mask"] = np.nonzero(pol == pid)[0]
             p["peak_cities"] = max(p["peak_cities"], nc)
+            if p.get("camp") is not None:
+                p["camp_years"] = p.get("camp_years", 0) + DT
             p["peak_pop"] = max(p["peak_pop"], p["pop"])
             p["peak_foreign"] = max(p.get("peak_foreign", 0.0),
                                     float(foreign[pid]))
@@ -433,6 +447,94 @@ class StatesMixin:
             V["strength"] -= t
             O["strength"] += t
             V["vassal_years"] += DT
+
+    def seated(self, P):
+        """A state that can wage war: it holds a city or a camp."""
+        return bool(P["cities"]) or P.get("camp") is not None
+
+    def decamp(self):
+        """`camps`: a camp polity that holds a city becomes an ordinary
+        state, its largest city the capital."""
+        for P in self.polities.values():
+            if P.get("camp") is not None and P["ended"] is None and \
+                    P["cities"]:
+                P["camp"] = None
+                P["capital"] = max(P["cities"], key=self.city_weight)
+                self.pver += 1
+                self.count("camp_city")
+                self.log("camp", f"{self.pname(P['id'])}, a camp polity, "
+                         f"takes its first city at "
+                         f"{self.place(P['capital'])}",
+                         cell=P["capital"], polities=[P["id"]])
+
+    def camp_score(self, L, cells):
+        """Heads x cohesion trait x (0.5 + hierarchy) of lineage L in
+        cells."""
+        return float(self.pop[cells].sum()) * float(self.coh[L]) * \
+            (0.5 + float(self.hier[L]))
+
+    def camps_step(self):
+        """`camps`: camp polities form on stateless land, move their seat,
+        and disperse (WP5 stage F)."""
+        if "camps" not in self.on:
+            return
+        self.decamp()
+        W, pol, lin = self.W, self.cell_pol, self.lin
+        if self.year % CAMP_MOVE == 0:
+            for P in self.polities.values():
+                if P.get("camp") is None or P["ended"] is not None:
+                    continue
+                m = np.nonzero((pol == P["id"]) & (lin == P["lin"]))[0]
+                m = m[~np.isin(m, list(self.cities))] if self.cities else m
+                if len(m):
+                    s = int(m[np.argmax(self.pop[m])])
+                    if s != P["camp"]:
+                        P["camp"] = P["capital"] = s
+                        self.pver += 1
+        if self.year % CAMP_EVERY:
+            return
+        rng = self.R("camps")
+        for P in list(self.polities.values()):
+            if P.get("camp") is None or P["ended"] is not None:
+                continue
+            m = np.nonzero((pol == P["id"]) & (lin == P["lin"]))[0]
+            if self.camp_score(P["lin"], m) < CAMP_N * CAMP_END:
+                self.count("camp_dispersed")
+                self.kill_polity(P["id"], "dispersed", code="dispersed")
+        st = np.nonzero((pol < 0) & (lin >= 0))[0]
+        if not len(st):
+            return
+        if self.cities:
+            st = st[~np.isin(st, list(self.cities))]
+        order = np.lexsort((-self.pop[st], lin[st]))
+        st = st[order]
+        Ls, first = np.unique(lin[st], return_index=True)
+        bounds = list(first[1:]) + [len(st)]
+        taken = np.zeros(W.N, bool)
+        for L, a, b in zip(Ls, first, bounds):
+            c = st[a:b]
+            top = int(c[0])                 # densest (sorted)
+            if taken[top]:
+                continue
+            near = c[gc_km(W.xyz, top, c) <= CAMP_R]
+            if self.camp_score(L, near) < CAMP_N or \
+                    rng.random() >= CAMP_P:
+                continue
+            # the land the camp would rule: its lineage's stateless cells
+            # within a new camp's reach (cohesion 0.6) of the seat
+            r = CAMP_REACH * 0.6 * (1 + CAMP_HERD *
+                                    float(self.herding[near].mean()))
+            d = dijkstra(W.G, indices=top, limit=r)
+            near = near[d[near] <= r]
+            if self.camp_score(L, near) < CAMP_N:
+                continue
+            taken[near] = True
+            pid = self.new_polity(int(L), top, cohesion=0.6, origin="camp",
+                                  camp=True)
+            self.count("camp_formed")
+            self.log("camp", f"{self.lname(int(L))} gathers under a camp "
+                     f"polity {self.pname(pid)} at {self.place(top)}",
+                     cell=top, polities=[pid])
 
     def pol_refresh(self):
         """`pol_step`: after a political sub-step in which cities changed
@@ -576,7 +678,9 @@ class StatesMixin:
         live = [pid for pid, P in self.polities.items()
                 if P["ended"] is None]
         for pid in live:
-            hp[pid] = 0.5 + self.eff(self.polities[pid], "hier")
+            # `camps`: a camp has no city to take food to
+            if self.polities[pid].get("camp") is None:
+                hp[pid] = 0.5 + self.eff(self.polities[pid], "hier")
         h = np.where(m, hp[pp], 0.0)
         cc = np.fromiter(self.cities.keys(), int) if self.cities else \
             np.zeros(0, int)
@@ -1142,6 +1246,10 @@ class StatesMixin:
         """Administrative reach (cost-km) of a state: its lineage's
         administration, cut when the state is underfed (fiscal) and
         lengthened by a mounted herding population (pastoral)."""
+        if P.get("camp") is not None:
+            # `camps`: a camp's reach is its people's cohesion, carried
+            # far by horses, not administration
+            return CAMP_REACH * P["cohesion"] * (1 + CAMP_HERD * P["herd"])
         r = REACH0 + REACH1 * self.admin[P["lin"]]
         r *= 0.6 + 0.4 * P["fed"]
         r *= 1 + 0.5 * P["herd"]
@@ -1301,8 +1409,9 @@ class StatesMixin:
         # one)
         for pid in list(self.polities):
             p = self.polities[pid]
-            if p["ended"] is None and \
-                    len(p["cities"]) >= SUCC_MIN_CITIES and \
+            if p["ended"] is None and (
+                    len(p["cities"]) >= SUCC_MIN_CITIES or
+                    p.get("camp") is not None) and \
                     self.year >= p["next_succ"]:
                 self.succession(pid, p)
 

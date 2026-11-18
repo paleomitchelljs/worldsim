@@ -33,8 +33,10 @@ Why:
 - A seat cell, `P["camp"]`. It carries no urban population and keeps
   no city record, culture row or ruin.
 - **Territory.** `territory` adds camp seats as sources alongside
-  cities. Reach = REACH0 x cohesion x (1 + CAMP_HERD x herding share),
-  not administration. With CAMP_HERD 1.5, mounted peoples reach about
+  cities. Reach = CAMP_REACH x cohesion x (1 + CAMP_HERD x herding
+  share), not administration. (Built with CAMP_REACH 300, about a
+  one-city state's reach. The REACH0 (120) first written here gave a
+  camp one cell, and most dispersed within 25 years.) With CAMP_HERD 1.5, mounted peoples reach about
   2.5 times as far.
 - **Strength.** As for any state (`polity_stats`), from the people in
   its territory.

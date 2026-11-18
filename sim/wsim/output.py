@@ -101,7 +101,7 @@ WCOL = ["id", "start", "end", "years", "att", "dfn", "people_att",
         "people_dfn", "landmass_att", "landmass_dfn", "cities_att",
         "cities_dfn", "strength_att", "strength_dfn", "goal", "goal_city",
         "goal_met", "why", "sieges", "captures", "recaptures", "moved",
-        "moved_back", "helpers", "sacks", "ravages"]
+        "moved_back", "helpers", "sacks", "ravages", "battles"]
 
 # Append-only tables: (Sim attribute, file, header). A header of None
 # takes the columns from the first row (dict rows); the column set is the
@@ -371,7 +371,7 @@ def write_polities(sim, out):
                     "peak_year", "peak_cities", "peak_pop", "capital_lon",
                     "capital_lat", "peak_foreign_share", "capital_cell",
                     "origin", "end_reason", "ended_by", "nb_land_mean",
-                    "nb_sea_mean", "nb_max", "nb_none_years"])
+                    "nb_sea_mean", "nb_max", "nb_none_years", "camp_years"])
         for p in sim.polities.values():
             nt = p.get("nb_ticks", 0)
             end = p["ended"] if p["ended"] is not None else sim.year
@@ -390,7 +390,8 @@ def write_polities(sim, out):
                         round(p.get("nb_land", 0) / nt, 2) if nt else "",
                         round(p.get("nb_sea", 0) / nt, 2) if nt else "",
                         p.get("nb_max", "") if nt else "",
-                        p.get("nb_none_years", 0) if nt else ""])
+                        p.get("nb_none_years", 0) if nt else "",
+                        p.get("camp_years", 0)])
 
 
 def write_dragons(sim, out):
