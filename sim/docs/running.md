@@ -58,6 +58,52 @@ a folder holding a copy of `wsim/` and the roster modules, with the map
 at `OLD/../gis/world.gpkg`. A whole-run check is still worth doing for a
 change that touches the early years.
 
+## Branching from a saved state
+
+Early millennia cost as much as late ones, so variants that differ only
+after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
+
+    # once: the base run, saving states on the way
+    ~/.venvs/worldsim/bin/python worldsim.py --peoples peoples_regional \
+        --starts 20 --start-vary 0.1 --vary 0 --sites sites_v2.json \
+        --seed 101 --years 8000 --frame-every 100 --out base_seed101 \
+        --save-state 3000 s101_y3000.pkl --save-state 5000 s101_y5000.pkl
+    # each variant
+    ~/.venvs/worldsim/bin/python worldsim.py --from-state s101_y5000.pkl \
+        --set PATH_PIVOT=0.45 --out var_pivot045_seed101
+
+- A bare `PATH` is in the runs root, like `--out`. A path inside Dropbox
+  is refused. States are about 250 MB at year 1,500 and 450 MB at year
+  5,500 (seed 101); git ignores `*.pkl`. The travel and food distance
+  caches are left out of the file and rebuilt, to the same values, when
+  asked.
+- With `--from-state`, `--set`, `--city-pop`, `--city-cap` and
+  `--dragon-*` take effect from the branch year. `--off` switches
+  mechanics off from the branch year. A mechanic that was off in the
+  state cannot be switched on. `--years` and `--frame-every` default to
+  the state's. The founding options (`--seed`, `--peoples`, `--starts`,
+  `--vary` and the rest) are the state's and are ignored. So is a
+  constant that was read only at setup: the climate series, the sites,
+  the founders' placement.
+- The branch's tables hold the whole history, from year 0. Its frames and
+  `history.gif` cover only the years after the branch. `run.json` gains
+  `branch`: the state file, the branch year, the `--set` and `--off`
+  given, every constant whose value changed (old and new), the end year,
+  and the run.json of the run that saved the state, as of the save.
+- A branch with no changes reproduces the run that saved the state
+  exactly (checked: seed 101, saved at 1,500, run to 2,000, all tables
+  byte-identical). Unpickling rebuilds Python sets, and their iteration
+  order can differ from the originals', which changes the history. So a
+  run carries on from its own saved copy after each save. A run that
+  saves a state can therefore differ, after the save year, from the same
+  run without `--save-state`. Compare branches with branches, or with
+  the run that saved them.
+- **Switch-on transients.** A mechanic or constant changed at the branch
+  year needs time to settle; the urban batch showed one. Branch at least
+  500 years before the period you compare. Never use branching for a
+  mechanic that acts from year 0, such as settlement, growth rates or
+  founders.
+
 ## Options
 
 | Option | Default | Meaning |
@@ -83,6 +129,8 @@ change that touches the early years.
 | `--dragon-penalty` | 0.036 | cut in the yearly growth rate per unit of dragon hazard at the worst group size ([structural.md](structural.md#dragons-dragons)); replaced `--dragon-kill` |
 | `--off` | none | structural mechanics to switch off, comma-separated, or `all` ([structural.md](structural.md)) |
 | `--out` | `seed<N>` | output folder; a bare name goes in the runs root |
+| `--save-state YEAR PATH` | none | save the whole Sim after the tick that reaches YEAR (repeatable); see [Branching](#branching-from-a-saved-state) |
+| `--from-state PATH` | none | continue a saved state as a new run; see [Branching](#branching-from-a-saved-state) |
 
 With `--off all --city-cap 3 40` the model reproduces the pre-structural one draw for draw
 (checked: identical `events.txt` and `polities.csv` over 1,500 years, seed
@@ -126,7 +174,7 @@ figures.
 | `lineages.csv` | every lineage, with parent, origin, traits and the technology stage reached |
 | `cities.csv`, `polities.csv` | lon/lat, founding and end years, peaks, rulers, peoples ruled (loads into QGIS) |
 | `timeseries.csv`, `final_state.npz` | per-tick statistics; final per-cell grid (row/col match `cells`), including roads, improvements, land condition, rivers and the drainage network as it ended |
-| `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the last write of `run.json`), `year_reached`, and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides |
+| `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the last write of `run.json`), `year_reached`, and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides. A run started with `--from-state` also has `branch` ([Branching](#branching-from-a-saved-state)) |
 | `price.csv` | Price-equation decomposition of each cultural trait, per century, per people and world-wide ([diagnostics.md](diagnostics.md)) |
 | `dragons.csv` | every dragon: birth, first home, end, fate, ally (with `dragons`) |
 | `relations.csv` | every pair of neighbouring live states on each frame tick: similarity, enmity and faith motives both ways, trade tie, war, alliance, truce, and `similarity_lin` (the ruling lineages'). From 2026-11-07 similarity and motives are those the war rule reads (the states' cultures under `city_culture`); before, they were always the ruling lineages', so they did not show what drove wars |

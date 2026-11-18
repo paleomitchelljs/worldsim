@@ -14,7 +14,7 @@ what an entry holds.
 | 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
 | 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
 | 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
-| 1 | E branching from a saved state | not started | | |
+| 1 | E branching from a saved state | done | 2026-11-17 | see entry |
 | 1 | F RNG streams and new baseline | not started | | |
 | 2 | A structured events | not started | | |
 | 2 | B run loader and metrics | not started | | |
@@ -382,3 +382,65 @@ in the others), `raids` 8.3, `technology` 7.7, `prepare_capacity` 6.1,
 
 **Next.** Stage E (branching from a saved state). Saved states are now
 about 450 MB at year 5,500, not the brief's 300 MB.
+
+### WP1 stage D, climate noise (2026-11-17, 2fdcab2)
+
+**Done (U, 2026-11-17: yes).** The local moisture field is drawn on every
+second row and column, with sigma 3 coarse cells (the same 6 fine cells,
+about 330 km), and read off bilinearly at the land cells
+(`CLIM_LOCAL_COARSE` = 2, C). Spatial correlation at lags 1, 3, 6 and 12
+cells: 0.993, 0.939, 0.781 and 0.372, against 0.993, 0.938, 0.777 and
+0.387 for the full-grid field. It costs 2.7 ms per tick against 5.8 ms.
+The climate's realisation changes, so histories differ from earlier runs.
+Documented in `structural.md` and `model-description.md`.
+
+**Runs.** `wp1d_clim_sanity_seed101` (in `sim/runs/`): 3,000 years, 96 s.
+At year 3,000 it had 29.3M people, 37 cities, 36 states and all ten
+peoples; `wp0b_sanity_seed101` had 28.3M, 43 and 39.
+
+### WP1 stage E: branching from a saved state (2026-11-17)
+
+**Done.**
+- `worldsim.py --save-state YEAR PATH` (repeatable) pickles the Sim after
+  the tick that reaches YEAR (`Sim.save`). A path inside Dropbox is
+  refused. `pdist` and `fdist` are left out of the file, and
+  `state_info` (the run.json as of the save) goes in.
+- `--from-state PATH` loads a state. `--set` and the other constant
+  options are written into `wsim.params` before unpickling imports the
+  modules, as on a fresh run. `--off` removes switches (`Sim.flags()`
+  now sets the shorthand flags, in `__init__` and on a branch).
+  `--years` and `--frame-every` default to the state's. `Sim.run()`
+  continues from the current tick. `run.json` gains `branch`: the state,
+  the branch year, the `--set` and `--off` given, every changed constant
+  (old and new), and the state's own run.json.
+- Documented in `docs/running.md`, "Branching from a saved state", with
+  the brief's caveat: branch 500+ years before the period compared, and
+  never for a mechanic that acts from year 0.
+
+**Surprise.** The first check failed. A branch with no changes diverged
+from the run that saved it within one tick. Unpickling rebuilds Python
+sets with new hash tables, so their iteration order can change, at once
+(`Pblk`) or after later insertions, and the history then changes. An
+in-process test showed this, and showed that a state already unpickled
+once round-trips exactly. Fix: after saving, the run carries on from
+`pickle.loads` of the bytes it wrote, so the run and every branch from
+that file continue alike. A run with `--save-state` can therefore differ,
+after the save year, from the same run without it. `snapcheck.py` was
+never affected: it always compares two loads of one file.
+
+**Runs** (scratch, deleted):
+- A: seed 101, 2,000 years, saving at 1,500 (250 MB).
+- B: branched from A's state with no changes. `events`, `timeseries`,
+  `cities`, `polities`, `lineages` and `deaths` are byte-identical to A.
+- C: branched with `--set PATH_PIVOT=0.45 --off food_flow --years 2500`.
+  It finished (40 s), its map is normal, and `run.json` records all
+  three changes and the state's run.json.
+- `--save-state` into `~/Dropbox` and `--years` before the branch year
+  are both refused.
+
+**Not done.** Choosing a fresh seed for the branch (replicates from one
+state) is not in the brief. Until WP1 stage F splits the RNG into
+streams, it would mean reseeding `self.rng` at the branch. Ask U if
+wanted.
+
+**Next.** Stage F (RNG streams and a new baseline; D12 needs U).

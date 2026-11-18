@@ -1,4 +1,6 @@
 """The simulation: state and the yearly step."""
+import os
+import pickle
 import time
 import numpy as np
 
@@ -123,11 +125,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.CE = np.full((CITY_MAX, nK), 0.5)   # city elites
         self.CM = np.full((CITY_MAX, nK), 0.5)   # city commons
         self.Chome = -np.ones(CITY_MAX, int)     # plurality lineage
-        self.cc_on = "city_culture" in self.on
-        self.dom_on = "dominion" in self.on
-        # `food_flow` works through dominion's extraction
-        self.ff_on = self.dom_on and "food_flow" in self.on
-        self.uc_on = "urban_city" in self.on
+        self.flags()
         self._pt = {}
         self.Cmem = np.zeros((CITY_MAX, 5))       # war, trade, hard, raid, revolt
         self.CH = np.zeros((CITY_MAX, nK))        # commons' own history
@@ -136,8 +134,6 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.Cwown = np.zeros(CITY_MAX)           # own state's share
         self.city_rows, self.city_gap_rows, self.city_trait_rows = [], [], []
         self.Cadm = np.zeros(CITY_MAX)            # city administration
-        self.ca_on = self.cc_on and "city_admin" in self.on
-        self.rt = "ruler_traits" in self.on and "rulers" in self.on
         self.n_dyn = 0
         self.roadt = np.zeros(MAXL)          # road engineering
         self.Lsup = np.full(MAXL, SUP0)     # superiority
@@ -280,6 +276,42 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.death_rows = []              # deaths.csv
         self.food_rows = []               # cityfood.csv
 
+    def flags(self):
+        """The shorthand flags for switches in self.on (set again when a
+        branched run switches mechanics off)."""
+        self.cc_on = "city_culture" in self.on
+        self.dom_on = "dominion" in self.on
+        # `food_flow` works through dominion's extraction
+        self.ff_on = self.dom_on and "food_flow" in self.on
+        self.uc_on = "urban_city" in self.on
+        self.ca_on = self.cc_on and "city_admin" in self.on
+        self.rt = "ruler_traits" in self.on and "rulers" in self.on
+
+    def save(self, path):
+        """Pickle the whole Sim, a state to branch from (worldsim.py
+        --save-state). The travel and food distance caches are left out:
+        they are rebuilt, to the same values, when next asked. The run's
+        run.json as of the save goes in with it (state_info), so a branch
+        can record what it grew from.
+
+        Unpickling rebuilds sets, whose iteration order can then differ
+        from the originals', so a loaded state would not continue exactly
+        as the run that saved it. The run therefore carries on from the
+        saved copy itself: it and every branch from the file continue
+        alike (a run that saves can differ, after the save year, from one
+        that does not)."""
+        from .output import run_info
+        self.state_info = run_info(self)
+        self.pdist, self.fdist = {}, {}
+        b = pickle.dumps(self, protocol=5)
+        with open(path + ".tmp", "wb") as fh:
+            fh.write(b)
+        os.replace(path + ".tmp", path)
+        new = pickle.loads(b)
+        del b
+        self.__dict__.clear()
+        self.__dict__.update(new.__dict__)
+
     def upgrade(self):
         """Bring a Sim pickled by older code up to this one (snapcheck)."""
         if not hasattr(self, "ff_on"):
@@ -403,16 +435,25 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                           np.array(st, int).reshape(-1, 4),
                           np.array(ti, float).reshape(-1, 3)))
 
-    def run(self, verbose=True):
-        """Run to the end, writing output to self.out as it goes (frames
+    def run(self, verbose=True, saves=None):
+        """Run from the current tick to the end (a loaded state continues
+        where it was saved), writing output to self.out as it goes (frames
         when rendered, tables every FLUSH_EVERY ticks), so a killed run
-        keeps what it had written."""
+        keeps what it had written. saves: {year: path}, a saved state
+        after the tick that reaches each year."""
         from .output import Stream
         stream = Stream(self, self.out)
         t0 = time.time()
         nt = self.years // DT
-        for _ in range(nt):
+        todo = sorted((saves or {}).items())
+        while self.tick < nt:
             self.step()
+            while todo and self.year >= todo[0][0]:
+                self.save(todo[0][1])
+                if verbose:
+                    print(f"saved state at year {self.year} -> "
+                          f"{todo[0][1]}", flush=True)
+                todo.pop(0)
             if self.tick % self.frame_every == 0 or self.tick == nt:
                 stream.frame(render(self))
                 self.relations()

@@ -98,9 +98,12 @@ def make_sim(argv=None):
     (sim, out folder, start time)."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--years", type=int, default=6000)
-    ap.add_argument("--frame-every", type=int, default=20,
-                    help="ticks between animation frames")
+    ap.add_argument("--years", type=int, default=None,
+                    help="year to run to (default 6000; with --from-state, "
+                    "the state's own)")
+    ap.add_argument("--frame-every", type=int, default=None,
+                    help="ticks between animation frames (default 20; with "
+                    "--from-state, the state's own)")
     ap.add_argument("--homelands", choices=["continents", "anywhere"],
                     default="continents",
                     help="continents: founders start on the two large "
@@ -164,7 +167,25 @@ def make_sim(argv=None):
     ap.add_argument("--out", default=None,
                     help="run folder; a bare name goes in the runs root "
                     "($WORLDSIM_RUNS or sim/runs); default seed<N>")
+    ap.add_argument("--save-state", nargs=2, action="append", default=[],
+                    metavar=("YEAR", "PATH"),
+                    help="save the whole Sim after the tick reaching YEAR, "
+                    "to branch from later (repeatable; a bare name goes in "
+                    "the runs root; ~450 MB at year 5500; not in Dropbox)")
+    ap.add_argument("--from-state", default=None, metavar="PATH",
+                    help="continue a saved state instead of starting a new "
+                    "world: --set, --city-pop, --city-cap, --dragon-* and "
+                    "--off apply from the branch year on; settings of the "
+                    "founding (--seed, --peoples, --starts, ...) are the "
+                    "state's and are ignored")
     a = ap.parse_args(argv)
+    saves = {}
+    for y, p in a.save_state:
+        p = os.path.abspath(runroot.path(p))
+        if "dropbox" in os.path.realpath(p).lower():
+            ap.error(f"--save-state: {p} is inside Dropbox; saved states "
+                     "are large and sync would evict or corrupt them")
+        saves[int(y)] = p
     for kv in a.set:
         k, v = kv.split("=", 1)
         g = vars(params)
@@ -183,11 +204,17 @@ def make_sim(argv=None):
         setp("CITY_CAP", True)
         setp("CITY_CAP0", a.city_cap[0])
         setp("CITY_CAP1", a.city_cap[1])
+    t0 = time.time()
+    code = code_version()
+    if a.from_state:
+        return branch(a, ap, off, saves, code, t0, argv)
     from wsim.geo import World, vary_peoples
     from wsim.sim import Sim
     out = runroot.path(a.out or f"seed{a.seed}")
-    t0 = time.time()
-    code = code_version()
+    a.years = 6000 if a.years is None else a.years
+    a.frame_every = 20 if a.frame_every is None else a.frame_every
+    if saves and min(saves) > a.years:
+        ap.error("--save-state: a YEAR is past --years")
     world = World()
     print(f"world: {world.N} land cells, loaded in {time.time()-t0:.1f}s")
     sim = Sim(world, seed=a.seed, years=a.years,
@@ -211,12 +238,62 @@ def make_sim(argv=None):
     for p in sim.P:
         print(f"  {p['key']} {p['label']:16s} r={p['r']:.4f} " +
               " ".join(f"{t[:4]}={p.get(t, 0.5):.2f}" for t in params.TRAITS))
+    sim.saves = saves
+    return sim, out, t0
+
+
+def branch(a, ap, off, saves, code, t0, argv):
+    """Load a saved state (--from-state) and set it up to continue as a
+    new run: overrides and constants are already in wsim.params, so the
+    modules the unpickling imports see them; switches named in --off are
+    turned off; run.json records what the run grew from and what changed."""
+    import pickle
+    from wsim.output import run_info
+    src = os.path.abspath(runroot.path(a.from_state))
+    with open(src, "rb") as fh:
+        sim = pickle.load(fh)
+    sim.upgrade()
+    base = getattr(sim, "state_info", None) or run_info(sim)
+    year0 = sim.year
+    was_off = sorted(set(params.FEATURES) - sim.on)
+    sim.on -= set(off)
+    sim.flags()
+    if a.years is not None:
+        span = (sim.clim_ser.shape[1] - 2) * params.DT
+        if a.years > span:
+            ap.error(f"--years: the state's climate series ends at year "
+                     f"{span}")
+        sim.years = a.years
+    if a.years is not None and a.years <= year0:
+        ap.error(f"--years: the state is already at year {year0}")
+    if a.frame_every is not None:
+        sim.frame_every = a.frame_every
+    if saves and min(saves) <= year0:
+        ap.error(f"--save-state: the state is already at year {year0}")
+    sim.out = out = runroot.path(a.out or f"branch{year0}")
+    old = base.get("constants") or {}
+    from wsim.output import constants_used
+    now = constants_used()
+    sim.overrides = list(getattr(sim, "overrides", [])) + a.set
+    sim.manifest = dict(
+        code=code,
+        command=shlex.join(sys.argv if argv is None
+                           else ["worldsim.py", *argv]),
+        python=platform.python_version(), numpy=np.__version__, t0=t0,
+        branch=dict(
+            state=src, year=year0, state_run=base,
+            set=a.set, off=sorted(set(off) - set(was_off)),
+            constants_changed={k: [old.get(k), v] for k, v in now.items()
+                               if old.get(k) != v},
+            years=sim.years))
+    sim.saves = saves
+    print(f"branch from {src} at year {year0}, running to {sim.years}")
     return sim, out, t0
 
 
 def main():
     sim, out, t0 = make_sim()
-    sim.run()
+    sim.run(saves=sim.saves)
     from wsim.output import write_outputs
     write_outputs(sim, out)
     print(f"done in {time.time()-t0:.0f}s -> {out}")

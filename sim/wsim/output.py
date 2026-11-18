@@ -207,28 +207,34 @@ class Stream:
 
 
 def write_run_json(sim, out):
-    man = getattr(sim, "manifest", {})
     with atomic(os.path.join(out, "run.json")) as fh:
-        json.dump(dict(seed=sim.seed, years=sim.years, dt=DT,
-                       year_reached=sim.year,
-                       code=man.get("code"), command=man.get("command"),
-                       python=man.get("python"), numpy=man.get("numpy"),
-                       wall_seconds=round(time.time() - man["t0"], 1)
-                       if "t0" in man else None,
-                       overrides=getattr(sim, "overrides", []),
-                       peoples=sim.P, vary=sim.vary, starts=sim.starts,
-                       start_vary=sim.start_vary, drift=sim.drift,
-                       start_pool=sim.start_pool,
-                       cluster_km=sim.cluster_km,
-                       settle_drift=sim.settle_drift,
-                       size_food=sim.size_food, city_pop=CITY_POP,
-                       start_mode=sim.start_mode,
-                       wander_steps=sim.wander_steps,
-                       city_cap=(CITY_CAP0, CITY_CAP1) if CITY_CAP else None,
-                       dragon_penalty=DRAGON_PEN, dragon_shun=DRAGON_SHUN,
-                       features=sorted(sim.on),
-                       constants=constants_used()), fh, indent=1,
-                  default=str)
+        json.dump(run_info(sim), fh, indent=1, default=str)
+
+
+def run_info(sim):
+    """run.json's contents: the run's settings, code, switches and
+    constants as used, and, for a branched run, its branch record."""
+    man = getattr(sim, "manifest", {})
+    return dict(seed=sim.seed, years=sim.years, dt=DT,
+                year_reached=sim.year,
+                code=man.get("code"), command=man.get("command"),
+                python=man.get("python"), numpy=man.get("numpy"),
+                wall_seconds=round(time.time() - man["t0"], 1)
+                if "t0" in man else None,
+                overrides=getattr(sim, "overrides", []),
+                peoples=sim.P, vary=sim.vary, starts=sim.starts,
+                start_vary=sim.start_vary, drift=sim.drift,
+                start_pool=sim.start_pool,
+                cluster_km=sim.cluster_km,
+                settle_drift=sim.settle_drift,
+                size_food=sim.size_food, city_pop=CITY_POP,
+                start_mode=sim.start_mode,
+                wander_steps=sim.wander_steps,
+                city_cap=(CITY_CAP0, CITY_CAP1) if CITY_CAP else None,
+                dragon_penalty=DRAGON_PEN, dragon_shun=DRAGON_SHUN,
+                features=sorted(sim.on),
+                constants=constants_used(),
+                branch=man.get("branch"))
 
 
 def write_wars(sim, out):
