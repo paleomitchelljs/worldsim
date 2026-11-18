@@ -41,7 +41,8 @@ class CultureMixin:
             self.Lpart[L] = PART0
             self.Lsup[L] = self.psup[people]
         if sd > 0:
-            self.Lsup[L] = self.drift_trait(self.Lsup[L], sd, self.R("lineage_sup"))
+            self.Lsup[L] = self.drift_trait(self.Lsup[L], sd,
+                                            self.R("lineage_sup"))
         if hasattr(self, "Lpref"):
             self.Lpref[L] = self.Lpref[parent] if parent >= 0 else \
                 self.ppref[people]
@@ -50,9 +51,11 @@ class CultureMixin:
                 e = e - sd * sd / 2
                 self.Lpref[L] = self.Lpref[L] * np.exp(e)
         if sd > 0 and "rulers" in self.on:
-            self.Lpart[L] = self.drift_trait(self.Lpart[L], sd, self.R("lineage_pref"))
+            self.Lpart[L] = self.drift_trait(self.Lpart[L], sd,
+                                             self.R("lineage_pref"))
         if sd > 0:
-            self.LX[L] = self.drift_trait(self.LX[L], sd, self.R("lineage_x"), len(XTRAITS))
+            self.LX[L] = self.drift_trait(self.LX[L], sd, self.R("lineage_x"),
+                                          len(XTRAITS))
         if parent >= 0:
             T, r, aff = self.LT[parent], self.Lr[parent], self.Laff[parent]
             for a in ("agri", "metal", "sail", "fishing", "admin", "bronze", "iron",

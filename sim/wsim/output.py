@@ -3,7 +3,6 @@ import contextlib
 import csv
 import json
 import os
-import re
 import shutil
 import time
 import numpy as np
@@ -174,9 +173,12 @@ class Stream:
     def flush(self):
         sim, out = self.sim, self.out
         n = self.done.get("events", 0)
-        with open(os.path.join(out, "events.txt"), "a" if n else "w") as fh:
-            for y, k, t in sim.events[n:]:
-                fh.write(f"{y:5d}  {k:10s} {t}\n")
+        mode = "a" if n else "w"
+        with open(os.path.join(out, "events.txt"), mode) as fh, \
+                open(os.path.join(out, "events.jsonl"), mode) as fj:
+            for e in sim.events[n:]:
+                fh.write(f"{e['year']:5d}  {e['kind']:10s} {e['text']}\n")
+                fj.write(json.dumps(event_row(sim, e)) + "\n")
         self.done["events"] = len(sim.events)
         for attr, name, head in APPEND:
             rows = getattr(sim, attr, [])
@@ -204,6 +206,30 @@ class Stream:
         write_posts(sim, out)
         write_history(sim, out)
         write_run_json(sim, out)
+
+
+def event_row(sim, e):
+    """An event as written to events.jsonl: its fields, plus lon, lat,
+    landmass id and landmass code (landmasses.py) where it has a cell."""
+    r = dict(e)
+    c = e.get("cell")
+    if c is not None and c >= 0:
+        W = sim.W
+        lm = int(W.landmass[c])
+        r.update(lon=round(float(W.lon[c]), 2), lat=round(float(W.lat[c]), 2),
+                 landmass=lm, landmass_code=LANDMASS_CODES.get(lm))
+    return r
+
+
+def _landmass_codes():
+    try:
+        from landmasses import CODES
+        return CODES
+    except ImportError:         # wsim used without the sim folder on path
+        return {}
+
+
+LANDMASS_CODES = _landmass_codes()
 
 
 def write_run_json(sim, out):
@@ -428,12 +454,11 @@ def write_outputs(sim, out):
     with open(os.path.join(out, "chronicle.txt"), "w") as fh:
         fh.write("Major events only: world-firsts, great plagues and "
                  "droughts, and events touching the 15 largest states.\n\n")
-        for y, k, t in sim.events:
-            ids = {int(x) for x in re.findall(r"P(\d+)\(", t)}
-            if k in always or (ids & great) or \
-                    (k in ("plague", "drought") and "M" in t and
-                     float(re.findall(r"([\d.]+)M", t)[0]) >= 2):
-                fh.write(f"{y:5d}  {k:10s} {t}\n")
+        for e in sim.events:
+            k = e["kind"]
+            if k in always or (set(e.get("polities", ())) & great) or \
+                    (k in ("plague", "drought") and e.get("n", 0) >= 2e6):
+                fh.write(f"{e['year']:5d}  {k:10s} {e['text']}\n")
     if "diagnostics" in sim.on:
         write_checks(sim, os.path.join(out, "checks.txt"))
     np.savez_compressed(os.path.join(out, "final_state.npz"),

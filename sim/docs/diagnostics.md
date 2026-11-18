@@ -85,7 +85,7 @@ The references are rough orders of magnitude, not tuning targets.
 | `states_<people>`, `cities_per_state_<people>` | live states of each people and their mean size |
 | `spread_<people>` | cultural spread inside a people: population-weighted mean distance of its lineages' traits from the people's mean |
 
-Unlike `events.txt`, which logs only events involving larger states,
+Unlike `events.txt` and `events.jsonl`, which log only events involving larger states,
 these counters include every event.
 
 ## Realism checks (`realism.py`, 2026-11-09)

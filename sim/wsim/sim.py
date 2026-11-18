@@ -329,6 +329,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.uc_on = "urban_city" in self.on
         if not hasattr(self, "lver"):
             self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
+        if self.events and not isinstance(self.events[0], dict):
+            # before WP2 stage A: (year, kind, text)
+            self.events = [dict(year=y, kind=k, text=t)
+                           for y, k, t in self.events]
         if not hasattr(self, "rngs"):
             # before WP1 stage F: one shared stream and a few offsets;
             # such a state continues on fresh named streams
@@ -338,8 +342,17 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         if not hasattr(self.W, "Gf"):
             self.W.food_graph()
 
-    def log(self, kind, text):
-        self.events.append((self.year, kind, text))
+    def log(self, kind, text, **data):
+        """Record an event (WP2 stage A): year, kind, text and whatever
+        of these the call site has in hand: cell (the place), polities
+        (ids, the actor first), peoples (keys), lineages, cities (ids), n
+        (a magnitude: people dead, cities taken, years). Written to
+        events.txt and events.jsonl (output.Stream)."""
+        e = dict(year=self.year, kind=kind, text=text)
+        for k, v in data.items():
+            if v is not None:
+                e[k] = plain(v)
+        self.events.append(e)
 
     def pname(self, pid):
         p = self.polities.get(pid)
@@ -385,10 +398,11 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
     def count(self, key, n=1):
         self.cnt[key] = self.cnt.get(key, 0) + n
 
-    def first(self, key, kind, text):
+    def first(self, key, kind, text, **data):
+        """Log an event only the first time `key` is seen."""
         if key not in self.firsts:
             self.firsts.add(key)
-            self.log(kind, text)
+            self.log(kind, text, **data)
 
     def step(self):
         self._sim = {}
@@ -482,6 +496,20 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                       f"  lineages {nlin:4d}  allies {len(self.allies):3d}"
                       f"  wars {len(self.wars):3d}  "
                       f"[{time.time()-t0:5.0f}s]", flush=True)
+
+
+def plain(v):
+    """v with numpy scalars and arrays made into Python numbers and lists
+    (for JSON)."""
+    if isinstance(v, np.ndarray):
+        return v.tolist()
+    if isinstance(v, np.integer):
+        return int(v)
+    if isinstance(v, np.floating):
+        return float(v)
+    if isinstance(v, (list, tuple, set)):
+        return [plain(x) for x in v]
+    return v
 
 
 # ---- rendering -----------------------------------------------------------

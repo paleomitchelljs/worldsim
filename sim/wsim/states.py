@@ -88,7 +88,9 @@ class StatesMixin:
         p["capital"] = max(p["cities"], key=self.city_weight)
         self.pver += 1
 
-    def kill_polity(self, pid, why):
+    def kill_polity(self, pid, why, by=None):
+        """End state pid; why: the reason, for the log; by: the state
+        that ended it, if any (the event's second polity)."""
         p = self.polities.get(pid)
         if p is None or p["ended"] is not None:
             return
@@ -101,7 +103,9 @@ class StatesMixin:
         if p["peak_cities"] >= 3 or p["peak_cells"] >= 150:
             self.log("fall", f"{self.pname(pid)} falls ({why}); "
                      f"{self.year - p['founded']} yrs, peak "
-                     f"{p['peak_cities']} cities / {p['peak_cells']} cells")
+                     f"{p['peak_cities']} cities / {p['peak_cells']} cells",
+                     polities=[pid] + ([by] if by is not None else []),
+                     n=p['peak_cities'])
         for key in [k for k in self.wars if pid in k]:
             w = self.wars.pop(key)
             side = "defender" if w.get("dfn") == pid else "attacker"
@@ -217,7 +221,8 @@ class StatesMixin:
                 rec["polity"] = self.new_polity(L, cell)
             rec["owners"].append(rec["polity"])
             self.first(("city", c), "city", f"first city of {self.keys[c]} "
-                       f"at {self.place(cell)}")
+                       f"at {self.place(cell)}",
+                       cell=cell, peoples=[self.keys[c]], cities=[rec['id']])
 
     def territory(self):
         W = self.W
@@ -726,7 +731,8 @@ class StatesMixin:
                     self.count("ally_balance")
                 if cross or len(a["cities"]) + len(b["cities"]) >= 8:
                     self.log("alliance", f"{self.pname(k[0])} and "
-                             f"{self.pname(k[1])} ally")
+                             f"{self.pname(k[1])} ally",
+                             polities=list(k))
         for k in list(self.allies):
             ab = self.live(k)
             if not ab or self.ties.get(k, 0) < 0.3:
@@ -785,7 +791,8 @@ class StatesMixin:
                 self.truce[k] = self.tick + 2
                 if len(V["cities"]) + len(O["cities"]) >= 6:
                     self.log("vassal", f"{self.pname(v)} throws off "
-                             f"{self.pname(o)}")
+                             f"{self.pname(o)}",
+                             polities=[v, o])
             elif V["culture"] == O["culture"] and len(V["cities"]) <= 3 \
                     and V["vassal_years"] >= 50 and rng.random() < \
                     DT * 0.004 * (0.5 + self.eff(O, "state")):
@@ -795,7 +802,8 @@ class StatesMixin:
                     O["cities"].add(c)
                 V["cities"] = set()
                 self.count("vassal_annex")
-                self.kill_polity(v, f"annexed by its lord {self.pname(o)}")
+                self.kill_polity(v, f"annexed by its lord {self.pname(o)}",
+                                 by=o)
 
     def submit(self, v, o):
         """State v becomes the tributary vassal of state o."""
@@ -814,7 +822,8 @@ class StatesMixin:
         V, O = self.polities[v], self.polities[o]
         if len(V["cities"]) + len(O["cities"]) >= 6:
             self.log("vassal", f"{self.pname(v)} submits to "
-                     f"{self.pname(o)} and pays tribute")
+                     f"{self.pname(o)} and pays tribute",
+                     polities=[v, o])
 
     def fuse(self, a, b):
         big, small = (a, b) if a["pop"] >= b["pop"] else (b, a)
@@ -832,12 +841,17 @@ class StatesMixin:
                      f"{self.pname(big['id'])} fuse into one state "
                      f"({self.keys[small['culture']]} + "
                      f"{self.keys[big['culture']]}) under "
-                     f"{self.lname(big['lin'])}")
+                     f"{self.lname(big['lin'])}",
+                     polities=[small['id'], big['id']],
+                     peoples=[self.keys[small['culture']],
+                              self.keys[big['culture']]],
+                     lineages=[big['lin']])
         elif len(big["cities"]) >= 5:
             self.log("union", f"{self.pname(small['id'])} joins "
-                     f"{self.pname(big['id'])} by treaty")
+                     f"{self.pname(big['id'])} by treaty",
+                     polities=[small['id'], big['id']])
         self.kill_polity(small["id"], f"{'fusion' if cross else 'union'} "
-                         f"with {self.pname(big['id'])}")
+                         f"with {self.pname(big['id'])}", by=big["id"])
 
     def blend(self, big, small):
         """A merged state takes one culture: its ruling lineages are
@@ -1326,7 +1340,8 @@ class StatesMixin:
                         self.log("succession", f"union of crowns: "
                                  f"{self.pname(pid)} and "
                                  f"{self.pname(other['id'])} pass to one "
-                                 "ruler")
+                                 "ruler",
+                                 polities=[pid, other['id']])
                     outcome += " union"
                     self.fuse(ab[0], ab[1])
                     break
@@ -1391,7 +1406,8 @@ class StatesMixin:
             self.log("succession", f"partition: {self.pname(pid)} is "
                      f"divided among {len(heirs)} heirs (" + ", ".join(
                          f"{self.pname(h)} {len(self.polities[h]['cities'])}"
-                         for h in heirs) + " cities)")
+                         for h in heirs) + " cities)",
+                     polities=[pid] + list(heirs), n=len(heirs))
         return len(heirs)
 
     def disputed(self, pid, p):
@@ -1409,13 +1425,15 @@ class StatesMixin:
             if len(p["cities"]) >= 5:
                 self.log("succession", f"disputed succession in "
                          f"{self.pname(pid)}: a pretender holds "
-                         f"{self.place(x)}")
+                         f"{self.place(x)}",
+                         cell=x, polities=[pid])
             self._pretender = True
             self.revolt(pid, x)
             self._pretender = False
         elif len(p["cities"]) >= 8:
             self.log("succession", f"disputed succession weakens "
-                     f"{self.pname(pid)}")
+                     f"{self.pname(pid)}",
+                     polities=[pid])
 
     def revolt(self, pid, x):
         """A province breaks away. Rebels of the ruling lineage found a
@@ -1485,5 +1503,7 @@ class StatesMixin:
             extra = f", new lineage {self.lname(Lnew)}" if same else ""
             self.log("revolt", f"{kind}: {self.pname(new)} breaks from "
                      f"{self.pname(pid)} at {self.place(x)} "
-                     f"with {taken} cities{extra}")
+                     f"with {taken} cities{extra}",
+                     cell=x, polities=[new, pid],
+                     lineages=[Lnew] if same else [], n=taken)
         p["cohesion"] *= 0.9

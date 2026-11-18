@@ -226,7 +226,8 @@ class DragonsMixin:
                 h["ally_people"] = self.keys[self.cul[c]]
                 self.count("dragon_ally")
                 self.first(("dragon_ally", self.cul[c]), "dragon",
-                           f"{who} takes a dragon as ally at {self.place(c)}")
+                           f"{who} takes a dragon as ally at {self.place(c)}",
+                           cell=c, peoples=[self.keys[self.cul[c]]])
             elif rng.random() < min(0.95, (DRAGON_SLAY0 + DRAGON_SLAY1 *
                                            self.viol[L]) *
                                     (0.5 + v) / s):
@@ -235,7 +236,8 @@ class DragonsMixin:
                 h["ended"], h["fate"] = self.year, "slain"
                 self.count("dragon_slain")
                 self.first(("dragon_slain", self.cul[c]), "dragon",
-                           f"{who} slays a dragon at {self.place(c)}")
+                           f"{who} slays a dragon at {self.place(c)}",
+                           cell=c, peoples=[self.keys[self.cul[c]]])
             else:
                 taken[self.dhome[d]] = False
                 site = self.dragon_site(self.dhome[d], avoid, taken)
@@ -313,7 +315,8 @@ class DragonsMixin:
                 self.count("dragon_ally")
                 self.first(("dragon_ally", self.cul[c]), "dragon",
                            f"{self.pname(pid)} takes a dragon as ally at "
-                           f"{self.place(c)}")
+                           f"{self.place(c)}",
+                           cell=c, polities=[pid])
 
     def dragon_record(self):
         al = self.dally >= 0

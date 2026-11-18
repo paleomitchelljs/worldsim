@@ -285,7 +285,8 @@ class LandMixin:
             if not ev["logged"]:
                 ev["logged"] = True
                 self.log("climate", f"a long dry spell sets in over "
-                         f"{ev['where']} (~{ev['years']:.0f} yrs)")
+                         f"{ev['where']} (~{ev['years']:.0f} yrs)",
+                         n=ev['years'])
         self.moist = m
         pa = np.clip((PREC_SD[0] + PREC_SD[1] * W.dryness) * m, -0.7, 0.7)
         el = 1 + W.dryness
@@ -325,7 +326,8 @@ class LandMixin:
             self._great_dry = self.year
             k = int(np.argmin(np.where(self.pop > 0, m, 9)))
             self.log("drought", f"great drought, worst near {self.place(k)}"
-                     f" ({dry_pop / 1e6:.1f}M people under drought)")
+                     f" ({dry_pop / 1e6:.1f}M people under drought)",
+                     cell=k, n=dry_pop)
         # rivers change course, mostly in high water
         prone = np.nonzero(W.river & W.alluvial & (W.relief < 0.3) &
                            (W.elev < 0.3) & (W.Q > 1000))[0]
@@ -375,7 +377,9 @@ class LandMixin:
             names = ", ".join(self.place(c) for c in hit[:4])
             self.log("river", f"the river at {self.place(i)} changes course"
                      f" ({len(lost)} cells lose it"
-                     + (f"; cities left dry: {names}" if hit else "") + ")")
+                     + (f"; cities left dry: {names}" if hit else "") + ")",
+                     cell=i, cities=[self.cities[c]['id'] for c in hit],
+                     n=len(lost))
 
     def grow(self):
         occ = np.nonzero(self.lin >= 0)[0]
@@ -588,4 +592,6 @@ class LandMixin:
             if dead > 2e5:
                 self.log("plague", f"plague from {self.place(o)} through "
                          f"{len(hit)} states, ~{dead/1e6:.2f}M dead"
-                         f" (host: {self.keys[host]})")
+                         f" (host: {self.keys[host]})",
+                         cell=o, polities=sorted(hit),
+                         peoples=[self.keys[host]], n=dead)

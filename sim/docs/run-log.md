@@ -1456,3 +1456,7 @@ three.
   field exactly.
 - 8,000 years now take 7.5-8.5 minutes on a lightly loaded machine (the
   guide's figure was about 14).
+- **Afterwards (U, 2026-11-17): `CLIM_LOCAL_COARSE` went back to 1**, so
+  `wp1f_fullclim_` is the baseline. The saved states were remade under it
+  (`wp1g_states_seed101`, `103`): up to year 3,000 their `events.txt` is
+  identical to `wp1f_fullclim_`'s.

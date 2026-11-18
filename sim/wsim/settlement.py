@@ -46,7 +46,8 @@ class SettlementMixin:
         self.wpos, self.wfrom = {}, {}
         for c, k in groups:
             ok = np.nonzero(suit[c] > 0)[0]
-            self.wpos[(c, k)] = self.wfrom[(c, k)] = int(self.R("start").choice(ok))
+            self.wpos[(c, k)] = self.wfrom[(c, k)] = int(
+                self.R("start").choice(ok))
         self.wander(groups, self.wander_steps, avoid=False)
 
     def region_mask(self, region):
@@ -86,8 +87,8 @@ class SettlementMixin:
             w = np.where(w.sum(1, keepdims=True) > 0, w,
                          (nb >= 0).astype(float))
             tot = w.sum(1)
-            pick = (w.cumsum(1) < (self.R("start").random(len(nb)) * tot)[:, None]
-                    ).sum(1)
+            u = self.R("start").random(len(nb))
+            pick = (w.cumsum(1) < (u * tot)[:, None]).sum(1)
             pick = np.minimum(pick, 7)
             new = nb[np.arange(len(nb)), pick]
             idx = np.nonzero(move)[0]
@@ -159,7 +160,8 @@ class SettlementMixin:
                 s = s0
             if not len(pos):
                 self.log("origin", f"{p['label']} group {k + 1} finds no "
-                         "empty land and never arrives")
+                         "empty land and never arrives",
+                         peoples=[p['key']])
                 return
             n = max(60, int(self.start_pool * len(pos)))
             top = pos[np.argsort(s[pos])[-n:]]
@@ -177,7 +179,8 @@ class SettlementMixin:
             moved = f", after wandering from {self.place(self.wfrom[(c, k)])}" \
                 f" ({d:.0f} km)"
         self.log("origin", f"{p['label']} group {k + 1} {self.lname(L)} "
-                 f"founded at {self.place(i)} [{BIOMES[W.biome[i]]}]{moved}")
+                 f"founded at {self.place(i)} [{BIOMES[W.biome[i]]}]{moved}",
+                 cell=i, peoples=[p['key']], lineages=[L])
 
     def colon(self, j, L=None):
         """How readily settlers of lineages L take cells j: terrain, and
@@ -555,7 +558,9 @@ class SettlementMixin:
                         self.log("voyage", f"{self.lname(L)} sailors land "
                                  f"on a new landmass at {self.place(t)} "
                                  f"({W.landmass_area[lm]/1e6:.1f}M km2), "
-                                 f"founding {self.lname(Lt)}")
+                                 f"founding {self.lname(Lt)}",
+                                 cell=t, lineages=[L, Lt],
+                                 n=W.landmass_area[lm])
                 self.lin[t], self.cul[t], self.pop[t] = \
                     Lt, self.Lpeople[Lt], mv
 
@@ -598,7 +603,9 @@ class SettlementMixin:
                         self.cities[x].get("flips", 0) + 1
                     self.log("minority", f"{self.keys[self.cul[x]]} come to "
                              f"outnumber {self.keys[old]} in the city at "
-                             f"{self.place(x)}")
+                             f"{self.place(x)}",
+                             cell=x,
+                             peoples=[self.keys[self.cul[x]], self.keys[old]])
         clear = gone | merge | (self.mcul < 0)
         self.mcul[clear], self.mlin[clear], self.mpop[clear] = -1, -1, 0
         self.mcap[clear] = False

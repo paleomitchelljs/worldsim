@@ -42,7 +42,8 @@ class DiagnosticsMixin:
             elif self.p_seen[c] and not self.p_extinct[c]:
                 self.p_extinct[c] = True
                 self.log("extinction", f"the last {self.P[c]['label']} are "
-                         "gone")
+                         "gone",
+                         peoples=[self.P[c]['key']])
         # population-weighted mean traits, world and per people
         o = np.nonzero(self.lin >= 0)[0]
         w, Lo, co = self.pop[o], self.lin[o], self.cul[o]

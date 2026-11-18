@@ -287,7 +287,8 @@ class CitiesMixin:
                 dM += dH
             else:
                 dM += dX
-        noise = self.R("city_culture").normal(0, CITY_NOISE * math.sqrt(DT), (n, K))
+        noise = self.R("city_culture").normal(
+            0, CITY_NOISE * math.sqrt(DT), (n, K))
         M = np.clip(M + DT * dM + noise, 0.01, 0.99)
         E = np.clip(E + DT * dE + self.R("city_culture").normal(
             0, CITY_NOISE * math.sqrt(DT), (n, K)), 0.01, 0.99)
@@ -376,7 +377,8 @@ class CitiesMixin:
         M, E = self.CM[ids], self.CE[ids]
         gap = np.sqrt(np.mean((E - M) ** 2, 1))
         pr = DT * CITY_REVOLT * M[:, cc] * (gap / CITY_GAP0) ** 2
-        hit = np.nonzero(self.R("city_culture").random(len(ids)) < np.minimum(pr, 0.9))[0]
+        hit = np.nonzero(self.R("city_culture").random(len(ids)) <
+                         np.minimum(pr, 0.9))[0]
         for j in hit:
             i, cell = ids[j], int(cells[j])
             self.CE[i] = self.CM[i] + CITY_REVOLT_KEEP * (self.CE[i] -
@@ -395,7 +397,8 @@ class CitiesMixin:
                         self.draw_ruler(P["id"], P)
                 if len(P["cities"]) >= 5:
                     self.log("revolt", f"the people of {self.place(cell)} "
-                             f"overthrow the court of {self.pname(P['id'])}")
+                             f"overthrow the court of {self.pname(P['id'])}",
+                             cell=cell, polities=[P['id']])
             elif cell in P["cities"] and self.R("city_culture").random() < \
                     CITY_REVOLT_SECEDE:
                 self.count("city_revolt_secede")
@@ -449,7 +452,9 @@ class CitiesMixin:
                 self.first(("city_spec", int(self.Lpeople[L])), "culture",
                            f"the city at {self.place(cell)} grows apart from "
                            f"{self.lname(L)}: a new lineage, "
-                           f"{self.lname(D)}")
+                           f"{self.lname(D)}",
+                           cell=cell, lineages=[L, D],
+                           peoples=[self.keys[self.Lpeople[L]]])
 
     def lineage_fusion(self):
         """Lineages of one people that live side by side under one state
@@ -577,7 +582,9 @@ class CitiesMixin:
                        ("become one people: " + self.lname(to)
                         if kind == "fuse" else
                         f"merge where they meet; {self.lname(big)} absorbs "
-                        f"the newcomers"))
+                        f"the newcomers"),
+                       lineages=[small, big],
+                       peoples=[self.keys[self.Lpeople[A]]])
             busy.update((A, B, to))
 
     def city_experience(self, ids, cells, pol, M, cols):

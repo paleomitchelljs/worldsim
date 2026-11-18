@@ -154,7 +154,7 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 From 2026-11-17 the run writes as it goes (`wsim/output.py`, `Stream`).
 Each frame is saved to `frames/` when it is rendered. Every `FLUSH_EVERY`
 ticks (C: 100 ticks, 500 years) and at the end, the append-only tables
-(`events.txt`, `timeseries.csv`, `city_sizes.csv`, `sieges.csv`,
+(`events.txt`, `events.jsonl`, `timeseries.csv`, `city_sizes.csv`, `sieges.csv`,
 `revolts.csv`, `relations.csv`, `price.csv`, `cityfood.csv`, `deaths.csv`,
 `citylevel.csv`, `citygaps.csv`, `citytraits.csv`, `lineage_events.csv`,
 `lineage_pairs.csv`) get their new rows. `wars.csv`, `rulers.csv`,
@@ -181,8 +181,9 @@ figures.
 | `legacy.png` | every city that ever stood, plus the peak extent of the largest states |
 | `population.png` | population, cities, number of states and size of the largest state over time |
 | `violence.png` | population-weighted mean violence and tolerance over time, for the world and each people |
-| `chronicle.txt` | major events: world-firsts, great plagues and droughts, the 15 largest states, fusions, extinctions |
-| `events.txt` | every logged event |
+| `chronicle.txt` | major events: world-firsts, great plagues and droughts (2M+ people, from the event's `n`), events naming one of the 15 largest states (from its `polities`), fusions, extinctions |
+| `events.txt` | every logged event, as text: year, kind, text |
+| `events.jsonl` | the same events, one JSON object per line (WP2 stage A, 2026-11-17): `year`, `kind`, `text`, and what the event knows of `cell` (land-cell index), `polities` (state ids, the actor first: attacker, rebel, conqueror), `peoples` (keys such as `Hum`), `lineages` (ids), `cities` (city ids, as in `cities.csv`), `n` (a magnitude: people dead for plague, people under drought, peak cities for a fall, cities taken in a revolt, heirs in a partition, landmass km² for a voyage, years for a dry spell, cells losing a river); with a cell, also `lon`, `lat` (cell centre), `landmass` (id) and `landmass_code` (`landmasses.py`; none under 0.05M km²) |
 | `traits.txt` | the traits actually used: people base values plus each founding group |
 | `lineages.csv` | every lineage, with parent, origin, traits and the technology stage reached |
 | `cities.csv`, `polities.csv` | lon/lat, founding and end years, peaks, rulers, peoples ruled (loads into QGIS) |

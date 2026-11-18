@@ -16,7 +16,7 @@ what an entry holds.
 | 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
-| 2 | A structured events | not started | | |
+| 2 | A structured events | done | 2026-11-17 | see entry |
 | 2 | B run loader and metrics | not started | | |
 | 2 | C tidy tables | not started | | |
 | 2 | D GIS export | not started | | |
@@ -494,3 +494,53 @@ takes about 8 minutes on a lightly loaded machine; the guide's figure was
 about 14.
 
 **Next.** WP2 stage A (structured events), as `README.md` orders it.
+
+### After WP1: climate field back on the full grid (2026-11-17, 96d0de8)
+
+U chose to set `CLIM_LOCAL_COARSE` back to 1. With factor 1 the field is
+read straight off the grid, giving exactly the old field and draws: a new
+seed-101 run's `events.txt` equals `wp1f_fullclim_seed101`'s. The
+baseline is therefore `wp1f_fullclim_` (BASELINE.md). The four saved
+states were remade under the default, from runs `wp1g_states_seed101` and
+`103`.
+
+### WP2 stage A: structured events (2026-11-17)
+
+**Done.**
+- `Sim.log(kind, text, **data)` stores a dict: year, kind, text, and
+  what the call site has in hand: `cell`, `polities` (actor first),
+  `peoples` (keys), `lineages`, `cities` (city ids), `n` (a magnitude).
+  `first()` passes the fields through.
+- All 48 call sites pass their fields. `kill_polity(pid, why, by=None)`:
+  its 8 callers pass the state that ended it, so a fall names both
+  states, as its text does.
+- `output.Stream` writes `events.jsonl` beside `events.txt`, both from
+  the same records. Rows with a cell gain `lon`, `lat`, `landmass` and
+  `landmass_code` (`landmasses.CODES`).
+- `chronicle.txt` is built from `polities` and `n`; `re` is gone from
+  `output.py`. `upgrade()` turns an older state's tuple events into
+  dicts, with no fields.
+- I also wrapped the 7 lines that the stage F stream renames had pushed
+  past 79 characters.
+
+**Runs.**
+- `wp2a_sanity_seed101` (3,000 years): `events.txt` is byte-identical
+  to `wp1f_fullclim_seed101` and `wp1g_states_seed101` before year
+  3,000, so logging changes nothing. Every kind carries its fields.
+- Branches from the old-format states: `wp2a_branch` (year 3,000 to
+  4,000) and `wp2a_branch5` (seed 103, 5,000 to 5,600, 1,654 events).
+  Old regex rule against new field rule for the chronicle: 916 lines
+  against 917. The one difference is a plague whose `polities` (the
+  states it passed through) includes one of the 15 largest states that
+  its text never names. That fits the chronicle's rule ("events touching
+  the 15 largest states"), so I kept it. No event names a state in its
+  text without listing it in `polities`.
+
+**Not done.**
+- `n` for droughts and plagues is exact, but the old rule read the
+  rounded text (for example 1.96M printed as "2.0M"). Events within
+  rounding of 2M can switch in or out of the chronicle.
+- `timeline.py` and `figures.py` still parse `events.txt`. Moving them
+  to `events.jsonl` belongs with WP2 stage B's loader.
+
+**Next.** WP2 stage B (run loader and metrics).

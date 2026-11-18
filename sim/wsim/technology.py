@@ -204,14 +204,16 @@ class TechnologyMixin:
         lost = self.bronze[A] & ~br & (Lpop[A] > 3e5)
         for L in A[lost]:
             self.log("tech", f"{self.lname(L)} can no longer get tin and "
-                     "copper: bronze goes out of use")
+                     "copper: bronze goes out of use",
+                     lineages=[L])
         for arr, new, nm in ((self.bronze, br, "cast bronze"),
                              (self.iron, fe, "work iron"),
                              (self.steel, st, "forge steel")):
             for L in A[new & ~arr[A]]:
                 c = self.Lpeople[L]
                 self.first((nm, c), "tech", f"{self.keys[c]} {nm} "
-                           f"(first: {self.lname(L)})")
+                           f"(first: {self.lname(L)})",
+                           peoples=[self.keys[c]], lineages=[L])
             arr[A] = new
         if "acculturation" in self.on:
             # customs drift toward those of contacts, weighted by contact and
@@ -328,7 +330,8 @@ class TechnologyMixin:
             for L in A[v[A] >= lv]:
                 c = self.Lpeople[L]
                 self.first((nm, c), "tech", f"{self.keys[c]} {nm} "
-                           f"(first: {self.lname(L)})")
+                           f"(first: {self.lname(L)})",
+                           peoples=[self.keys[c]], lineages=[L])
 
     def scale_factor(self, A, LpopF, occ):
         """Invention multiplier F of living lineages A (see SCALE_*)."""
@@ -393,7 +396,8 @@ class TechnologyMixin:
             for L in A[got][:1]:
                 self.first(("domesticate", k), "tech",
                            f"{self.lname(L)} domesticates {self.h_name[k]}"
-                           f" (hearth at {self.place(self.h_cell[k])})")
+                           f" (hearth at {self.place(self.h_cell[k])})",
+                           cell=self.h_cell[k], lineages=[L])
 
     def guarded(self, A, crow, ccol, cval, nc):
         """Guarded techniques: invented by skilled rulers of large states,
@@ -414,7 +418,8 @@ class TechnologyMixin:
                 self.guard[A[got], g] = True
                 for L in A[got][:1]:
                     self.log("craft", f"the secret of {GUARD_NAMES[g]} "
-                             f"reaches {self.lname(L)}")
+                             f"reaches {self.lname(L)}",
+                             lineages=[L])
         if self.n_guard >= GUARD_MAX:
             return
         for pid, p in self.polities.items():
@@ -427,6 +432,7 @@ class TechnologyMixin:
                 self.n_guard += 1
                 self.guard[L, g] = True
                 self.log("craft", f"{self.pname(pid)} ({self.lname(L)}) "
-                         f"masters {GUARD_NAMES[g]} and guards the secret")
+                         f"masters {GUARD_NAMES[g]} and guards the secret",
+                         polities=[pid], lineages=[L])
                 if self.n_guard >= GUARD_MAX:
                     return

@@ -22,7 +22,8 @@ class WarMixin:
             if P is not None and len(P["cities"]) >= 8:
                 self.log("war", f"the land around the city at "
                          f"{self.place(x)} in {self.pname(P['id'])} is "
-                         f"laid waste")
+                         f"laid waste",
+                         cell=x, polities=[P['id']])
 
     def war_prize(self, b, a):
         """What conquering state b would give state a."""
@@ -103,7 +104,8 @@ class WarMixin:
             if not self.contact_seen[x, y]:
                 self.contact_seen[x, y] = self.contact_seen[y, x] = True
                 self.log("contact", f"first contact: {self.keys[x]} meets "
-                         f"{self.keys[y]}")
+                         f"{self.keys[y]}",
+                         peoples=[self.keys[x], self.keys[y]])
         suffered = []
         # capacity does not depend on population: computed once for each
         # side, redone only where a raid or takeover changes a cell
@@ -323,7 +325,8 @@ class WarMixin:
                         self.count("ally_betray")
                         if len(A["cities"]) + len(B["cities"]) >= 8:
                             self.log("alliance", f"{self.pname(att)} "
-                                     f"betrays its ally {self.pname(dfn)}")
+                                     f"betrays its ally {self.pname(dfn)}",
+                                     polities=[att, dfn])
                     self.count("war_" + ("same" if A["culture"] ==
                                          B["culture"] else "cross"))
                     self.wars[k] = dict(att=att, dfn=dfn, start=self.tick,
@@ -339,7 +342,8 @@ class WarMixin:
                     self.ties.pop(k, None)
                     if len(A["cities"]) + len(B["cities"]) >= 8:
                         self.log("war", f"{self.pname(att)} attacks "
-                                 f"{self.pname(dfn)}")
+                                 f"{self.pname(dfn)}",
+                                 polities=[att, dfn])
                     break
         for k in list(self.wars):
             w = self.wars.get(k)
@@ -499,7 +503,8 @@ class WarMixin:
                 self.count("ally_refuse")
                 if len(Q["cities"]) + len(B["cities"]) >= 8:
                     self.log("alliance", f"{self.pname(q)} refuses the "
-                             f"call of {self.pname(b)}; the alliance ends")
+                             f"call of {self.pname(b)}; the alliance ends",
+                             polities=[q, b])
 
     def defence_at(self, D, O, t):
         """What state D brings to bear holding its city t against O:
@@ -642,10 +647,11 @@ class WarMixin:
         self.city_elite_to(A, t)
         if len(A["cities"]) + len(B["cities"]) >= 6:
             self.log("war", f"{self.pname(dfn)} cedes the city at "
-                     f"{self.place(t)} to {self.pname(att)}")
+                     f"{self.place(t)} to {self.pname(att)}",
+                     cell=t, polities=[dfn, att])
         if not B["cities"]:
             self.kill_polity(dfn, f"ceded its last city to "
-                             f"{self.pname(att)}")
+                             f"{self.pname(att)}", by=att)
         elif B["capital"] == t:
             self.recapital(B)
 
@@ -674,7 +680,8 @@ class WarMixin:
             if self.R("war").random() < GUARD_TAKE * (2 if was_cap else 1):
                 self.guard[La, g] = True
                 self.log("craft", f"{self.pname(att)} takes the secret "
-                         f"of {GUARD_NAMES[g]} from {self.pname(dfn)}")
+                         f"of {GUARD_NAMES[g]} from {self.pname(dfn)}",
+                         polities=[att, dfn])
         self.turmoil(B, ADM_LOSS / max(len(B["cities"]), 1))
         B["cities"].discard(t)
         A["cities"].add(t)
@@ -704,7 +711,10 @@ class WarMixin:
             if len(A["cities"]) + len(B["cities"]) >= 5:
                 self.log("clearance", f"{self.pname(att)} clears "
                          f"{self.keys[rec['culture']]} from the city at "
-                         f"{self.place(t)}")
+                         f"{self.place(t)}",
+                         cell=t, polities=[att],
+                         peoples=[self.keys[rec['culture']]],
+                         cities=[rec['id']])
         if rec["culture"] != ca:
             # a garrison and settlers of the conqueror's people stay on
             self.add_minority([t], ca, La, MIN_GARRISON * self.pop[t] *
@@ -714,16 +724,19 @@ class WarMixin:
             self.spike(dfn)
             if len(B["cities"]) + 1 >= 4:
                 self.log("conquest", f"{self.pname(att)} takes the capital "
-                         f"of {self.pname(dfn)} at {self.place(t)}")
+                         f"of {self.pname(dfn)} at {self.place(t)}",
+                         cell=t, polities=[att, dfn], cities=[rec['id']])
             if not B["cities"]:
-                self.kill_polity(dfn, f"conquered by {self.pname(att)}")
+                self.kill_polity(dfn, f"conquered by {self.pname(att)}",
+                                 by=att)
             elif B["culture"] == ca and len(B["cities"]) <= 3:
                 for c in list(B["cities"]):
                     self.cities[c]["polity"] = att
                     self.cities[c]["owners"].append(att)
                     A["cities"].add(c)
                 B["cities"] = set()
-                self.kill_polity(dfn, f"absorbed by {self.pname(att)}")
+                self.kill_polity(dfn, f"absorbed by {self.pname(att)}",
+                                 by=att)
             elif self.R("war").random() < SHATTER_P:
                 rest = list(B["cities"])
                 B["cities"] = set()
@@ -781,7 +794,8 @@ class WarMixin:
             if self.R("war").random() < GUARD_TAKE * (2 if was_cap else 1):
                 self.guard[A["lin"], g] = True
                 self.log("craft", f"{self.pname(att)} takes the secret "
-                         f"of {GUARD_NAMES[g]} from {self.pname(dfn)}")
+                         f"of {GUARD_NAMES[g]} from {self.pname(dfn)}",
+                         polities=[att, dfn])
         self.turmoil(B, ADM_LOSS / max(len(B["cities"]), 1))
         spare = 1 - DOM_SPARE * self.eff(A, "dom")
         b_pop, b_mpop = self.pop[t], self.mpop[t]
@@ -800,7 +814,8 @@ class WarMixin:
             self.count("war_goal_met")
         if len(A["cities"]) + len(B["cities"]) >= 6:
             self.log("war", f"{self.pname(att)} sacks the city at "
-                     f"{self.place(t)} and leaves it to {self.pname(dfn)}")
+                     f"{self.place(t)} and leaves it to {self.pname(dfn)}",
+                     cell=t, polities=[att, dfn])
 
     def fort_toll(self, P, t):
         """`fortress`: a state besieging a fortress people's city loses

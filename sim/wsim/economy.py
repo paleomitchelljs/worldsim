@@ -232,7 +232,8 @@ class EconomyMixin:
                             >= 8:
                         self.log("trade", f"{self.pname(pid)} plants a "
                                  f"trading post at {self.place(c)} in "
-                                 f"{self.pname(h)}")
+                                 f"{self.pname(h)}",
+                                 cell=c, polities=[pid, h])
                 self.posts[k] = (pid, c, self.year)
 
     def trade_ties(self):
@@ -287,7 +288,9 @@ class EconomyMixin:
                 self.trade_seen[cx, cy] = self.trade_seen[cy, cx] = True
                 self.log("trade", f"lasting trade between {self.keys[cx]} "
                          f"and {self.keys[cy]}: {self.pname(x)} and "
-                         f"{self.pname(y)}")
+                         f"{self.pname(y)}",
+                         polities=[x, y],
+                         peoples=[self.keys[cx], self.keys[cy]])
         tot = {}
         for (x, y), t in self.ties.items():
             tot[x] = tot.get(x, 0) + t
