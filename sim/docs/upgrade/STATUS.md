@@ -13,7 +13,7 @@ what an entry holds.
 | 1 | A polity table | done | 2026-11-17 | 48ce872 |
 | 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
 | 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
-| 1 | D migration, raids, climate, wars | partial (budding, voyages, raids, adjacency) | 2026-11-17 | 17e54e7 |
+| 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
 | 1 | E branching from a saved state | not started | | |
 | 1 | F RNG streams and new baseline | not started | | |
 | 2 | A structured events | not started | | |
@@ -326,3 +326,59 @@ of seed 101: `migrate` 15.2 s (of which `voyages` 8.1 s), `wars_step`
 (`power_dist` 6.1 s over 192,441 calls), `raids` 6.5 s, `gc_km` 3.5 s
 (62,083 calls), `climate` 3.4 s, `eff` 2.1 s (1.68M calls), `similarity`
 1.9 s (321k calls).
+
+### WP1 stage D, second part (2026-11-17, b8c092b)
+
+**Done.**
+- **State distances survive distant graph changes.** At year 5,500,
+  `power_dist` cost 0.4 us a call on a hit, but `W.gver` moved about every
+  three ticks (river avulsions; roads every `ROAD_EVERY`). Each move threw
+  away every state's Dijkstra result: 497 rebuilds per 20 ticks, each a
+  Dijkstra plus a whole-grid `gc_km`. `World.travel()` and `food_graph()`
+  now record which cells each change touched (`note_change`,
+  `changed_since`; the last 64 versions). For the travel graph the record
+  comes from the edge-cost diff; for the food graph it comes from the
+  sparse-matrix diff. `power_dist` keeps its arrays when none of those
+  cells was reached within the search limit, and so does `food_dist`.
+  That leaves every distance exactly as it was: a path through a changed
+  edge reaches one end of it first, over unchanged edges, already past
+  the limit. The `pdist` entries gain an 8th item, the cells reached.
+  Entries from older pickles, which lack it, rebuild once.
+- **Raids:** kin pairs encoded as one int64 for `np.unique`, instead of
+  `axis=0`.
+
+**Runs.**
+- Profile pair, seed 101, 6,000 years, run at the same time: phase time
+  315 s at 17e54e7 and 292 s at b8c092b (-7%). `raids` 46 -> 32 s,
+  `wars_step` 23 -> 16 s. `events`, `timeseries`, `cities`, `polities`,
+  `lineages` and `wars` are byte-identical. That run is also this stage's
+  sanity run: `final_maps.png` at year 6,000 shows 381 cities and 134
+  states, all ten peoples present.
+- 20 ticks from a year-5,500 state, after 20 ticks of warm-up: 1,090
+  Dijkstra calls (0.95 s) before, 636 (0.63 s) after; wall time 8.8 s
+  against 7.9 s.
+
+**Not done, and why.**
+- `voyages` (about 12% of step time late on). Random draws and landings
+  alternate inside the loop, so batching across lineages would reorder
+  the draws. The rest of its cost is Python per lineage.
+- `climate`. `accumulate` is now small (0.026 s of 0.88 s per 60 ticks
+  early on). The cost is `avulse` (0.36 s, mostly `reroute`) and the
+  local-noise Gaussian filter (0.27 s, about 5% of early step time). The
+  brief's fix (draw at quarter resolution, then upsample) changes the
+  climate realisation, so it is not a pure refactor. **Needs U** if
+  wanted; it is worth about 5% early and 1-2% late.
+- `gc_km`: most of its time was inside `power_dist` rebuilds, which are
+  now fewer.
+- The per-tick memo of `power_dist` that the brief proposes would need
+  hooks at about 20 places that write a state's cities, seats or capital.
+  Hits already cost 0.4 us, so a memo would gain little and add a
+  staleness risk.
+
+**Where the time is now** (seed 101, phase seconds for the 5,000-6,000
+era, 89.5 s in all): `migrate` 27.1, `wars_step` 10.2, `Kf` 10.1 (nested
+in the others), `raids` 8.3, `technology` 7.7, `prepare_capacity` 6.1,
+`trade_ties` 3.5, `diplomacy` 3.5, `extraction` 3.2.
+
+**Next.** Stage E (branching from a saved state). Saved states are now
+about 450 MB at year 5,500, not the brief's 300 MB.
