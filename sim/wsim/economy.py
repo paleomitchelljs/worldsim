@@ -244,7 +244,7 @@ class EconomyMixin:
             pairs = self.adj | set(self.posts)
         for k in list(self.ties):
             if k not in pairs or k in self.wars or not self.live(k):
-                self.ties[k] *= 0.9
+                self.ties[k] *= 1 - over(TIE_DECAY)
                 if self.ties[k] < 0.02:
                     del self.ties[k]
         W = self.W

@@ -80,7 +80,7 @@ Trade already carries plague exposure.
 
 **Fed share (`fiscal`).**
 - **Fed share:** `fed` = Σ min(pop, K) / Σ pop over a state's cells, smoothed
-  (weight 0.2 per tick). At equilibrium it is about 1. It falls after a
+  (weight 0.2 per 5 years). At equilibrium it is about 1. It falls after a
   drought, a dry phase or land decline leaves people above K.
 - **Strength:** x (0.4 + 0.6 x fed).
 - **Reach:** x (0.6 + 0.4 x fed).
@@ -98,8 +98,8 @@ model (Goldstone; Turchin's secular cycles).
 - **Feedback:** each revolt cuts `e` by 20%.
 
 **Succession (`succession`).**
-- **When:** states of 3 or more cities draw reign lengths (exponential,
-  mean 25 years).
+- **When:** states of 1 or more cities (SUCC_MIN_CITIES; 3 until
+  2026-11-18, U) draw reign lengths (exponential, mean 25 years).
 - **Crisis chance** at each succession: 0.12 x (1.3 − 0.6 x statecraft),
   times (0.5 + violence) when `costs` is on.
 - **A crisis:** cohesion x 0.8, elites x 0.85.
@@ -1298,7 +1298,7 @@ clearance, no garrison), the winner may take a guarded secret, the
 defender loses administration (turmoil) and, if it was its capital,
 20% of its cohesion; the winner gains 0.03 cohesion; a prey war's goal
 is met. One sack per war per tick. A tributary: `submit`, the war ends
-("tributary"), truce for 6 ticks. Recorded: `sieges.csv` `terms`,
+("tributary"), truce for 30 years. Recorded: `sieges.csv` `terms`,
 `wars.csv` `sacks`, n_war_tributary, n_war_sack.
 
 Analysis: `realism.py` (diagnostics.md).

@@ -199,7 +199,7 @@ class TechnologyMixin:
                                        (self.steel, oks))):
             self.known[A, s] |= ok
             self.lack[A, s] = np.where(ok, 0, self.lack[A, s] + 1)
-            stages.append(ok | (arr[A] & (self.lack[A, s] <= SUPPLY_GRACE)))
+            stages.append(ok | (arr[A] & (self.lack[A, s] * DT <= SUPPLY_GRACE)))
         br, fe, st = stages
         lost = self.bronze[A] & ~br & (Lpop[A] > 3e5)
         for L in A[lost]:

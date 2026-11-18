@@ -618,3 +618,43 @@ cause is unknown (run-log). Worth a look before stage D: whether the
 gate centre (ODDS_MID 0.7, C) is too high for peers, and whether a
 5-seed batch confirms the population effect. Do not tune ODDS_MID to
 restore the peer-war share; decide on the mechanism.
+
+## What stage D must still decide about time (2026-11-18, WP5 stage C)
+
+Stage C wrote the political clocks and rates in years (list in STATUS.md).
+Some quantities are counted per event or per tick, and a shorter step
+does not convert them:
+- **Sieges per step.** `wars_step` lays 1 + floor(2 x logistics) siege
+  attempts per war per tick. At a yearly step that would be five times
+  as many sieges per 5 years. Either attempts become a rate per year, or
+  a siege is given a length in years. This is the main design choice
+  for stage D (C: give a siege a length).
+- **Per-event effects**: the siege toll (SIEGE_TOLL, 3%), cohesion lost
+  per failed siege (SIEGE_COH), submission and ravaging (drawn once per
+  siege attempt), capture and sack effects, call to allies. These follow
+  from the siege count.
+- **"Once per tick" caps**: one sack per war per tick, one cultural spike
+  per state per tick (`pevent`), one band per target per tick. The
+  per-tick accumulators `revolted`, `sup_win` and `sup_loss` are read
+  and reset by culture once per tick. A sub-stepped war must keep adding
+  to them, not reset them.
+- **Minimum reign** `max(DT, ...)`: one tick. At a yearly step it could
+  be one year.
+- Diplomacy and rebellions were already written per year (DT x rate);
+  their unnamed numbers (alliance break 0.004, formation 0.005, fusion
+  0.0025, vassal annexation 0.004 per year) were left as they are.
+
+## Small-state succession: no bursts, and lower late growth? (2026-11-18)
+
+U asked for successions in small states so that a gifted ruler could
+make a small state grow fast. In `wp5c_*` it does not happen
+(run-log.md): rulers do not affect the chance of declaring, and a
+one-city state declares about once in 300-400 years. Options (C):
+(a) let the ruler's offense enter the attacker's own reading of the odds
+(deterrence) for the attacker only, so a gifted ruler of a small state
+picks fights it can win. This reverses U's form of `ruler_mil` (the
+talent "does not change their chance of going to war"), so it needs U.
+(b) Leave it: bursts then come from long reigns and luck, as now.
+Separately, growth in 7000-8000 fell to 0.009%/yr in both seeds with
+small-state succession on (0.029 in seed 101 without it). A 5-seed batch
+would tell whether this is real before anything is built on it.

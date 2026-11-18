@@ -369,8 +369,8 @@ class StatesMixin:
                 p["strength"] *= 1 + PREC_STR * min(
                     1.0, float(self.p_output[pid].sum()))
             if pop_by[pid] > 0:
-                p["fed"] += FISC_EMA * (fed_by[pid] - p["fed"])
-                p["crowd"] += FISC_EMA * (crowd_by[pid] - p["crowd"])
+                p["fed"] += over(FISC_EMA) * (fed_by[pid] - p["fed"])
+                p["crowd"] += over(FISC_EMA) * (crowd_by[pid] - p["crowd"])
                 p["herd"] = float(herd_by[pid])
                 p["kdens"] = float(kd_by[pid])
             # armies are paid from the harvest, not from head count
@@ -477,7 +477,7 @@ class StatesMixin:
                 new[P["capital"]] += take[pid]
             if P["ended"] is None:
                 P["extract"] = float(take[pid])
-        self.ext_in += FISC_EMA * (new - self.ext_in)
+        self.ext_in += over(FISC_EMA) * (new - self.ext_in)
         self.count("ext_food", float(take.sum()))
 
     def city_cells(self, pid):
@@ -655,7 +655,7 @@ class StatesMixin:
                     V[b] += g
         if len(cc):
             new_trade[c2] = V[p2] * wc / np.maximum(ws[p2], 1e-9)
-        a = FISC_EMA
+        a = over(FISC_EMA)
         if self.td_on:
             tr = give / np.maximum(Q, 1e-9)     # on both lineages
             self.tr_x += a * (tr - self.tr_x)
@@ -763,7 +763,8 @@ class StatesMixin:
     def sea_adjacency(self):
         """Polities whose coastal cities lie within a sailor's range."""
         W = self.W
-        if self.tick % 4 and hasattr(self, "_sea_adj"):
+        if self.tick % max(1, round(SEA_ADJ_EVERY / DT)) and \
+                hasattr(self, "_sea_adj"):
             return {k for k in self._sea_adj
                     if all(self.polities.get(x, {}).get("ended", 1) is None
                            for x in k)}
@@ -926,7 +927,7 @@ class StatesMixin:
                 del self.vassal[v]
                 self.count("vassal_defect")
                 k = (min(v, o), max(v, o))
-                self.truce[k] = self.tick + 2
+                self.truce[k] = self.year + TRUCE_VASSAL
                 if len(V["cities"]) + len(O["cities"]) >= 6:
                     self.log("vassal", f"{self.pname(v)} throws off "
                              f"{self.pname(o)}",
@@ -1256,8 +1257,14 @@ class StatesMixin:
                     self.revolt(pid, x)
                     # a revolt thins the elite
                     p["elite"] = max(0.3, 0.8 * p["elite"])
-            if nc >= 3 and \
-                    self.year >= p["next_succ"] and p["ended"] is None:
+        # reigns end in states of SUCC_MIN_CITIES or more cities (U
+        # 2026-11-18: small states too, so a talented ruler can arise in
+        # one)
+        for pid in list(self.polities):
+            p = self.polities[pid]
+            if p["ended"] is None and \
+                    len(p["cities"]) >= SUCC_MIN_CITIES and \
+                    self.year >= p["next_succ"]:
                 self.succession(pid, p)
 
     def rt_vals(self, L):
@@ -1465,7 +1472,8 @@ class StatesMixin:
             if rng.random() < VASSAL_ACC * alien:
                 del self.vassal[v]
                 self.count("vassal_defect")
-                self.truce[(min(v, pid), max(v, pid))] = self.tick + 2
+                self.truce[(min(v, pid), max(v, pid))] = \
+                    self.year + TRUCE_VASSAL
         if p["ended"] is None and p["cities"]:
             for kk in [kk for kk in self.allies if pid in kk]:
                 ab = self.live(kk)
@@ -1544,7 +1552,7 @@ class StatesMixin:
             self.spike(a)
             for b in heirs:
                 if a < b:
-                    self.truce[(a, b)] = self.tick + 4
+                    self.truce[(a, b)] = self.year + TRUCE_HEIRS
         self.count("partition")
         if len(cc) >= 6:
             self.log("succession", f"partition: {self.pname(pid)} is "

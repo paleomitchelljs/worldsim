@@ -234,7 +234,7 @@ class WarMixin:
             for i, kk in enumerate(uk):
                 k = (int(kk // 10_000_000), int(kk % 10_000_000))
                 g[i] = 1 - self.ties.get(k, 0.0)
-                if k in self.allies or self.truce.get(k, -1) > self.tick:
+                if k in self.allies or self.truce.get(k, -1) > self.year:
                     g[i] *= RAID_PEACE
             f[two] = f[two] * g[inv]
         return f
@@ -321,13 +321,13 @@ class WarMixin:
         if at:
             wc = np.nonzero(np.isin(self.cell_pol, list(at)))[0]
             b_pop = self.pop[wc]
-            self.pop[wc] *= 1 - WAR_COST * self.hardy(wc)
+            self.pop[wc] *= 1 - DT * WAR_COST * self.hardy(wc)
             self.dead("war levies", wc, b_pop - self.pop[wc])
         pairs = sorted(pairs)
         pairs = [pairs[i] for i in rng.permutation(len(pairs))]
         for k in pairs:
             if k in self.wars or \
-                    self.truce.get(k, -1) > self.tick or \
+                    self.truce.get(k, -1) > self.year or \
                     self.is_vassal_pair(k):
                 continue
             ab = self.live(k)
@@ -343,11 +343,11 @@ class WarMixin:
                 # the draw; most pairs are ruled out on the bound alone
                 u = rng.random()
                 bf = BETRAY_K if k in self.allies else 1.0
-                if u >= min(bf * self.war_bound(A, B, k), 0.5):
+                if u >= min(bf * self.war_bound(A, B, k), DT * WAR_P_CAP):
                     continue
                 p, motive = self.war_chance(A, B, k, allies)
                 p *= bf
-                if u < min(p, 0.5):
+                if u < min(p, DT * WAR_P_CAP):
                     if k in self.allies:
                         self.allies.pop(k, None)
                         self.ally_kind.pop(k, None)
@@ -358,7 +358,7 @@ class WarMixin:
                                      polities=[att, dfn])
                     self.count("war_" + ("same" if A["culture"] ==
                                          B["culture"] else "cross"))
-                    self.wars[k] = dict(att=att, dfn=dfn, start=self.tick,
+                    self.wars[k] = dict(att=att, dfn=dfn, start=self.year,
                                         caps=0, goal=None, kind="idle",
                                         done=False)
                     if motive is not None and \
@@ -394,13 +394,13 @@ class WarMixin:
                 g = w["goal"]
                 ra = self.projected(A, g) * self.offense(A) / max(
                     1.4 * self.city_def(g) * self.projected(B, g), 1e-9)
-                if rng.random() < WAR_CEDE * min(1.0, max(0.0, ra - 1)):
+                if rng.random() < over(WAR_CEDE * min(1.0, max(0.0, ra - 1))):
                     w["moved"] = w.get("moved", 0.0) + self.city_fe(g)
                     # closed first: ceding a last city ends the defender,
                     # and its end would close the war as "defender fell"
                     self.war_close(self.wars.pop(k, None), "ceded")
                     self.cede(w["att"], w["dfn"], g)
-                    self.truce[k] = self.tick + 6
+                    self.truce[k] = self.year + TRUCE_WAR
                     continue
             # logistics: a well-run state keeps more sieges going at once
             ns = 1 + int(LOG_SIEGE * self.logi(A))
@@ -454,7 +454,7 @@ class WarMixin:
                     # the weaker side submits rather than be besieged
                     self.submit(w["dfn"], w["att"])
                     self.war_close(self.wars.pop(k, None), "submitted")
-                    self.truce[k] = self.tick + 6
+                    self.truce[k] = self.year + TRUCE_WAR
                     w["submitted"] = True
                     break
                 if odds and pw < SIEGE_MIN:
@@ -462,9 +462,9 @@ class WarMixin:
                     if rng.random() < self.eff(A, "viol"):
                         self.ravage(w, A, B, t)
                     break
-                w["last_siege"] = self.tick
+                w["last_siege"] = self.year
                 b_pop = self.pop[t]
-                self.pop[t] *= 1 - 0.03 * self.hardy(t)
+                self.pop[t] *= 1 - SIEGE_TOLL * self.hardy(t)
                 self.dead("siege", t, b_pop - self.pop[t])
                 self.fort_toll(A, t)
                 self.shock(t, "siege")
@@ -485,7 +485,7 @@ class WarMixin:
                     self.count("war_tributary")
                     self.submit(w["dfn"], w["att"])
                     self.war_close(self.wars.pop(k, None), "tributary")
-                    self.truce[k] = self.tick + 6
+                    self.truce[k] = self.year + TRUCE_WAR
                     w["submitted"] = True
                     break
                 if terms == "sack":
@@ -500,7 +500,7 @@ class WarMixin:
                         self.count("war_goal_met")
                     self.capture(w["att"], w["dfn"], t)
                 else:
-                    A["cohesion"] *= 1 - 0.02 * (
+                    A["cohesion"] *= 1 - SIEGE_COH * (
                         1.5 - self.logi(A) / 1.5)
             if w.get("submitted"):
                 continue
@@ -510,13 +510,13 @@ class WarMixin:
                 self.counteroffensive(k, w, A, B)
                 if k not in self.wars:
                     continue
-            if odds and (self.tick - w["last_siege"]) * DT >= WAR_STALL:
+            if odds and self.year - w["last_siege"] >= WAR_STALL:
                 # no siege for years: the war peters out
                 self.war_close(self.wars.pop(k, None), "abandoned")
-                self.truce[k] = self.tick + 6
+                self.truce[k] = self.year + TRUCE_WAR
                 continue
-            dur = self.tick - w["start"]
-            pend = WAR_END0 + 0.03 * dur
+            # (the chance per SPAN years, made the chance this step below)
+            pend = WAR_END0 + WAR_END_K * (self.year - w["start"])
             # supply lines let a campaign go on
             pend *= 1 - LOG_END * self.logi(A) / 1.5
             if w.get("done"):
@@ -524,14 +524,14 @@ class WarMixin:
             rep = w.get("recaps", 0) > w["caps"]
             if rep:
                 pend = max(pend, WAR_DONE)
-            if rng.random() < pend or \
+            if rng.random() < over(pend) or \
                     self.polities[w["dfn"]]["ended"] is not None:
                 self.war_close(self.wars.pop(k, None),
                                "defender fell" if self.polities[w["dfn"]][
                                    "ended"] is not None else
                                "goal met" if w.get("done") else
                                "repulsed" if rep else "peace")
-                self.truce[k] = self.tick + 6
+                self.truce[k] = self.year + TRUCE_WAR
 
     def call_allies(self, w, A, B):
         """Defender B's allies are called against attacker A: each joins
@@ -588,7 +588,7 @@ class WarMixin:
         """The defender B strikes back at the attacker A (two_sided)."""
         rng = self.R("war")
         R = B.get("strength", 0.0) / max(A.get("strength", 0.0), 1e-9)
-        if rng.random() >= COUNTER_K * R * R / (1 + R * R):
+        if rng.random() >= over(COUNTER_K * R * R / (1 + R * R)):
             return
         ns = 1 + int(LOG_SIEGE * self.logi(B))
         for _ in range(ns):
@@ -606,9 +606,9 @@ class WarMixin:
             if "war_odds" in self.on:
                 if pw < SIEGE_MIN:
                     break               # too long odds: no siege
-                w["last_siege"] = self.tick
+                w["last_siege"] = self.year
             b_pop = self.pop[t]
-            self.pop[t] *= 1 - 0.03 * self.hardy(t)
+            self.pop[t] *= 1 - SIEGE_TOLL * self.hardy(t)
             self.dead("siege", t, b_pop - self.pop[t])
             self.fort_toll(B, t)
             self.shock(t, "siege")
@@ -629,7 +629,7 @@ class WarMixin:
                 if k not in self.wars:
                     break
             else:
-                B["cohesion"] *= 1 - 0.02 * (
+                B["cohesion"] *= 1 - SIEGE_COH * (
                     1.5 - self.logi(B) / 1.5)
 
     def ravage(self, w, A, B, t):

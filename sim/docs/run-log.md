@@ -1831,3 +1831,55 @@ runs are not attributed to either. Seed 101 / seed 103.
     That is a choice about the mechanism, not a target.
 - Wars fell 29% / 24% in both seeds. I have not traced why. Site
   defence enters deterrence (it is physical); ruler talent does not.
+
+### 2026-11-18 WP5 stage C, wider site spread, small-state succession (`wp5c_seed101`, `wp5c_seed103`, `wp5c_s3_seed101`)
+
+Stage C wrote the political clocks in years (no change in value at DT 5,
+but the succession pass now runs after all revolts, so draws fall in a
+different order). U asked for two changes alongside: SITE_DEF_SD 0.12 ->
+0.18 (C value for "a bit wider"), and succession in states of any size
+(SUCC_MIN_CITIES 1, was 3). `wp5c_s3_seed101` keeps the old succession
+rule (`--set SUCC_MIN_CITIES=3`), so seed 101 separates the succession
+change from the rest. Standard settings, 8,000 years. Seed 101 / 103;
+`wp5x` is the stage B addendum.
+
+| Measure | wp5x | wp5c_s3 (101) | wp5c |
+|---|---|---|---|
+| population at 8,000 (M) | 92.6 / 155 | 98.8 | 81.4 / 142 |
+| growth %/yr, 7000-8000 | 0.035 / 0.014 | 0.029 | 0.009 / 0.009 |
+| wars | 1,761 / 5,366 | 2,988 | 2,907 / 7,364 |
+| wars ending inside one tick | 0.55 / 0.70 | 0.61 | 0.58 / 0.66 |
+| sieges taken | 0.46 / 0.56 | 0.47 | 0.48 / 0.57 |
+| peer wars, share | 0.010 / 0.016 | 0.008 | 0.009 / 0.019 |
+| states at war, mean | 0.022 / 0.034 | 0.028 | 0.039 / 0.068 |
+| largest state (M km2) | 3.0 / 8.8 | 4.1 | 2.6 / 9.2 |
+| vassals standing, mean 4000+ | 8.9 / 28.1 | 12.6 | 12.6 / 42.6 |
+| 3+ city states ended over 1,000 yr | 44 / 53 | 51 | 37 / 41 |
+| reigns logged | 1,678 / 2,399 | 1,850 | 14,795 / 8,343 |
+
+- **Same seed, near-same rules, very different war counts.** wp5x and
+  wp5c_s3 differ only in the site spread and the order of draws, yet
+  seed 101's wars went from 1,761 to 2,988. War counts in single runs
+  are mostly path noise; read the table on that scale.
+- **Small-state succession gives no bursts from talent.** Reigns that
+  start in a state of 1-2 cities, by the ruler's talent g (under 0.05,
+  0.05-0.15, 0.15-0.3, over 0.3):
+  - cities taken plus defenders submitting, per century of reign:
+    0.16, 0.09, 0.16, 0.11 (101); 0.24, 0.26, 0.26, 0.11 (103);
+  - wars declared per century of reign: 0.25, 0.19, 0.25, 0.14 (101);
+    0.35, 0.35, 0.34, 0.18 (103);
+  - reigns that went from 1-2 cities to 5+: 20, 11, 11, 1 (101); 36,
+    31, 18, 3 (103), about 2 in 1,000 in every class.
+  - The largest small-state expansions (13-28 cities taken in one reign)
+    were under rulers with g 0.01-0.15. Elf reigns of 250 years
+    (lifespan) do most of them.
+  - Why: talent does not enter the decision to declare (U's form of
+    `ruler_mil`). A one-city state declares about once in 300-400 years
+    whatever its ruler, so a gifted ruler rarely gets a war in which to
+    use the edge. In wp5c_s3 (no small-state succession), the 15 reigns
+    over 0.3 that began small gained 1.7 per century, against 0.26:
+    those were rulers of formerly large states, with neighbours to
+    fight.
+- **Late growth fell in both seeds** (0.009%/yr in 7000-8000, against
+  0.014-0.035). Seed 101 with the old succession rule does not show it.
+  Not traced: one seed each. Logged in open-questions.md.

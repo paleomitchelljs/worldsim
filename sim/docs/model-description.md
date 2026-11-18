@@ -5,7 +5,10 @@ A description of `worldsim.py` and the `peoples_balanced` roster as of
 
 Notation: `clip(x, a, b)` limits x to [a, b]; `σ(x) = 1 / (1 + e^−x)`;
 `DT` = 5 years; "per tick" = per 5 years; rates given "per year" are
-multiplied by DT each tick. Logit-normal jitter of a value x by s means
+multiplied by DT each tick. Chances and compounding shares given "per 5
+years" (WP5 stage C, 2026-11-18, C) are applied over a step of DT years
+as 1 − (1 − p)^(DT / 5), which is p at DT = 5; truces, war ages and the
+plague gap are counted in years. Logit-normal jitter of a value x by s means
 `σ(logit(clip(x, 0.02, 0.98)) + N(0, 2.5 s))`.
 
 ---
@@ -364,8 +367,8 @@ mutation `--start-vary`.
 
 ### 5.1 Cell factors
 
-- Drought factor per cell (1 at rest): each tick it recovers 35% of the
-  way to 1; `[not climate]` random droughts lower it (section 17).
+- Drought factor per cell (1 at rest): every 5 years it recovers 35% of
+  the way to 1; `[not climate]` random droughts lower it (section 17).
 - City cells: × (1.5 + 2 × min(1.5, ruling state's trade volume)), or ×
   1.5 if unruled; `[development]` × (1 + 0.25 × the ruler's development).
 - City cap (only with `--city-cap a b`): city cell food-equivalents ≤ 6000
@@ -742,8 +745,8 @@ population, strength.
   the ruling lineage with chance DT × 0.008 × (0.5 + ruler statecraft)
   (× (0.5 + ruler proselytism) `[proselytism]`).
 - **Adjacency:** states sharing a land edge, plus states with coastal
-  cities within 2 × the sailing range of either ruler (recomputed every 4
-  ticks).
+  cities within 2 × the sailing range of either ruler (recomputed every 20
+  years).
 - **Tribute** `[vassals]`: 25% of a vassal's strength moves to its lord.
 - **Land value:** a state's capacity in food-equivalents per km² over its
   settled cells.
@@ -755,7 +758,7 @@ population, strength.
 
 ### 12.3 Trade
 
-- Ties between non-adjacent or warring states fall × 0.9 per tick and
+- Ties between non-adjacent or warring states fall × 0.9 per 5 years and
   vanish under 0.02.
 - For adjacent states at peace: growth g = trade_a × trade_b × (0.4 + 0.3
   × (tol_a + tol_b)), with trade_a, trade_b the ruling lineages' trade
@@ -833,7 +836,7 @@ population, strength.
 
 - A vassal throws off its lord with chance DT × 0.01 × min(2, 2 × vassal
   strength / lord strength) × (1.5 − lord S) × (1.5 if of another people);
-  truce 2 ticks.
+  truce 10 years.
 - A lord annexes a vassal of its own people with ≤ 3 cities and ≥ 50
   vassal years with chance DT × 0.004 × (0.5 + lord statecraft).
 - A vassal does not fight its lord; an ally pair is dissolved when one
@@ -906,7 +909,8 @@ the first side at random:
     at a 3:1 projected edge, at half that chance), and it never cedes
     its last city.
   - `[site_defence]` terrain defence at a city × the site's own m =
-    clip(exp(0.12 × t₃), 0.5, 3), drawn once per cell.
+    clip(exp(0.18 × t₃), 0.5, 3), drawn once per cell (0.12 until
+    2026-11-18; U: wider).
   - `[ruler_mil]` a besieging (or cession-pressing) state's projected
     strength × (1 + g + legacy); g ~ exponential(0.1) capped at 1 per
     ruler; legacy → 0.5 × (legacy + g) at each succession.
@@ -931,7 +935,7 @@ the first side at random:
     `[war_goals]`, from the largest motive: land, prey, enmity → the
     target's city nearest the attacker's capital; rule, faith → its
     capital; resource → as below; irredentism → a lost city.
-  - While at war, the people of both states lose 0.5% per tick.
+  - While at war, the people of both states lose 0.1% per year.
 - `[not war_v2]`, the two rules below apply.
 - `[not war_motive]`:
   - `[dominance]` × (0.5 + dominance) × (1 + 0.5 × dominance × min(2,
@@ -947,7 +951,7 @@ the first side at random:
   motive m, saturated as m / (1 + m / 2); p_m = DT × 0.012 × 3 × (0.5 +
   violence) × S × min(3, strength ratio)^1.2 / 2 × (1 − tie) × the
   saturated motive.
-- War with chance min(p, 0.5); the tie is cut.
+- War with chance min(p, DT × 0.1); the tie is cut.
 - `[war_goals]` with chance p_m / p the war has a goal, from the largest
   motive: resource → the target's city whose territory holds a site of a
   kind the attacker lacks (else its capital); rule → the target's capital;
@@ -962,9 +966,10 @@ the first side at random:
   `[logistics]`, else 1. Each siege below is repeated while the defender
   has cities.
 - `[war_goals]` before the sieges, a defender whose goal city (land,
-  prey, resource or irredentism goals) is held cedes it with chance 0.3 × clip(A / D − 1, 0, 1)
+  prey, resource or irredentism goals) is held cedes it with chance 0.3
+  per 5 years × clip(A / D − 1, 0, 1)
   at that city (D with the × 1.4 × defence term): the city passes without
-  losses, the war ends, truce 6 ticks.
+  losses, the war ends, truce 30 years.
 - Target: the goal city while held and not yet taken `[war_goals]`, else
   the defender's city nearest the attacker's capital.
 - Projected strength = strength × exp(−distance / (1.5 × reach × (1 + G
@@ -975,7 +980,7 @@ the first side at random:
   0.5 × the defender's development).
 - `[vassals]` if the defender is not a vassal and attacker > 3 ×
   defender, the defender submits with chance 0.5 × (1.2 − S_def) (× (0.5
-  + attacker dominance) `[dominance]`); the war ends, truce 6 ticks.
+  + attacker dominance) `[dominance]`); the war ends, truce 30 years.
 - `[devastation]` each siege (either side's) lays waste, with chance
   0.03, one cell chosen at random among the besieged city and its
   neighbouring cells held by the city's holder: the cell's capacity
@@ -983,14 +988,14 @@ the first side at random:
   years); K × that factor (U 2026-11-01; numbers C).
 - Otherwise the target loses 3%; the attacker takes it with chance A² /
   (A² + D²), else loses 0.02 × (1.5 − G / 1.5 `[logistics]`) of S.
-- The war ends with chance (0.12 + 0.03 × ticks elapsed) × (1 − 0.6 × G
-  / 1.5 `[logistics]`), at least 0.8 once the goal city is taken
-  `[war_goals]`, or when the defender falls; truce 6 ticks.
+- The war ends with chance, per 5 years, (0.12 + 0.006 × years elapsed)
+  × (1 − 0.6 × G / 1.5 `[logistics]`), at least 0.8 once the goal city
+  is taken `[war_goals]`, or when the defender falls; truce 30 years.
 
 ### 13.2a Counteroffensives `[two_sided]`
 
-- Each tick of a war the defender strikes back with chance 0.5 × R² /
-  (1 + R²), R = defender / attacker strength: as many sieges as its
+- In each 5 years of a war the defender strikes back with chance 0.5 ×
+  R² / (1 + R²), R = defender / attacker strength: as many sieges as its
   logistics allow, at the attacker's cities it lost in this war first,
   else any, nearest its capital first.
 - Odds PB² / (PB² + PA²); PA = the attacker's projected strength at the
@@ -1000,7 +1005,7 @@ the first side at random:
   a capture as in 13.3; a failure costs the defender cohesion as a failed
   siege costs an attacker.
 - An attacker that has lost more cities than it took ends the war at 0.8
-  per tick ("repulsed").
+  per 5 years ("repulsed").
 
 ### 13.3 Capture
 
@@ -1048,7 +1053,8 @@ states' nearest cities.
 
 ### 14.2 Succession `[succession]`
 
-- States of 3+ cities: reigns last Exp(25 years), at least 5.
+- States of 1+ cities (SUCC_MIN_CITIES; 3+ until 2026-11-18, U: small
+  states too): reigns last Exp(25 years), at least 5.
 - Crisis chance per reign = 0.12 × (1.3 − 0.6 × statecraft) (× (0.5 +
   violence) `[costs]`).
 - A crisis: S × 0.8, elite × 0.85; with chance min(0.9, 0.3 + 0.3 ×
@@ -1155,7 +1161,7 @@ positive gap) × (0.3 + innovation) × (1 − 0.5 × cohesion `[costs]`).
 - Bronze: metallurgy ≥ 1.0, copper and tin. Iron: ≥ 1.8, iron, and bronze
   (known or now). Steel: iron conditions, ≥ 2.6, and ≥ 6 cities.
 - `[supply]` a stage reached is known for good; in use while its
-  conditions hold, and for 4 ticks after they lapse.
+  conditions hold, and for 20 years after they lapse.
 - `[not supply]` a stage once reached stays in use.
 
 ### 15.5 Effects
@@ -1370,9 +1376,9 @@ severity U(0.35, 0.7); drought factor = min(current, 1 − severity × clip(1
 
 ### 17.2 Plague
 
-- Each tick with chance 0.04 × min(1, city population / 3 million), city
-  population in food-equivalents `[food_units]` or heads, at
-  most once per 10 ticks.
+- Each year with chance 0.008 × min(1, city population / 3 million) (×
+  DT per tick), city population in food-equivalents `[food_units]` or
+  heads, at most once per 50 years.
 - Origin: a city drawn by population; its state is hit. Spread for 4
   rounds to adjacent states with chance 0.25 + 0.6 × tie (× 0.7 to states
   of another people `[immunity]`).

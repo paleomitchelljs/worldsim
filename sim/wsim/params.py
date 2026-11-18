@@ -12,6 +12,22 @@ BIOMES = ["Jungle", "Desert", "Grassland", "Temperate forest", "Tundra"]
 
 # ---- assumptions ---------------------------------------------------------
 DT = 5                      # years per tick
+# Rates (WP5 stage C, 2026-11-18). A chance of an event, or a share lost or
+# gained by compounding, that the model once wrote per 5-year tick is now
+# quoted per SPAN years and applied over a step of any length by over();
+# at DT = SPAN each is what it was. Rates linear in time are written per
+# year and multiplied by the step, as before.
+SPAN = 5.0
+
+
+def over(p, years=None, span=SPAN):
+    """The chance over `years` (default DT) of an event with chance p per
+    `span` years at a constant hazard; equally the share lost over `years`
+    at p per span. p is clipped to 0-1."""
+    years = DT if years is None else years
+    return 1.0 - (1.0 - min(1.0, max(0.0, p))) ** (years / span)
+
+
 # Forager density (people/km2) by biome.
 FORAGE = {"Jungle": 0.25, "Temperate forest": 0.18, "Grassland": 0.15,
           "Desert": 0.02, "Tundra": 0.03}
@@ -93,14 +109,17 @@ COST_STATE = 2.0            # unrest x (1 + COST_STATE * statecraft * hunger)
 COST_EXPN = 0.8             # raid damage x (1 + COST_EXPN * expn * thinness)
 # Fiscal: a state's strength and reach follow its fed population, not its
 # head count. fed = sum(pop * min(1, K/pop)) / sum(pop), smoothed.
-FISC_EMA = 0.2              # weight of this tick in the smoothed value
+FISC_EMA = 0.2              # weight of the last SPAN years, via over()
 # Structural-demographic unrest (Goldstone, Turchin). Elites grow when the
 # land is crowded (cheap labour, high rents) and shrink otherwise; political
 # stress = crowding x elite load, and multiplies the revolt hazard.
 ELITE_G = 0.004             # per year, elite growth per unit crowding excess
 ELITE_CROWD = 0.75          # crowding at which elites neither grow nor shrink
 UNREST = 3.0                # revolt hazard x (1 + UNREST * stress)
-# Succession: per-generation chance of a crisis in states of 3+ cities.
+# Succession: per-generation chance of a crisis in states of
+# SUCC_MIN_CITIES or more cities (3 until 2026-11-18; U: small states
+# too, so that a talented ruler can arise in one).
+SUCC_MIN_CITIES = 1
 SUCC_GEN = 25.0             # years per reign, on average
 SUCC_P = 0.12               # crisis chance per reign x (0.5 + violence)
                             # x (1.3 - 0.6 statecraft)
@@ -170,9 +189,9 @@ HUNGER_WAR, HUNGER_RAID = 2.0, 1.5
 # runs to a neighbour no more than AVULSE_TOL km higher.
 AVULSE_RATE, AVULSE_TOL = 2.5e-4, 0.03
 # Supply: a metal stage needs its ores in hand to stay in use; knowledge is
-# kept, but use lapses after SUPPLY_GRACE ticks without supply. Without
+# kept, but use lapses after SUPPLY_GRACE years without supply. Without
 # cities, administration and metallurgy decay.
-SUPPLY_GRACE = 4
+SUPPLY_GRACE = 20           # years (was 4 ticks)
 DECAY_ADMIN, DECAY_METAL = 0.002, 0.0004   # per year, scaled by city loss
 # Minorities: one secondary people per cell, up to MIN_CAP of the cell's K.
 MIN_CAP = 0.2
@@ -270,7 +289,9 @@ TERMS_SACK, TERMS_GOAL = 0.5, 2.0
 # nothing. Removed 2026-11-07; the declaration rate is WAR_BASE.)
 COH_DECAY = 0.004
 REVOLT_BASE = 0.0009
-WAR_END0 = 0.12
+# War ending (per SPAN years, via over()): WAR_END0 + WAR_END_K x the
+# war's age in years (was 0.03 per tick of age).
+WAR_END0, WAR_END_K = 0.12, 0.006
 SHATTER_P = 0.4
 # Acculturation: cultural traits move toward contacts' traits, weighted by
 # contact and prestige (sqrt population), at ACC x tolerance per year.
@@ -374,19 +395,19 @@ SALT_GAIN, SALT_REC, SALT_MAX = 0.002, 0.003, 0.7
 # is the largest motive: a resource (the target's city ruling a site of a
 # kind the attacker lacks, else its capital), rule (the capital), or land
 # (the city nearest the attacker's capital). Sieges go for the goal city;
-# once it is taken the war ends with chance WAR_DONE per tick. Before each
+# once it is taken the war ends with chance WAR_DONE per SPAN years. Before each
 # round a weaker defender cedes the goal city (no sack) with chance
-# WAR_CEDE x clip(attacker / defender - 1, 0, 1) per tick; rule goals are
+# WAR_CEDE x clip(attacker / defender - 1, 0, 1) per SPAN years; rule goals are
 # not ceded.
 WAR_DONE, WAR_CEDE = 0.8, 0.3
-# Two-sided wars (`two_sided`, U 2026-10-30; form and numbers C): each tick
-# of a war the defender strikes back with chance COUNTER_K x R^2 / (1 +
+# Two-sided wars (`two_sided`, U 2026-10-30; form and numbers C): in
+# each SPAN years of a war the defender strikes back with chance COUNTER_K x R^2 / (1 +
 # R^2), R = defender strength / attacker strength; it then lays as many
 # sieges as its logistics allow at the attacker's cities, first those it
 # lost in this war, nearest its capital first. Odds as for the attacker,
 # with the attacker's allies, lord, vassals, terrain and walls defending.
 # An attacker that has lost more cities than it took ends the war at
-# WAR_DONE per tick ("repulsed").
+# WAR_DONE per SPAN years ("repulsed").
 COUNTER_K = 0.5
 # Alliances (U 2026-10-30; forms and numbers C).
 # `ally_duty`: when a state is attacked each ally (not allied to the
@@ -449,8 +470,9 @@ PATH_TOL = 1.0               # 1: tolerance in trait_path too; 0: not
 # holder owns. A wasted cell's capacity drops to 0 and recovers linearly
 # over WASTE_YEARS.
 WASTE_P, WASTE_YEARS = 0.03, 100.0      # 0.03: U 2026-11-01
-# Rulers (`rulers`, U 2026-10-30; forms and numbers C). Each state of 3+
-# cities has a ruler; reigns last exponential(SUCC_GEN x lifespan) years
+# Rulers (`rulers`, U 2026-10-30; forms and numbers C). Each state of
+# SUCC_MIN_CITIES+ cities (3+ until 2026-11-18) has a succession of
+# rulers; reigns last exponential(SUCC_GEN x lifespan) years
 # (lifespan: biological roster trait, U). A ruler's death:
 # - partition (U): with chance partibility x min(1, cities / PART_N) the
 #   realm is split among 2-4 heirs, each taking the cities nearest his
@@ -869,11 +891,25 @@ PREY_K, PREY_R = 1.5, 3.0
 #   enmity     ENM_K x (1 - similarity) x hostility
 #   faith      as under `mission`
 #   irredentism  IRR_K x min(1, cities B holds that A once held / 2)
-# While at war each side's people lose WAR_COST per tick. Trade tie
+# While at war each side's people lose WAR_COST per year (was 0.005 a
+# tick). The chance of declaring is capped at WAR_P_CAP per year (was 0.5
+# a tick). Trade tie
 # growth x (1.25 - 0.5 x the pair's mean dominance): the domineering take,
 # the others trade.
 WAR_BASE, WAR_EPS, DET_K = 0.12, 0.004, 1.0
-ENM_K, IRR_K, WAR_COST = 1.5, 1.5, 0.005
+ENM_K, IRR_K, WAR_COST = 1.5, 1.5, 0.001
+WAR_P_CAP = 0.1
+# Clocks in years (WP5 stage C; values as they were in ticks). A war ended
+# by peace, cession, submission or abandonment leaves a truce of
+# TRUCE_WAR years; a vassal that breaks away, TRUCE_VASSAL; heirs of a
+# partition, TRUCE_HEIRS. Trade ties between states not trading decay by
+# TIE_DECAY per SPAN years. Sea adjacency is recomputed every
+# SEA_ADJ_EVERY years. A siege kills SIEGE_TOLL of the city's people and a
+# failed one costs the besieger SIEGE_COH x (1.5 - logistics / 1.5) of its
+# cohesion; both are per siege, not per time.
+TRUCE_WAR, TRUCE_VASSAL, TRUCE_HEIRS = 30, 10, 20
+TIE_DECAY, SEA_ADJ_EVERY = 0.1, 20
+SIEGE_TOLL, SIEGE_COH = 0.03, 0.02
 # Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18; U: build it; forms
 # from the review, numbers C). Declaring: the deterrence factor becomes
 # floor + (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W), with
@@ -899,10 +935,11 @@ SUBMIT_ODDS, SUBMIT_K = 0.6, 1.0
 # cell draws m = exp(SITE_DEF_SD x t) once, t Student-t with SITE_DEF_DF
 # degrees of freedom, clipped to SITE_DEF_LIM; m multiplies the terrain
 # defence of a city there wherever a siege, cession or deterrence reads
-# it. With these values half of sites lie within 0.91-1.10 and 9 in 10
-# within 0.75-1.33; 1 in 200 is below 0.5 (held there by the clip) and
-# 1 in 200 above 2.0, 1 in 700 at the cap of 3.
-SITE_DEF_SD, SITE_DEF_DF, SITE_DEF_LIM = 0.12, 3, (0.5, 3.0)
+# it. SITE_DEF_SD was 0.12 until 2026-11-18 (U: widen it a bit). With
+# 0.18 half of sites lie within 0.87-1.15 and 9 in 10 within 0.65-1.53;
+# 1 in 18 is above 1.5, 1 in 65 above 2.0 and 1 in 230 at the cap of 3;
+# 1 in 65 is held at the floor of 0.5.
+SITE_DEF_SD, SITE_DEF_DF, SITE_DEF_LIM = 0.18, 3, (0.5, 3.0)
 # Ruler generalship (`ruler_mil`, U 2026-11-18: some rulers are better at
 # offense; it does not change the chance of war, but at war their state
 # punches above its weight, and the edge fades over later reigns; numbers
@@ -968,6 +1005,11 @@ SKILLS = ("innovation", "statecraft")
 # pass it on less readily. Immunity per cell after exposure, decaying
 # IMM_DECAY per year; large cities hold endemic immunity IMM_ENDEMIC.
 PLAGUE_CROSS = 0.3
+# Plague onset: chance PLAGUE_P per year x min(1, urban people / 3M), at
+# most once every PLAGUE_GAP years (was 0.04 a tick, 10 ticks). Drought
+# relief: each SPAN years the drought factor recovers DROUGHT_REC of its
+# gap to 1.
+PLAGUE_P, PLAGUE_GAP, DROUGHT_REC = 0.008, 50, 0.35
 IMM_HIT, IMM_DECAY, IMM_ENDEMIC = 0.8, 0.012, 0.5
 IMM_PROTECT = 0.8           # mortality x (1 - IMM_PROTECT * immunity)
 PRICE_EVERY = 100           # years between Price-equation snapshots

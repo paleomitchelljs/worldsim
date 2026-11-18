@@ -235,7 +235,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self._ptab_key = None       # capital or end changes (ptab())
         self.next_pid = 1
         self.wars = {}              # (lo, hi) -> record
-        self.truce = {}             # (lo, hi) -> tick until
+        self.truce = {}             # (lo, hi) -> year until
+        self.clock_years = True     # truces, wars, plague gap in years
         self.ties = {}              # (lo, hi) -> trade strength 0..1
         self.allies = {}            # (lo, hi) -> year formed
         self.ally_kind = {}         # (lo, hi) -> "affinity" | "balance"
@@ -397,6 +398,17 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):
             self.W.food_graph()
+        if not hasattr(self, "clock_years"):
+            # before WP5 stage C: truces, war starts and last sieges, and
+            # the plague gap were held in ticks
+            self.clock_years = True
+            self.truce = {k: v * DT for k, v in self.truce.items()}
+            for w in self.wars.values():
+                for a in ("start", "last_siege"):
+                    if a in w:
+                        w[a] *= DT
+            if hasattr(self, "_plague_next"):
+                self._plague_next *= DT
 
     def log(self, kind, text, **data):
         """Record an event (WP2 stage A): year, kind, text and whatever

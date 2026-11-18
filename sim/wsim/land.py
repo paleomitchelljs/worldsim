@@ -541,7 +541,7 @@ class LandMixin:
 
     def disasters(self):
         rng = self.R("disasters")
-        self.drought += (1 - self.drought) * 0.35
+        self.drought += (1 - self.drought) * over(DROUGHT_REC)
         self.imm *= math.exp(-IMM_DECAY * DT)
         if self.cities:
             cc = np.fromiter(self.cities.keys(), int)
@@ -550,9 +550,9 @@ class LandMixin:
             self.imm[big] = np.maximum(self.imm[big], IMM_ENDEMIC)
         urban = sum(self.pop[c] * (self.peat[self.cul[c]] if self.cul[c] >= 0 else 1)
                     for c in self.cities)
-        if self.cities and self.tick >= getattr(self, "_plague_next", 0) \
-                and rng.random() < 0.04 * min(1, urban / 3e6):
-            self._plague_next = self.tick + 10
+        if self.cities and self.year >= getattr(self, "_plague_next", 0) \
+                and rng.random() < DT * PLAGUE_P * min(1, urban / 3e6):
+            self._plague_next = self.year + PLAGUE_GAP
             cc = np.fromiter(self.cities.keys(), int)
             wt = self.pop[cc]
             o = int(rng.choice(cc, p=wt / wt.sum()))

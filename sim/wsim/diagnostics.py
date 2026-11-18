@@ -704,5 +704,5 @@ class DiagnosticsMixin:
                 len(B["cities"]), round(sim, 4), round(ea, 4), round(eb, 4),
                 round(fa, 4), round(fb, 4), round(self.ties.get(k, 0.0), 4),
                 int(k in self.wars), int(k in self.allies),
-                int(self.truce.get(k, -1) > self.tick),
+                int(self.truce.get(k, -1) > self.year),
                 round(self.similarity(A["lin"], B["lin"]), 4)))

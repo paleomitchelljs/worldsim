@@ -29,7 +29,7 @@ what an entry holds.
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
-| 5 | C time constants in years | not started | | |
+| 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | COMMIT |
 | 5 | D yearly political step | not started | | |
 | 5 | E army stock | not started | | |
 | 5 | F cityless polities | not started | | |
@@ -1320,3 +1320,86 @@ waits on the batch, per open-questions.md.
 - A ruler of a 1-2 city state never succeeds (succession runs only at
   3+ cities), so a small state keeps its founder's talent until it
   grows.
+
+### WP5 stage C: time constants in years (2026-11-18, COMMIT)
+
+**Asked by U (2026-11-18), alongside the stage:** widen SITE_DEF_SD a
+bit; let rulers of small states have successions, so that a gifted ruler
+might make a small state grow fast (as Cyrus did).
+
+**Done.**
+- `params.over(p, years, span)`: the chance over a step of an event
+  quoted per SPAN (5) years, or the share lost. At DT = 5 it returns p.
+- Converted (values unchanged at DT 5):
+  - truces: war end 6 ticks -> TRUCE_WAR 30 yr; vassal breakaway and
+    defection at a lord's death 2 ticks -> TRUCE_VASSAL 10; partition
+    heirs 4 ticks -> TRUCE_HEIRS 20. `self.truce` holds years.
+  - war age and last siege held in years (`w["start"]`,
+    `w["last_siege"]`); ending WAR_END0 0.12 + WAR_END_K 0.006 x years,
+    per 5 years via over(); WAR_DONE, WAR_CEDE, COUNTER_K per 5 years
+    via over().
+  - WAR_COST 0.005 per tick -> 0.001 per year x DT; the 0.5 cap on the
+    chance of war -> WAR_P_CAP 0.1 per year x DT (in `war_bound` too).
+  - FISC_EMA 0.2 per 5 years via over() (fed, crowd, extraction, local
+    and trade food smoothing).
+  - trade-tie decay x 0.9 per tick -> TIE_DECAY 0.1 per 5 years.
+  - `sea_adjacency` every 4 ticks -> SEA_ADJ_EVERY 20 years.
+  - SUPPLY_GRACE 4 ticks -> 20 years.
+  - plague 0.04 per tick, gap 10 ticks -> PLAGUE_P 0.008 per year,
+    PLAGUE_GAP 50 years; drought relief 0.35 -> DROUGHT_REC per 5 years.
+  - siege toll and failed-siege cohesion named SIEGE_TOLL, SIEGE_COH.
+- `upgrade()` converts truces, war clocks and the plague gap of old
+  saved states from ticks to years (flag `clock_years`).
+- **U's changes:** SITE_DEF_SD 0.12 -> 0.18 (C value: 1 site in 65
+  above 2x, was 1 in 194; 1 in 18 above 1.5x). SUCC_MIN_CITIES = 1 (was
+  a literal 3); successions now run in their own pass after revolts.
+  `--set SUCC_MIN_CITIES=3` restores the old rule.
+- Docs: model-description.md, rules/war.md, structural.md, run-log.md,
+  open-questions.md (two entries).
+
+**Left as they are (stage C), with reasons.**
+- Siege toll, cohesion per failed siege, submission and ravage draws,
+  capture and sack effects: they are per siege, not per time. What
+  needs a decision is how many sieges a war gets per year. Now it gets
+  1 + floor(2 x logistics) per tick. This is the main choice for stage
+  D; open-questions.md.
+- "Once per tick" caps (one sack per war, one cultural spike per state),
+  and the per-tick accumulators `revolted`, `sup_win`, `sup_loss` that
+  culture reads and resets. Listed for stage D.
+- The minimum reign `max(DT, ...)`.
+- Diplomacy and rebellion rates were already per year x DT; their bare
+  numbers (0.004, 0.005, 0.0025, vassal annexation 0.004) stay unnamed.
+- Event-level numbers in `capture`, `sack`, `revolt`, `disputed`.
+
+**Runs** (8,000 years, standard settings): `wp5c_seed101`,
+`wp5c_seed103`, and `wp5c_s3_seed101` (old succession rule). Table in
+run-log.md.
+
+**Results.**
+- Nothing broke. Population 81.4M / 142M (stage B addendum: 92.6M /
+  155M). Peoples, cities and states as usual on the seed 101 map.
+- War counts in single runs are mostly path noise. Seed 101 went from
+  1,761 to 2,988 wars between two runs that differ only in the site
+  spread and the order of draws.
+- **Small-state succession gives no Cyrus-like bursts.** Reigns that
+  begin in a 1-2 city state reach 5+ cities about 2 times in 1,000,
+  whatever the ruler's talent. The largest such expansions were under
+  rulers of low talent with long (Elf) reigns. The reason: talent does
+  not enter the decision to declare (U's form), and a one-city state
+  declares about once in 300-400 years. Rulers of talent over 0.3
+  declare less often than the rest (0.14-0.18 per century against
+  0.19-0.35), on 28-32 wars per run.
+- Reigns logged rose from about 2,000 to 8,000-15,000 per run.
+
+**For U.**
+- If you want the bursts, the ruler's edge has to enter the attacker's
+  own reading of its odds, so that a gifted ruler of a small state
+  picks fights. That reverses "does not change their chance of going to
+  war". Your call; open-questions.md.
+- Growth in 7000-8000 fell to 0.009%/yr in both seeds with small-state
+  succession (0.029 in seed 101 without it). One seed each; a 5-seed
+  batch would settle it.
+
+**Next.** Stage D (yearly political step) needs a decision on sieges per
+year (open-questions.md). The 5-seed batch suggested after stage B is
+still not done.

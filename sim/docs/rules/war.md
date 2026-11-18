@@ -34,8 +34,9 @@ There is no war between allies or during a truce (30 years after a war).
    a 2:1 edge wins 80%.
 6. **Cost:** every siege costs the target 3% of its population. A failed
    siege costs the attacker 2% of its cohesion.
-7. **End:** the war ends each tick with probability 0.12 + 0.03 x ticks
-   elapsed.
+7. **End:** the war ends with probability 0.12 + 0.006 x years elapsed
+   per 5 years (stage C, 2026-11-18: written in years; the same at a
+   5-year tick).
 
 ## Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18)
 
@@ -75,12 +76,14 @@ by default. See [structural.md](../structural.md), "2026-11-18".
 
 U: each city gets a random defence boost for whatever in its ground
 makes it easier or harder to take than terrain says; most alike, a few
-vulnerable, a few very hard. Numbers C. Each cell draws m = exp(0.12 x
+vulnerable, a few very hard. Numbers C. Each cell draws m = exp(0.18 x
 t), with t Student-t (3 degrees of freedom), clipped to 0.5-3. The draw
 belongs to the site, so a city refounded there keeps it. m multiplies
 the terrain defence of a city there in sieges, counter-offensives,
-cessions and deterrence. Half of sites lie in 0.91-1.10 and 9 in 10 in
-0.75-1.33. 1 in 200 is at 0.5 (clipped) and 1 in 200 above 2.0.
+cessions and deterrence. The spread was 0.12 until 2026-11-18, when U
+asked for it a bit wider. With 0.18, half of sites lie in 0.87-1.15 and
+9 in 10 in 0.65-1.53. 1 in 18 is above 1.5, 1 in 65 above 2.0 and 1 in
+230 at the cap of 3. 1 in 65 is held at the floor of 0.5.
 
 ## Ruler generalship (`ruler_mil`, 2026-11-18)
 
@@ -97,8 +100,10 @@ the edge fades over later reigns. Numbers C.
 - It does not enter defence or deterrence, so the chance of declaring is
   unchanged. It moves the siege odds, so it moves the siege threshold
   and the defender's choice to submit.
-- Succession runs only in states of 3+ cities, so a smaller state keeps
-  its founder's g until it grows.
+- Successions run in states of any size (U, 2026-11-18; before then
+  only at 3+ cities, so a smaller state kept its founder's g until it
+  grew). A small state can draw a talented ruler and, in that reign,
+  take its neighbours faster.
 
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 
