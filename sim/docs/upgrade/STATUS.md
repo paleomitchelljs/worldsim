@@ -31,7 +31,7 @@ what an entry holds.
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
-| 5 | E army stock | done (on by default) | 2026-11-18 | ECOMMIT |
+| 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
 | 5 | F cityless polities | design note, needs U | 2026-11-18 | |
 | 6 | A experiment batch | not started | | |
 | 6 | B adopt | not started | | |
@@ -1447,7 +1447,7 @@ scratchpad, for branch tests), `wp5d_seed103`. Table in run-log.md.
 **Next.** Stage E. It replaces the age term of the ending rule with
 exhaustion, which may let campaigns run to several sieges.
 
-### WP5 stage E: armies as a stock (2026-11-18, ECOMMIT)
+### WP5 stage E: armies as a stock (2026-11-18, c65846f)
 
 **Done** (switch `army`, on by default; forms from the brief's four
 points, numbers C):
