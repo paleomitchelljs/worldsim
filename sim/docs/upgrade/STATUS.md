@@ -12,8 +12,8 @@ what an entry holds.
 | 0 | E clean-up | done | 2026-11-17 | 44ef835 + fix a5b8d95 |
 | 1 | A polity table | done | 2026-11-17 | 48ce872 |
 | 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
-| 1 | C resident capacity cache | not started | | |
-| 1 | D migration, raids, climate, wars | not started | | |
+| 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
+| 1 | D migration, raids, climate, wars | partial (budding, voyages, raids, adjacency) | 2026-11-17 | 17e54e7 |
 | 1 | E branching from a saved state | not started | | |
 | 1 | F RNG streams and new baseline | not started | | |
 | 2 | A structured events | not started | | |
@@ -264,3 +264,65 @@ wars_step (13.7 s in the last era, unchanged). Those belong to stage D.
 **Next.** Stage C (resident capacity cache), with the cell vectors
 inside it.
 
+
+### WP1 stage D, first part (2026-11-17, 17e54e7)
+
+**Done.** These edits were already in the working tree, uncommitted and
+not logged, when this session started. I checked them line by line and
+committed them on their own:
+- `K2`: the lineage-only factors (agri, tools, sod, food per head,
+  fishing, wetland skill, development, herding share) come from
+  `lterms()`. When `L` has one entry per cell, `lterms()` works them out
+  once per lineage and gathers. This is the lineage half of stage B's
+  vectors.
+- `budding` scores only empty neighbours with room for a band. Before,
+  every other cell scored 0 and could never win.
+- `voyages` re-tests only the cells already kept for each ball. A landing
+  only removes candidates.
+- `raids`: kin similarity without the Python `zip`; capacity once per
+  unique cell (a cell borders several others); the first-contact loop is
+  skipped when every pair in the tick has already met.
+- `adjacency_by_people`: one scatter per direction, not a loop over peoples.
+- `trade_ties`: `dev()` once for all lineages.
+
+**Runs.** Seed 101, 2,000 years, at 5ebae60 and at 17e54e7: `events.txt`,
+`timeseries.csv`, `cities.csv`, `polities.csv` and `lineages.csv` are
+byte-identical.
+
+### WP1 stage C: resident capacity cache (2026-11-17, not adopted)
+
+**Built, measured, removed.** The cache held raw K2 (Kc, Kh) per cell and
+applied the state's take on each read, so `extraction` did not invalidate
+it. It found dirty cells by comparing K2's inputs (8 cell arrays, 13
+lineage arrays, `W.gver`) with copies, instead of hooks at each write. It
+served `famine`, `grow`, `migrate`, `raids`/`raid_K`, `technology`,
+`polity_stats`, `food_flows`, `update_cities` and `diagnostics.urban`.
+
+It was correct:
+- 6,000 years of seed 101: `events`, `timeseries`, `cities`, `polities`,
+  `lineages` and `wars` were byte-identical to 17e54e7.
+- Over 40 ticks from year 4,000, all 717 cached calls (10.4M values)
+  equalled a fresh `K2` exactly.
+
+It was not faster:
+- The 6,000-year profile pair (run at the same time) gave 316 s of phase
+  time before and 319 s after. Kf's nested time rose from 34 s to 38 s.
+- Miss rates over 20 ticks from year 3,000: `famine` 1.00 (climate
+  rewrites `cm` on every cell each tick), `migrate` 0.94 (`land_use`
+  rewrites `land`, `salt` and `imp` on every occupied cell), `technology`
+  1.00. The cache hit in `grow` (0.00), `raids` (0.00), `polity_stats`
+  (0.11) and `food_flows` (0.00). That is about a third of the cells
+  asked for. The input comparison cost 0.35-0.43 ms per call, about 21
+  calls per tick, and that ate the saving.
+- After stages A, B and the `lterms` gather, K2 is 8% of the last 500
+  years (4.8 of 57 s). Its 21,968 calls per 100 ticks are mostly small:
+  `river_leap` alone makes 21,869 one-cell calls. The remaining cost is
+  call overhead, which a cell cache does not touch.
+
+**Next stage needs to know.** Stage C's premise (big redundant capacity
+arrays) no longer holds. Do not rebuild it unless K2 gets expensive
+again. The largest items now, by cumulative time in the last 500 years
+of seed 101: `migrate` 15.2 s (of which `voyages` 8.1 s), `wars_step`
+(`power_dist` 6.1 s over 192,441 calls), `raids` 6.5 s, `gc_km` 3.5 s
+(62,083 calls), `climate` 3.4 s, `eff` 2.1 s (1.68M calls), `similarity`
+1.9 s (321k calls).
