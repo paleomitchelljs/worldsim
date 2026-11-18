@@ -30,7 +30,7 @@ what an entry holds.
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
-| 5 | D yearly political step | done (on by default) | 2026-11-18 | DCOMMIT |
+| 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
 | 5 | E army stock | not started | | |
 | 5 | F cityless polities | not started | | |
 | 6 | A experiment batch | not started | | |
@@ -1404,7 +1404,7 @@ run-log.md.
 year (open-questions.md). The 5-seed batch suggested after stage B is
 still not done.
 
-### WP5 stage D: yearly political step (2026-11-18, DCOMMIT)
+### WP5 stage D: yearly political step (2026-11-18, 0b1c30d)
 
 **Decision (U, 2026-11-18):** do D, E and F in order; sieges get a
 length; D8 yes (camps).
