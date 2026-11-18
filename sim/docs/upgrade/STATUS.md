@@ -21,8 +21,8 @@ what an entry holds.
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
 | 2 | D GIS export | done | 2026-11-17 | 3b8fe04 |
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
-| 3 | B renderer and projection | not started | | |
-| 3 | C state colours and change layers | not started | | |
+| 3 | B renderer and projection | done | 2026-11-17 | BCHASH |
+| 3 | C state colours and change layers | done | 2026-11-17 | BCHASH |
 | 3 | D video and viewer | not started | | |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
@@ -795,4 +795,91 @@ gives 126.34M people and 644 cities at the end, the same as
 
 **Next.** Stage B (offline renderer, Mollweide). It is mostly written in
 the working tree and not committed; see its entry.
+
+### WP3 stages B and C: offline renderer, Mollweide, state colours, change layers (2026-11-17, BCHASH)
+
+One commit for both. The offline renderer needed state colours from
+polity ids, which is stage C's first item, so I wrote that directly
+instead of a stopgap.
+
+**B, done.**
+- `wsim/maps.py` holds the drawing:
+  - `Snap`: one moment of a run.
+  - `Proj`: grid to pixels, plate carrée or Mollweide.
+  - Layers drawn on the 360 x 720 grid; `panel` and `frame` assemble
+    them.
+  `render(sim)` (`render.py`) builds a `Snap` from the live Sim and
+  calls `maps.frame`, so the run's frames and the offline ones share
+  the code. `legacy_map` and `lineage_map` are unchanged.
+- Projection: Mollweide as an index array from the closed-form
+  inverse, computed once per run. Points go through the forward
+  projection, with 8 Newton steps on 2 theta + sin 2 theta =
+  pi sin(lat). Borders are found on the projected label image. The map
+  keeps the plate carrée crop's latitudes. At scale 2 a Mollweide
+  frame is 1440 x 1164; plate carrée stays 1440 x 1104.
+- `render_run.py RUN`: `--layer`, `--proj`, `--format mp4|gif|png`,
+  `--every`, `--from-year`/`--to-year`, `--scale`, `--fps`. It reads
+  `history.npz`, `run.json`, `wars.csv` (for the header's war count),
+  `polities.csv` (parents) and the cached world, and imports no
+  simulation step. MP4 is H.264, yuv420p, padded to even size; stage D
+  only has to add layouts.
+- `docs/running.md`, "Drawing a finished run".
+
+**C, done.**
+- `wsim/colors.py`: one colour per state for life. The hue stays within
+  0.045 of its people's; lightness ranges 0.28-0.80 and saturation
+  0.30-0.95 (HLS). States are coloured in order of first appearance.
+  Each takes the first of 32 candidates (seeded by its id) that is at
+  least 70 ("redmean" distance) from every already-coloured state it
+  ever borders, in any snapshot, and from its parent. Otherwise it takes
+  the candidate farthest from them. It uses the snapshots alone, so old
+  runs get it too. The live render still uses `polity_color`, which is
+  untouched.
+- Layers `state_age` and `people_age`: years since the cell last changed
+  state or people, on a log scale from 25 to 2,000 years.
+- Turnover strip under the maps: per landmass group, the share of ruled
+  cells whose state differs from 100 years before, with the current
+  year marked.
+- Labels for the ten largest states sit at the centre of the largest
+  piece: 8-connected, joined across the date line, at the cell nearest
+  the piece's mean position. Labels that would overlap are skipped.
+  This applies to the live frames too.
+
+**Runs and checks.**
+- `wp3b_sanity_seed101` (3,000 years, 103 s): 29.0M people, 41 cities,
+  38 states, with frames from the new `render(sim)`. Its
+  `final_maps.png` looks as before. The run began before the label
+  change, so its frames still put labels at the capital.
+- Live render against the committed one, on `wp1f_s101_y5000.pkl`: the
+  same size, with 0.15% of pixels different (labels and rings, now
+  chosen by counting the state's cells). 0.06 s a frame against 0.04 s;
+  Mollweide 0.10 s.
+- `render_run.py wp3a_seed101`: 320 frames in 27 s, a 3.4 MB MP4. It
+  also reads old 100-year runs (`wp1f_fullclim_seed101`, no city dots).
+- **Before/after pair, year 8,000 of `wp3a_seed101`:**
+  `runs/wp3a_seed101/final_maps.png` (old live render, plate carrée,
+  colours from `polity_color`) and
+  `runs/wp3a_seed101/render/states+peoples_mollweide/f00000.png`
+  (Mollweide, `colors.py`). The southern continent and the polar strip
+  shrink to their true relative area. Neighbouring states of one people,
+  near-identical before, are now distinct, while each people's hue
+  still reads.
+- Year 6,000, `states,state_age,people_age`: young state borders are
+  bright around the Elf, Dwarf and Snake-folk state clusters. The
+  people-age layer is almost all dark (2,000+ years) apart from coasts
+  and a few frontiers, which matches the review's finding that peoples
+  barely move. The strip starts at 1.0, because new states count as
+  change, and then sits at about 0.1-0.4, noisily.
+
+**Choices to check (C).** The colour constants (hue spread, ranges,
+minimum distance); the age scale (25 to 2,000 years, inferno); "changed
+state" counts a cell passing to or from no state; the strip is not
+smoothed.
+
+**Not done.** The offline frames have no dragons, because
+`history.npz` does not hold them. Their header has population only, not
+lineage counts or technology stages.
+
+**Next.** Stage D (video layouts; the HTML viewer is optional and needs
+U).
 

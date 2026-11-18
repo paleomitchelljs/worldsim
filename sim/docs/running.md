@@ -219,6 +219,43 @@ landmasses. `timeline.py RUN --landmass W1,W2` takes the same codes.
 (runs before 2026-11-01 lack `posts.csv`; their posts are rebuilt from
 the events still standing at the end).
 
+## Drawing a finished run (`render_run.py`)
+
+`render_run.py RUN` (WP3 stage B, 2026-11-17) draws a run's maps from
+`history.npz`, `run.json` and the cached world, without rerunning or
+importing the simulation step. An 8,000-year run with 25-year snapshots
+takes about 30 s: 320 frames, a 3.4 MB MP4.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--layer` | `states,peoples` | one or more of `states`, `peoples`, `density` (heads per km², log scale 0.1-1,000), `lineages` (hue = people, shade = lineage; runs from WP3 stage A), `state_age` (ruled cells by years since they last changed state, from bright yellow, under 25 years, to dark purple, 2,000+; borders drawn), `people_age` (occupied cells by years since their people last changed, same scale), stacked top to bottom |
+| `--no-strip` | off | leave out the turnover strip. With `states` or `state_age`, a strip under the maps shows, for each landmass group (S, W, N, E, X), the share of ruled cells whose state differs from 100 years before, over the whole run, with the frame's year marked |
+| `--proj` | `mollweide` | `mollweide` (equal-area) or `platecarree` (the raw grid, as `final_maps.png` and the book's source maps) |
+| `--format` | `mp4` | `mp4` (H.264, yuv420p), `gif`, or `png` frames in a folder |
+| `--every` | 1 | snapshots between frames |
+| `--from-year`, `--to-year` | all | the span drawn |
+| `--scale`, `--fps` | 2, 8 | pixels per grid cell (across); frames per second |
+
+The ten largest states (150+ cells) are labelled at the centre of their
+largest piece, not at the capital. A label that would overlap one
+already placed is left out. The live frames do the same.
+
+It writes `<run>/render/<layers>_<proj>.<format>`. States are coloured
+by `wsim/colors.py`. Each state keeps one colour for its whole life, in
+its people's family of hues, and differs from every state it ever
+borders and from its parent. The live frames (`history.gif`,
+`final_maps.png`) still use the colour each state drew at founding.
+What `history.npz` lacks, the offline frames lack: no dragons, no
+lineage counts or technology stages in the header, and for runs before
+WP3 stage A no city dots. The war count in the header comes from
+`wars.csv`.
+
+Mollweide is drawn by inverse-projecting every output pixel once to a
+grid cell (closed form), so a frame is one array lookup. City dots and
+labels go through the forward projection, and borders are found on the
+projected image, so they stay one pixel wide. The map keeps the
+latitudes of the plate carrée crop.
+
 ## GIS export (`export.py`)
 
 `export.py RUN [RUN ...]` (WP2 stage D, 2026-11-17) writes three files

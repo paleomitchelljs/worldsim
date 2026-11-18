@@ -1,121 +1,53 @@
 """Maps and plots."""
 import math
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 from scipy import ndimage
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
+from .maps import Proj, Snap, borders_mask, font, frame  # noqa: F401
 
 
-def font(size):
-    try:
-        return ImageFont.load_default(size=size)
-    except TypeError:
-        return ImageFont.load_default()
+_PROJ = {}
 
 
-def borders_mask(lab2):
-    b = np.zeros(lab2.shape, bool)
-    b[:, :-1] |= lab2[:, :-1] != lab2[:, 1:]
-    b[:-1, :] |= lab2[:-1, :] != lab2[1:, :]
-    return b
+def proj_for(W, kind="platecarree", scale=2):
+    """A projection, built once per world, kind and scale."""
+    k = (id(W), kind, scale)
+    if k not in _PROJ:
+        _PROJ[k] = Proj(W, kind, scale)
+    return _PROJ[k]
 
 
-def render(sim, scale=2):
-    W = sim.W
-    r0, r1 = W.r0, W.r1
-    occ = sim.cul >= 0
-    dens = np.where(occ, sim.pop / W.area, 0)
-    a = np.clip(np.log10(1 + dens) / np.log10(1 + 60), 0.4, 1)
-
-    # political map
-    pol = W.base.astype(float).copy()
-    pid = sim.cell_pol
+def snap_of(sim):
+    """The live Sim as a maps.Snap (WP3 stage B)."""
     pc = np.zeros((sim.next_pid, 3))
+    live = {}
     for k, p in sim.polities.items():
         pc[k] = p["col"]
-    m = pid >= 0
-    rr, cc = W.row, W.col
-    tribal = occ & ~m
-    col_t = sim.colors[np.maximum(sim.cul, 0)].astype(float)
-    pol[rr[tribal], cc[tribal]] = 0.6 * pol[rr[tribal], cc[tribal]] + \
-        0.4 * col_t[tribal]
-    pol[rr[m], cc[m]] = 0.15 * pol[rr[m], cc[m]] + 0.85 * pc[pid[m]]
-    lab = -np.ones((NY, NX), int)
-    lab[rr, cc] = np.where(m, pid, -2)
-    lab[~W.land2] = -3
-    bm = borders_mask(lab) & W.land2 & (lab >= 0)
-    pol[bm] = pol[bm] * 0.25
-
-    # peoples map
-    eth = W.base.astype(float).copy()
-    eth[rr[occ], cc[occ]] = (1 - a[occ, None]) * eth[rr[occ], cc[occ]] + \
-        a[occ, None] * col_t[occ]
-
-    def panel(img):
-        im = img[r0:r1].clip(0, 255).astype(np.uint8)
-        im = np.repeat(np.repeat(im, scale, 0), scale, 1)
-        return Image.fromarray(im)
-
-    P1, P2 = panel(pol), panel(eth)
-    for P, dots in ((P1, True), (P2, True)):
-        d = ImageDraw.Draw(P)
-        for cell, rec in sim.cities.items():
-            s = sim.city_size.get(cell, 0)
-            rad = 1 + 1.2 * math.log10(1 + s / 2000)
-            x = (W.col[cell] + 0.5) * scale
-            y = (W.row[cell] - r0 + 0.5) * scale
-            p = sim.polities.get(rec["polity"])
-            cap = p is not None and p["capital"] == cell
-            d.ellipse([x - rad, y - rad, x + rad, y + rad],
-                      fill=(255, 255, 255) if cap else (235, 230, 215),
-                      outline=(0, 0, 0))
-            if cap and p["n_cells"] > 250:
-                d.ellipse([x - rad - 3, y - rad - 3, x + rad + 3, y + rad + 3],
-                          outline=(255, 255, 255), width=2)
-    d = ImageDraw.Draw(P2)
-    for h, al in zip(sim.dhome, sim.dally):
-        x = (W.col[h] + 0.5) * scale
-        y = (W.row[h] - r0 + 0.5) * scale
-        d.rectangle([x - 1, y - 1, x + 1, y + 1],
-                    fill=(255, 215, 0) if al >= 0 else (120, 0, 0))
-    d = ImageDraw.Draw(P1)
-    f = font(13)
-    live = sorted([p for p in sim.polities.values() if p["ended"] is None],
-                  key=lambda p: -p["n_cells"])[:10]
-    for p in live:
-        if p["n_cells"] < 150:
-            break
-        c = p["capital"]
-        x = (W.col[c] + 0.5) * scale + 6
-        y = (W.row[c] - r0 + 0.5) * scale - 6
-        d.text((x, y), sim.pname(p["id"]), fill=(255, 255, 255), font=f,
-               stroke_width=2, stroke_fill=(0, 0, 0))
-
-    w, h = P1.size
-    rows = (sim.nP + 4) // 5
-    hdr = 14 + 38 * rows
-    out = Image.new("RGB", (w, 2 * h + hdr + 6), (16, 18, 24))
-    out.paste(P1, (0, hdr))
-    out.paste(P2, (0, hdr + h + 6))
-    d = ImageDraw.Draw(out)
-    d.text((12, 8), f"Year {sim.year}", fill=(240, 240, 240), font=font(24))
+        if p["ended"] is None:
+            live[k] = (p["capital"], p["culture"], len(p["cities"]))
+    cells = np.fromiter(sim.cities.keys(), int, len(sim.cities))
+    pol = np.array([sim.cities[c]["polity"] for c in cells], int)
+    cap = np.array([c == live.get(q, (-1,))[0] for c, q in zip(cells, pol)],
+                   bool)
+    size = np.array([sim.city_size.get(c, 0.0) for c in cells])
     ps = sim.people_summary()
-    for i, k in enumerate(sim.keys):
-        x = 150 + 225 * (i % 5)
-        y0 = 38 * (i // 5)
-        d.rectangle([x, 12 + y0, x + 14, 26 + y0], fill=tuple(sim.colors[i]))
-        d.text((x + 20, 8 + y0), f"{sim.P[i]['label']}",
-               fill=(230, 230, 230), font=font(13))
-        d.text((x + 20, 26 + y0), f"{ps[i]['pop']/1e6:5.2f}M "
-               f"{ps[i]['nlin']} lin {ps[i]['stage']}",
-               fill=(170, 170, 170), font=font(12))
-    nl = sum(1 for p in sim.polities.values() if p["ended"] is None)
-    d.text((12, 40), f"states {nl}", fill=(230, 230, 230), font=font(13))
-    d.text((12, 58), f"wars {len(sim.wars)}", fill=(230, 230, 230),
-           font=font(13))
-    return out
+    return Snap(
+        sim.year, sim.cul, sim.cell_pol, sim.pop, sim.colors, sim.keys,
+        [p["label"] for p in sim.P], pc,
+        cities=dict(cell=cells, size=size, polity=pol, capital=cap),
+        states=live, lineage=sim.lin, lcol=getattr(sim, "Lcol", None),
+        dragons=(sim.dhome, sim.dally),
+        lines=(f"states {len(live)}", f"wars {len(sim.wars)}"),
+        legend=[f"{ps[i]['pop']/1e6:5.2f}M {ps[i]['nlin']} lin "
+                f"{ps[i]['stage']}" for i in range(sim.nP)])
+
+
+def render(sim, scale=2, kind="platecarree"):
+    """The run's frame: states above, peoples below (maps.frame)."""
+    return frame(sim.W, snap_of(sim), proj_for(sim.W, kind, scale))
 
 
 def legacy_map(sim, scale=2):
