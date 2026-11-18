@@ -24,7 +24,7 @@ what an entry holds.
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
-| 4 | A ledger (records only) | done | 2026-11-17 | see entry |
+| 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
 | 5 | A diagnosis | not started | | |
@@ -946,7 +946,7 @@ not continuous. Events are listed newest-last, with the first 400
 shown.
 
 
-### WP4 stage A: food ledger (2026-11-17, commit: see git log, "WP4 stage A")
+### WP4 stage A: food ledger (2026-11-17, 83775fa)
 
 **Done.**
 - `food_flows` passes its unsmoothed flows to `food_ledger`
