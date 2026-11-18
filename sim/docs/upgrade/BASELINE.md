@@ -10,6 +10,14 @@ of mixed settings. WP2 stage B turns these into functions and WP1 stage F
 reruns them on a clean six-seed batch; treat the values below as
 provisional until then.
 
+**Update, 2026-11-17 (WP1 stage F).** The baseline for later packages is
+now `wp1f_base_seed101`-`104` and `106` (named random streams; 668ac79),
+in `sim/runs/`. The `realism.py` table and the comparison with the old
+`ub_` batch are in `docs/run-log.md`, "2026-11-17 WP1 stage F". Median end
+population is 116M (86-164M), against 137M (124-160M) for `ub_`. The
+sections below still describe `al_seed103` and the old code; WP2 stage B
+recomputes them as functions on the new batch.
+
 Reproduce with `docs/upgrade/tools/analyze_run.py` (edit the run names at
 the top of each section; it reads only local files).
 

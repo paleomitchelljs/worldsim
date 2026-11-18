@@ -15,7 +15,7 @@ what an entry holds.
 | 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
 | 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
-| 1 | F RNG streams and new baseline | not started | | |
+| 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | not started | | |
 | 2 | B run loader and metrics | not started | | |
 | 2 | C tidy tables | not started | | |
@@ -444,3 +444,50 @@ streams, it would mean reseeding `self.rng` at the branch. Ask U if
 wanted.
 
 **Next.** Stage F (RNG streams and a new baseline; D12 needs U).
+
+### WP1 stage F: named random streams and a new baseline (2026-11-17, 668ac79)
+
+**Done (U: D12 yes; a fresh seed for a branch, yes).**
+- `geo.stream(seed, name)`: a `SeedSequence` child keyed on
+  `crc32(name)`. A stream's draws depend only on the seed and its name,
+  so adding a stream or drawing more from one shifts no other.
+- `self.rng` is removed. Its 51 uses are grouped by subsystem: start,
+  lineage, migrate, famine, disasters, trade, tech, cities, polity,
+  diplomacy, revolt, succession, raid, war, colour. The old offset
+  streams (climate, dragons, rulers, city_culture, lineage_sup,
+  lineage_pref, lineage_x, and at setup vary, vary_x, prefs) use the same
+  scheme. `Sim.R(name)` makes a stream on first use and keeps it in
+  `self.rngs`.
+- `Sim.reseed(seed)` and `worldsim.py --branch-seed N` give a branch
+  fresh streams. What was drawn at setup stays as saved: the climate
+  series, abrupt events, sites and founders. `run.json` gains
+  `stream_seed`. `upgrade()` puts an older state on fresh named streams.
+
+**Runs.**
+- `wp1f_base_seed101`-`104` and `106`: 8,000 years, sweep settings; 7.5-8.5
+  minutes each on a lightly loaded machine. Seeds 101 and 103 saved states
+  at years 3,000 and 5,000 (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`,
+  260-290 MB). Results and the comparison with `ub_` are in
+  `docs/run-log.md`; most measures overlap. End population is wider and
+  lower: median 116M (86-164M) against 137M (124-160M). Dragon deaths are
+  0.60-0.64 of all deaths against 0.53-0.61. Cities ended are 0.62-0.76
+  of those founded against 0.50-0.64.
+- `wp1f_fullclim_seed*` (the same five seeds, `CLIM_LOCAL_COARSE=1`):
+  median end population 147M (108-178M). The climate statistics match
+  the coarse batch (moisture sd, drought shares, great droughts), so I
+  read the population gap as seed noise. It is unresolved and logged in
+  `open-questions.md`.
+- Branch tests from `wp1f_s101_y5000.pkl`, run to 5,300: with the state's
+  own streams, `events.txt` matches the base run line for line; with
+  `--branch-seed 7` it differs from the first tick. Both took 44 s.
+
+**Not done.** BASELINE.md's detailed sections still describe `al_seed103`
+and the old code; it now points to the new batch. Recomputing those
+sections is WP2 stage B's job.
+
+**WP1 summary.** Stages A, B, D and E are done, C was measured and not
+adopted, and F is done. On seed 101, phase time over 6,000 years fell
+from 392 s (WP0 E, profile pair of 2026-11-17) to about 292 s before the
+streams. A full 8,000-year run now takes about 8 minutes.
+
+**Next.** WP2 stage A (structured events), as `README.md` orders it.

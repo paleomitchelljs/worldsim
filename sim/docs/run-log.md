@@ -1403,3 +1403,53 @@ the three.
   counts, endings and the city change over falls are. Polity counts
   barely change (fw 4,418-6,637, ub 4,452-6,353): most of these towns
   join the state that holds the cell.
+
+### 2026-11-17 WP1 stage F: new baseline on named random streams (`wp1f_base_`, `wp1f_fullclim_`)
+
+What it tested: the model after WP1 (speed refactors, the climate's local
+field at half resolution, every draw from a named stream; D12, U). Seeds
+101-104 and 106, sweep settings, 8,000 years, defaults. `wp1f_base_`: as
+committed (668ac79). `wp1f_fullclim_`: the same with
+`--set CLIM_LOCAL_COARSE=1`, the full-resolution local field, to separate
+the climate change from the stream split. Compared with `ub_` (seeds 101-104
+and 106, 2026-11-09 code, the same settings; in the old Dropbox runs
+folder). Up to year 5,000, seed 101 under the pre-stream code still matched
+`ub_seed101` exactly (`wp1_ref_6000`), so the gap below is from stage F and
+the climate field, not from earlier drift. Saved states for branching:
+`runs/wp1f_s101_y3000.pkl`, `wp1f_s101_y5000.pkl`, `wp1f_s103_y3000.pkl`,
+`wp1f_s103_y5000.pkl` (260-290 MB each).
+
+| measure | ub (old) | wp1f_base | wp1f_fullclim |
+|---|---|---|---|
+| population end, M (by seed 101/102/103/104/106) | 137/125/159/160/124 | 86/164/120/110/116 | 140/147/165/178/108 |
+| population end, median | 137 | 116 | 147 |
+| population yr 6000, median | 79 | 61 | 76 |
+| urban share, end | 0.089-0.093 | 0.061-0.093 | - |
+| largest city (k fe) | 96-131 | 75-123 | - |
+| largest state, M km2 | 4.9-6.7 | 2.7-8.7 | - |
+| wars | 4,690-8,557 | 2,666-8,300 | - |
+| wars settled within a tick | 0.66-0.72 | 0.61-0.68 | - |
+| cities founded | 1,549-2,577 | 1,761-2,244 | - |
+| cities ended, share | 0.50-0.64 | 0.62-0.76 | - |
+| deaths: dragon | 0.53-0.61 | 0.60-0.64 | - |
+| deaths: feud | 0.20-0.22 | 0.18-0.21 | - |
+
+(`-`: not run through `realism.py`.) War endings, siege terms and the other
+death causes overlap between `ub` and `wp1f_base`.
+
+- **The spread across seeds is wider than before** (end population 86-164M
+  against 124-160M), and the median is lower. With five seeds a side
+  that is not distinguishable from chance (rank-sum p about 0.1).
+- **The half-resolution climate field may lower population, but the
+  evidence is weak.** With the full-resolution field the median comes
+  back to 147M (p about 0.15 against `wp1f_base`). The field's own
+  statistics are the same in both batches: moisture sd 0.551 against
+  0.546, mean share of people under drought 0.092 against 0.091, ticks
+  with over 30% of people under drought 0.051 against 0.049, 7-10 against
+  6-12 great droughts per run. Spatial correlation at lags of 1-12 cells
+  matched to within 0.015 (stage D check). No mechanism is apparent, so I
+  read it as seed noise (C), and kept the faster field. Recheck when WP2's
+  metrics give a larger batch; `CLIM_LOCAL_COARSE=1` restores the old
+  field exactly.
+- 8,000 years now take 7.5-8.5 minutes on a lightly loaded machine (the
+  guide's figure was about 14).
