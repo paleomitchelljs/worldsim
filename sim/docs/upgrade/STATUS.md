@@ -18,7 +18,7 @@ what an entry holds.
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
 | 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
-| 2 | C tidy tables | not started | | |
+| 2 | C tidy tables | done | 2026-11-17 | (this commit) |
 | 2 | D GIS export | not started | | |
 | 3 | A snapshots | not started | | |
 | 3 | B renderer and projection | not started | | |
@@ -604,3 +604,54 @@ states were remade under the default, from runs `wp1g_states_seed101` and
   `runio.Run` when next touched.
 
 **Next.** WP2 stage C (tidy tables).
+
+### WP2 stage C: tidy tables (2026-11-17)
+
+**Done.**
+- `timeseries_long.csv` (`year, people, variable, value`), written by
+  `Stream.flush_long` alongside the wide `timeseries.csv`, which stays.
+  `runio.split_col` splits a column name: `<variable>_<key>` gives
+  that people; `<variable>_world` and everything else give `ALL`. Empty
+  values are left out. CSV, not Parquet, because D4 (pyarrow) is
+  unanswered. `Run.timeseries_long` melts the wide table for older runs.
+- `polities.csv` gains `capital_cell`, `origin`, `end_reason` and
+  `ended_by`. `new_polity(..., origin=)` is tagged at all four call
+  sites: `city_outside`, `city_inside`, `colony`, `revolt_<kind>`,
+  `partition`, `shatter`. That is WP5 stage A's item 1 (the tag only,
+  not its table). `kill_polity(..., code=)` stores a one-word reason
+  (`lost_last_city`, `ceded`, `conquered`, `absorbed`, `shattered`,
+  `annexed`, `fusion`, `union`) and the state that ended it. In
+  `revolt()`, the lines that work out `kind` and `key` moved above
+  `new_polity`. They draw no random numbers.
+- `docs/running.md`, "Table columns and units": every table, one row
+  each, with its columns and units. Heads against food-equivalents.
+  The three city "sizes" (`size`, `size_old`, `cell_pop`).
+  `docs/diagnostics.md` points to it.
+
+**Runs.**
+- `wp2c_sanity_seed101` (3,000 years, 186 s): 30.5M people, 44 cities,
+  43 states. `events.txt` is byte-identical to `wp2a_sanity_seed101`, so
+  the records change nothing. `timeseries_long.csv` is 5.3 MB against
+  1.6 MB for the wide file (181,286 rows). An 8,000-year run will give
+  about 15 MB.
+- Only `city_outside` and two revolts occur in those 3,000 years, so
+  `wp2c_branch` continues `wp1f_s101_y5000.pkl` to year 5,600. Its 404
+  new states: 129 city_outside, 84 revolt_secession, 73 revolt_kin, 62
+  revolt_ethnic, 21 partition, 16 revolt_pretender, 13 city_inside, 6
+  shatter, 0 colony. The 1,297 states from before the branch have a
+  blank origin.
+- `Run("wp1f_fullclim_seed101").timeseries_long` (melted): 497,647
+  rows; 19 variables per people.
+
+**Not done.**
+- No `colony` origin appeared in either run, so that tag is unexercised.
+  The `n_colony_city` counter shows colonist cities do get founded. In
+  those cases the city joined its home state.
+- No metric reads `origin` yet. WP5 stage A tabulates it.
+- Polities in a saved state from before this stage have a blank
+  `origin`. If they end after the branch, they still get an
+  `end_reason`.
+
+**Next.** WP2 stage D (GIS export), which needs U on D4 (`xarray`,
+`netCDF4`, `geopandas`).
+

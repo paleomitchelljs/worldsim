@@ -154,7 +154,8 @@ With `--off all --city-cap 3 40` the model reproduces the pre-structural one dra
 From 2026-11-17 the run writes as it goes (`wsim/output.py`, `Stream`).
 Each frame is saved to `frames/` when it is rendered. Every `FLUSH_EVERY`
 ticks (C: 100 ticks, 500 years) and at the end, the append-only tables
-(`events.txt`, `events.jsonl`, `timeseries.csv`, `city_sizes.csv`, `sieges.csv`,
+(`events.txt`, `events.jsonl`, `timeseries.csv`, `timeseries_long.csv`,
+`city_sizes.csv`, `sieges.csv`,
 `revolts.csv`, `relations.csv`, `price.csv`, `cityfood.csv`, `deaths.csv`,
 `citylevel.csv`, `citygaps.csv`, `citytraits.csv`, `lineage_events.csv`,
 `lineage_pairs.csv`) get their new rows. `wars.csv`, `rulers.csv`,
@@ -187,6 +188,7 @@ figures.
 | `traits.txt` | the traits actually used: people base values plus each founding group |
 | `lineages.csv` | every lineage, with parent, origin, traits and the technology stage reached |
 | `cities.csv`, `polities.csv` | lon/lat, founding and end years, peaks, rulers, peoples ruled (loads into QGIS) |
+| `timeseries_long.csv` | the same numbers as `timeseries.csv`, one per row: `year, people, variable, value` (WP2 stage C, 2026-11-17). A column named `<variable>_<key>` gives that people (`pop_Hum`: people `Hum`, variable `pop`); `<variable>_world` and every other column give `people = ALL`. Empty values are left out. Older runs: `Run(name).timeseries_long` melts their wide table the same way |
 | `timeseries.csv`, `final_state.npz` | per-tick statistics; final per-cell grid (row/col match `cells`), including roads, improvements, land condition, rivers and the drainage network as it ended |
 | `run.json` | the settings of the run, including the mechanics switched on. From 2026-11-17 also `code` (git commit and whether tracked files differed from it), `command` (the full command line), `python` and `numpy` versions, `wall_seconds` (from start to the last write of `run.json`), `year_reached`, and `constants`: every numeric constant in `wsim/params.py` as used, after `--set` and the other overrides. A run started with `--from-state` also has `branch` ([Branching](#branching-from-a-saved-state)) |
 | `price.csv` | Price-equation decomposition of each cultural trait, per century, per people and world-wide ([diagnostics.md](diagnostics.md)) |
@@ -215,3 +217,65 @@ landmasses. `timeline.py RUN --landmass W1,W2` takes the same codes.
 `figures.py RUNS` rebuilds `final.png`, `wars.png`, `trade.png` and (with `history.npz`) the war maps and `tradewars.gif` for finished runs
 (runs before 2026-11-01 lack `posts.csv`; their posts are rebuilt from
 the events still standing at the end).
+
+## Table columns and units
+
+Every table a run writes, with its columns (WP2 stage C, 2026-11-17).
+Units, unless a row says otherwise: years are calendar years of the run
+(5-year ticks); `cell` is a land-cell index (row and column in
+`final_state.npz`); `lon`, `lat` are the cell centre in degrees;
+`people` is a people's key (`Hum`, ...); state, city, war and lineage
+ids match across tables. Population counts are of two kinds:
+
+- **heads**: individuals (`pop` in the code). `timeseries.csv` `pop_*`,
+  `cell_pop`, `hinter_pop`, `peak_pop`, `deaths`.
+- **food-equivalents (fe)**: heads x body size^0.75 (`--size-food`), so
+  a troll counts for more than a goblin. City sizes are in fe.
+
+**"Size" of a city** has meant three things. Say which.
+
+| Name | Where | Meaning | Unit |
+|---|---|---|---|
+| `size` | `city_sizes.csv`; `peak_size` in `cities.csv`; `largest_city_fe` | urban population: the part of the city cell fed by food brought in (trade, rent, tax, tribute), not by its own land ([diagnostics.md](diagnostics.md#records-of-2026-11-09)) | fe |
+| `size_old` | `city_sizes.csv` | the formula before 2026-11-09: 0.08 x city cell + 0.04 x hinterland | fe |
+| `cell_pop` | `city_sizes.csv`, `cityfood.csv` | everyone living in the city's cell, farmers included | heads |
+
+| File | One row per | Columns |
+|---|---|---|
+| `timeseries.csv` | tick | `year`; world measures; per-people columns `<variable>_<key>` and world means `<variable>_world`; `n_<counter>`: events of that kind during the tick. Meanings in [diagnostics.md](diagnostics.md#extra-timeseriescsv-columns-always-written) |
+| `timeseries_long.csv` | tick x column | `year, people, variable, value` (see above) |
+| `polities.csv` | state | `id`; `people` (the ruling people), `lineage` (`L<id>`, at the end), `peoples_ruled`; `founded`, `ended` (blank if alive), `years`; `parent` (state it broke from, if any); `peak_cells`, `peak_km2`, `peak_year`, `peak_cities`, `peak_pop` (heads); `capital_lon`, `capital_lat`, `capital_cell` (the last capital); `peak_foreign_share` (share of heads not of the ruling people); `origin`, `end_reason`, `ended_by` (below) |
+| `cities.csv` | city ever founded | `id, cell, lon, lat, people, founded, ended`; `end_reason` (text), `cause`; `years`; `peak_size` (fe), `peak_year`; `n_sacks, n_rulers`; `prev_city`, `refounded`, `successor` (city ids and the year a ruin was resettled); `ruin_years, ruin_empty_years`; `rulers` (state ids in order); `minority_peoples, minority_peak_share, minority_years, majority_changes` |
+| `city_sizes.csv` | city or ruin, every 25 yr | `year, city_id, cell, status` (`city`, `ruin, settled`, `ruin, empty`); `size` (fe), `cell_pop` (heads), `size_old` (fe); `people, polity` (-1 none); `minority`, `minority_share` |
+| `cityfood.csv` | city, every 25 yr | `year, city_id, cell, people, polity, capital, coastal, river`; `cell_pop`, `hinter_pop` (heads), `hinter_cells`; `k_rural` (what the cell's land feeds), `urban`, `from_trade, from_rent, from_prov, from_capital` (fe); `main_source` |
+| `wars.csv` | war | `id, start, end, years, att, dfn`; peoples, landmasses, cities and `strength` (model units: the state's weighted population x military x (0.3 + 0.7 cohesion), `states.py`) of each side at the start; `goal, goal_city, goal_met, why` (how it ended, `ongoing` if alive); `sieges, captures, recaptures, moved, moved_back, helpers, sacks` |
+| `sieges.csv` | siege | `year, war, side` (`att`: the attacker's siege; `dfn`: a counter-offensive), `city, city_fe` (fe), `capital`, `besieger, holder`, `P_besieger, P_holder` (strength brought), `odds` (win probability at launch), `taken`, `terms` |
+| `revolts.csv` | revolt | `year, state, new_state, people_ruler, people_rebels, kind` (secession, kin, ethnic, pretender), `cities_taken, cities_left, landmass, lon, lat` |
+| `relations.csv` | neighbouring pair of live states, every frame tick | ids, peoples, landmasses and cities of `a` and `b`; `similarity`, `similarity_lin` (0-1); `enmity_ab, enmity_ba, faith_ab, faith_ba`; `tie` (trade); `war, allied, truce` (0/1) |
+| `rulers.csv` | reign | `ruler, state, people, start, end, years, cities, succession` (how it ended), `dynasty`; ruler traits `violence, dominance, expansion, statecraft`; `w`, `gap` ([rules](rules/)) |
+| `lineages.csv` | lineage | `id, people, parent, parent2, how, founded, ended, fate, peak_pop` (heads); `stage, agri, metal, sail, fishing`; memories `war_mem` ... `raid_mem`; `admin`, `r` (growth per year); cultural traits (0-1) |
+| `lineage_events.csv`, `lineage_pairs.csv` | fusion or absorption; pair of lineages sharing a state | `year, kind, people, a, b, to, state, years_together, pop_a, pop_b, share, distance` ...; `hazard` |
+| `deaths.csv` | people x cause, every century | `year, people, cause, deaths` (heads over the century) |
+| `price.csv` | people (and world) x trait, every century | Price-equation terms ([diagnostics.md](diagnostics.md#price-decomposition-pricecsv)) |
+| `citylevel.csv`, `citygaps.csv`, `citytraits.csv` | trait, city | city-level cultural measures ([diagnostics.md](diagnostics.md)) |
+| `dragons.csv` | dragon | `id, born, parent, home0` (cell), traits, `ended, fate, ally, ally_people, ally_year, moves` |
+| `posts.csv` | trading post standing at the end | `planter, host` (states), `city` (cell), `lon, lat, year`, peoples |
+| `events.jsonl` | event | see the files table above |
+
+**`polities.csv` `origin`** (records, WP2 stage C; C): how the state
+began. `city_outside`: a city founded outside any state.
+`city_inside`: a city founded inside a state that it did not join.
+`colony`: a city of a colonist lineage that did not join its home
+state. `revolt_secession`, `revolt_kin`, `revolt_ethnic`,
+`revolt_pretender`: a breakaway (the kinds of `revolts.csv`).
+`partition`: an heir's share of a divided realm. `shatter`: a city left
+on its own when its state shattered after losing its capital. Blank for
+runs before 2026-11-17.
+
+**`end_reason`**: `lost_last_city` (its last city depopulated, abandoned or taken over by another people), `ceded`,
+`conquered`, `absorbed` (a same-people state of 3 or fewer cities taken
+whole), `shattered`, `annexed` (by its lord), `fusion` (with another
+people's state), `union` (with its own people's). **`ended_by`**: the
+state that ended it, where there is one. The full text of each fall is in
+`events.jsonl` (kind `fall`, for states of 3+ cities or 150+ cells).
+

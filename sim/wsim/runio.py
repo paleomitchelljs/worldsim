@@ -25,6 +25,7 @@ SF_DATALESS = 0x40000000
 # table name -> file in the run folder
 FILES = {
     "timeseries": "timeseries.csv",
+    "timeseries_long": "timeseries_long.csv",
     "cities": "cities.csv",
     "polities": "polities.csv",
     "wars": "wars.csv",
@@ -84,6 +85,8 @@ class Run:
         p = self.path(table)
         if table == "events" and not os.path.exists(p):
             p = os.path.join(self.dir, "events.txt")
+        if table == "timeseries_long" and not os.path.exists(p):
+            p = self.path("timeseries")
         if not os.path.exists(p):
             return "absent"
         if online_only(p):
@@ -104,6 +107,9 @@ class Run:
         p = self.path(table)
         if table == "events":
             v = read_events(self.dir)
+        elif table == "timeseries_long" and not os.path.exists(p):
+            # runs before WP2 stage C: melted from the wide table
+            v = long_table(self.timeseries, self.keys)
         elif p.endswith(".csv"):
             v = pd.read_csv(p, low_memory=False)
         elif p.endswith(".npz"):
@@ -160,3 +166,25 @@ def read_events(run_dir):
                 y, k, t = line.rstrip("\n").split(None, 2)
                 rows.append(dict(year=int(y), kind=k, text=t))
     return pd.DataFrame(rows)
+
+
+def split_col(name, keys):
+    """(people, variable) for a timeseries.csv column (WP2 stage C):
+    `pop_Hum` -> (Hum, pop), `violence_world` -> (ALL, violence), any
+    other column -> (ALL, name)."""
+    head, _, tail = name.rpartition("_")
+    if head and tail in keys:
+        return tail, head
+    if head and tail == "world":
+        return "ALL", head
+    return "ALL", name
+
+
+def long_table(ts, keys):
+    """The wide timeseries as year, people, variable, value, without
+    empty values."""
+    m = ts.melt(id_vars="year", var_name="col").dropna(subset=["value"])
+    pv = {c: split_col(c, keys) for c in m["col"].unique()}
+    m["people"] = m["col"].map(lambda c: pv[c][0])
+    m["variable"] = m["col"].map(lambda c: pv[c][1])
+    return m[["year", "people", "variable", "value"]].reset_index(drop=True)

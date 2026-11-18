@@ -184,6 +184,7 @@ class Stream:
                         w.writerow(head)
                 w.writerows(rows[n:])
             self.done[attr] = len(rows)
+        self.flush_long()
         write_wars(sim, out)
         write_rulers(sim, out)
         write_lineages(sim, out)
@@ -193,6 +194,26 @@ class Stream:
         write_posts(sim, out)
         write_history(sim, out)
         write_run_json(sim, out)
+
+    def flush_long(self):
+        """timeseries.csv's new rows again as year, people, variable,
+        value (WP2 stage C); people is ALL for a world column. Empty
+        values are left out."""
+        from .runio import split_col
+        rows, n = self.sim.ts, self.done.get("ts_long", 0)
+        if len(rows) <= n:
+            return
+        keys = set(self.sim.keys)
+        with open(os.path.join(self.out, "timeseries_long.csv"),
+                  "a" if n else "w", newline="") as fh:
+            w = csv.writer(fh)
+            if not n:
+                w.writerow(["year", "people", "variable", "value"])
+            for r in rows[n:]:
+                for c, v in r.items():
+                    if c != "year" and v is not None:
+                        w.writerow([r["year"], *split_col(c, keys), v])
+        self.done["ts_long"] = len(rows)
 
 
 def event_row(sim, e):
@@ -335,7 +356,8 @@ def write_polities(sim, out):
         w.writerow(["id", "people", "lineage", "peoples_ruled", "founded",
                     "ended", "years", "parent", "peak_cells", "peak_km2",
                     "peak_year", "peak_cities", "peak_pop", "capital_lon",
-                    "capital_lat", "peak_foreign_share"])
+                    "capital_lat", "peak_foreign_share", "capital_cell",
+                    "origin", "end_reason", "ended_by"])
         for p in sim.polities.values():
             end = p["ended"] if p["ended"] is not None else sim.year
             cap = p["capital"]
@@ -347,7 +369,9 @@ def write_polities(sim, out):
                         p["peak_cells"], km2 and int(km2), p["peak_year"],
                         p["peak_cities"], int(p["peak_pop"]),
                         f"{sim.W.lon[cap]:.2f}", f"{sim.W.lat[cap]:.2f}",
-                        round(p.get("peak_foreign", 0.0), 3)])
+                        round(p.get("peak_foreign", 0.0), 3), cap,
+                        p.get("origin", ""), p.get("end_reason", ""),
+                        "" if p.get("ended_by") is None else p["ended_by"]])
 
 
 def write_dragons(sim, out):

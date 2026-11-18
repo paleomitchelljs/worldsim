@@ -651,7 +651,7 @@ class WarMixin:
                      cell=t, polities=[dfn, att])
         if not B["cities"]:
             self.kill_polity(dfn, f"ceded its last city to "
-                             f"{self.pname(att)}", by=att)
+                             f"{self.pname(att)}", by=att, code="ceded")
         elif B["capital"] == t:
             self.recapital(B)
 
@@ -728,7 +728,7 @@ class WarMixin:
                          cell=t, polities=[att, dfn], cities=[rec['id']])
             if not B["cities"]:
                 self.kill_polity(dfn, f"conquered by {self.pname(att)}",
-                                 by=att)
+                                 by=att, code="conquered")
             elif B["culture"] == ca and len(B["cities"]) <= 3:
                 for c in list(B["cities"]):
                     self.cities[c]["polity"] = att
@@ -736,15 +736,16 @@ class WarMixin:
                     A["cities"].add(c)
                 B["cities"] = set()
                 self.kill_polity(dfn, f"absorbed by {self.pname(att)}",
-                                 by=att)
+                                 by=att, code="absorbed")
             elif self.R("war").random() < SHATTER_P:
                 rest = list(B["cities"])
                 B["cities"] = set()
-                self.kill_polity(dfn, "shattered after its capital fell")
+                self.kill_polity(dfn, "shattered after its capital fell",
+                                 code="shattered")
                 for c in rest:
                     Lc = self.lin[c] if self.lin[c] >= 0 else B["lin"]
                     self.cities[c]["polity"] = self.new_polity(
-                        Lc, c, 0.5, parent=dfn)
+                        Lc, c, 0.5, parent=dfn, origin="shatter")
                     self.cities[c]["owners"].append(self.cities[c]["polity"])
             else:
                 self.recapital(B)

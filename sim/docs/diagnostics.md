@@ -2,6 +2,15 @@
 
 Code: `Sim.price`, `write_checks`; extra columns in `timeseries.csv`.
 
+Every output table, its columns and their units are listed once, in
+[running.md](running.md#table-columns-and-units) (WP2 stage C,
+2026-11-17). That section also says which of the three city "sizes" is
+which: `size` (urban population, food-equivalents), `size_old` (the
+formula before 2026-11-09, food-equivalents) and `cell_pop` (everyone in
+the city cell, heads). `timeseries.csv` is also written long, as
+`timeseries_long.csv` (`year, people, variable, value`). `polities.csv`
+gained `capital_cell`, `origin`, `end_reason` and `ended_by` (records).
+
 ## Price decomposition (`price.csv`)
 
 Every 100 years the run takes a snapshot of every living lineage: its

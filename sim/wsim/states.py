@@ -35,7 +35,12 @@ class StatesMixin:
         pl = self.ptab()[0]
         return np.where(pl >= 0, self.admin[np.maximum(pl, 0)], 0.0)
 
-    def new_polity(self, L, capital, cohesion=0.6, parent=None):
+    def new_polity(self, L, capital, cohesion=0.6, parent=None,
+                   origin=""):
+        """A new state of lineage L seated at `capital`. origin (a record,
+        WP2 stage C): city_outside, city_inside (founded inside a state it
+        did not join), colony (a colonist lineage's city that did not join
+        its home state), revolt_<kind>, partition or shatter."""
         pid = self.next_pid
         self.next_pid += 1
         self.pver += 1
@@ -51,7 +56,9 @@ class StatesMixin:
                                   cities={capital}, peak_cells=0,
                                   peak_year=self.year, peak_cities=1,
                                   peak_pop=0, peak_mask=None, peoples=set(),
-                                  parent=parent, n_cells=0, strength=0,
+                                  parent=parent, origin=origin,
+                                  end_reason="", ended_by=None,
+                                  n_cells=0, strength=0,
                                   pop=0, col=self.polity_color(c))
         if self.rt:
             x, dyn = self.draw_ruler(pid, self.polities[pid])
@@ -83,18 +90,21 @@ class StatesMixin:
 
     def recapital(self, p):
         if not p["cities"]:
-            self.kill_polity(p["id"], "lost its last city")
+            self.kill_polity(p["id"], "lost its last city",
+                             code="lost_last_city")
             return
         p["capital"] = max(p["cities"], key=self.city_weight)
         self.pver += 1
 
-    def kill_polity(self, pid, why, by=None):
+    def kill_polity(self, pid, why, by=None, code=""):
         """End state pid; why: the reason, for the log; by: the state
-        that ended it, if any (the event's second polity)."""
+        that ended it, if any (the event's second polity); code: the
+        reason as one word, for polities.csv (WP2 stage C)."""
         p = self.polities.get(pid)
         if p is None or p["ended"] is not None:
             return
         p["ended"] = self.year
+        p["end_reason"], p["ended_by"] = code, by
         self.pver += 1
         self.vassal.pop(pid, None)
         for v in [v for v, o in self.vassal.items() if o == pid]:
@@ -177,7 +187,9 @@ class StatesMixin:
             owner = int(self.cell_pol[cell])
             op = self.polities.get(owner)
             join = False
+            origin = "city_outside"
             if op is not None and op["ended"] is None:
+                origin = "city_inside"
                 if op["culture"] == c:
                     join = self.R("cities").random() < \
                         0.3 + 0.7 * self.eff(op, "state")
@@ -188,6 +200,7 @@ class StatesMixin:
                 if op is not None and op["ended"] is None and \
                         op["culture"] == c:
                     owner = op["id"]
+                    origin = "colony"
                     join = self.R("cities").random() < \
                         0.3 + 0.7 * self.eff(op, "state")
                     if join:
@@ -218,7 +231,7 @@ class StatesMixin:
                 rec["polity"] = owner
                 op["cities"].add(cell)
             else:
-                rec["polity"] = self.new_polity(L, cell)
+                rec["polity"] = self.new_polity(L, cell, origin=origin)
             rec["owners"].append(rec["polity"])
             self.first(("city", c), "city", f"first city of {self.keys[c]} "
                        f"at {self.place(cell)}",
@@ -803,7 +816,7 @@ class StatesMixin:
                 V["cities"] = set()
                 self.count("vassal_annex")
                 self.kill_polity(v, f"annexed by its lord {self.pname(o)}",
-                                 by=o)
+                                 by=o, code="annexed")
 
     def submit(self, v, o):
         """State v becomes the tributary vassal of state o."""
@@ -851,7 +864,8 @@ class StatesMixin:
                      f"{self.pname(big['id'])} by treaty",
                      polities=[small['id'], big['id']])
         self.kill_polity(small["id"], f"{'fusion' if cross else 'union'} "
-                         f"with {self.pname(big['id'])}", by=big["id"])
+                         f"with {self.pname(big['id'])}", by=big["id"],
+                         code="fusion" if cross else "union")
 
     def blend(self, big, small):
         """A merged state takes one culture: its ruling lineages are
@@ -1384,7 +1398,8 @@ class StatesMixin:
         heirs = [pid]
         for i, s in enumerate(seats[1:], 1):
             group = [c for c, j in zip(cc, near) if j == i]
-            new = self.new_polity(p["lin"], s, p["cohesion"], parent=pid)
+            new = self.new_polity(p["lin"], s, p["cohesion"], parent=pid,
+                                  origin="partition")
             if self.rt:
                 q = self.polities[new]
                 q["ruler"]["x"], q["ruler"]["dyn"] = self.draw_ruler(
@@ -1445,7 +1460,11 @@ class StatesMixin:
         same = Lx == p["lin"]
         Lnew = self.new_lineage(cx, Lx, "secession", sd=self.drift) \
             if same else Lx
-        new = self.new_polity(Lnew, x, 0.75, parent=pid)
+        kind = ("ethnic revolt" if cx != p["culture"] else
+                "secession" if same else "kin revolt")
+        key = "pretender" if self._pretender else kind.split()[0]
+        new = self.new_polity(Lnew, x, 0.75, parent=pid,
+                              origin="revolt_" + key)
         self.cities[x].setdefault("lost", {})[pid] = self.year
         p["cities"].discard(x)
         self.cities[x]["polity"] = new
@@ -1478,9 +1497,6 @@ class StatesMixin:
             hint = np.isin(self.cell_city, group) & (self.lin == Lx)
             self.lin[hint] = Lnew
         taken = len(group)
-        kind = ("ethnic revolt" if cx != p["culture"] else
-                "secession" if same else "kin revolt")
-        key = "pretender" if self._pretender else kind.split()[0]
         share = taken / max(taken + len(p["cities"]), 1)
         self.turmoil(p, ADM_LOSS * share)
         if share >= SPIKE_REVOLT:
