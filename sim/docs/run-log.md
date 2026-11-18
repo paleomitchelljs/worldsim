@@ -1785,3 +1785,49 @@ with the floor scaled by min(1, R / 0.7). Seed 101 / seed 103.
   old rule, so long-odds wars rose from 1% to 13-14%. Half of all wars
   then had no siege, and population ended 15-19% lower in both seeds.
   Scaling the floor by R removed all three effects.
+
+### 2026-11-18 WP5 B addendum: site defence and ruler generalship (`wp5x_seed101`, `wp5x_seed103`)
+
+U asked for both (2026-11-18); forms and numbers C (rules/war.md).
+Standard settings, 8,000 years, `--no-video`, every default switch
+(`war_odds`, `site_defence`, `ruler_mil`). Compared with `wp5b2_*`
+(`war_odds` alone). Two changes at once, so differences between the
+runs are not attributed to either. Seed 101 / seed 103.
+
+| Measure | war_odds | + both |
+|---|---|---|
+| population at 8,000 (M) | 104.9 / 135.2 | 92.6 / 154.8 |
+| wars | 2,487 / 7,074 | 1,761 / 5,366 |
+| wars ending inside one tick | 0.59 / 0.63 | 0.55 / 0.70 |
+| sieges taken | 0.46 / 0.51 | 0.46 / 0.56 |
+| peer wars, share | 0.012 / 0.016 | 0.010 / 0.016 |
+| states at war, mean | 0.029 / 0.053 | 0.022 / 0.034 |
+| largest state (M km2) | 4.2 / 7.0 | 3.0 / 8.8 |
+| ended 3+ city states, median life (yr) | 300 / 190 | 338 / 200 |
+| ... over 1,000 yr | 36 / 50 | 44 / 53 |
+| largest city (k fe) | 114 / 126 | 88 / 112 |
+
+- **Ruler generalship has a visible effect.** Reigns logged: 1,678 /
+  2,399, with median talent g 0.07 and 4% over 0.3.
+  - Cities taken plus defenders made to submit or pay tribute, per
+    century of reign, in wars the state began: g over 0.3, 1.92 / 2.29;
+    g under 0.05, 1.03 / 1.66.
+  - Between 0.05 and 0.3 there is no consistent difference. The talent
+    matters at its tail, as the draw intends.
+- **Site defence has a weak effect.**
+  - Sieges taken, by the site's multiplier (under 0.75, 0.75-0.9,
+    0.9-1.1, 1.1-1.33, over 1.33): 0.47, 0.45, 0.47, 0.47, 0.46 (seed
+    101). The siege threshold explains this: a hard site is besieged
+    only when the odds are already good.
+  - Sacks per city, same classes: 0.45, 0.32, 0.36, 0.22, 0.38 (101);
+    1.48, 1.30, 1.23, 1.01, 0.76 (103).
+  - Owners per city: 3.0, 2.5, 2.7, 2.4, 3.8 (101); 7.5, 7.2, 7.2,
+    6.4, 6.9 (103).
+  - Seed 103 shows hard sites sacked half as often. Seed 101 is noisy,
+    and its 93 hardest sites had the most owners.
+  - With 9 in 10 sites within 0.75-1.33, where a city stands, and which
+    states surround it, outweigh its own draw. If very hard sites should
+    stand out, the spread (SITE_DEF_SD, C) is the number to revisit.
+    That is a choice about the mechanism, not a target.
+- Wars fell 29% / 24% in both seeds. I have not traced why. Site
+  defence enters deterrence (it is physical); ruler talent does not.

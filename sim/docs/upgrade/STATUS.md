@@ -1278,3 +1278,45 @@ adjacency is in scope; drop persistent borders.
 
 **Next.** Stage C (time constants in years) needs no decision. Stage D
 waits on the batch, per open-questions.md.
+
+### WP5 stage B addendum: site defence, ruler generalship (2026-11-18, HASH)
+
+**Asked by U (2026-11-18).**
+- Each city gets a random defence boost: most alike, a few vulnerable,
+  a few very hard to take.
+- Some rulers are better at offense. This does not change their chance
+  of going to war, but at war their state punches above its weight, with
+  the boost fading over later reigns.
+
+**Done** (two switches, on by default; numbers C):
+- `site_defence`: a per-site multiplier on terrain defence,
+  clip(exp(0.12 t3), 0.5, 3). It is drawn once per cell on its own
+  stream (`new_state_v5`, also in `upgrade()`). `Sim.city_def` reads it
+  in sieges, counter-offensives, cessions and deterrence.
+- `ruler_mil`: each ruler's talent g ~ exponential(0.1), capped at 1.
+  The state attacks at 1 + g + legacy; at each succession, legacy
+  becomes 0.5 x (legacy + g). It applies to the besieger's strength and
+  the cession test, not to defence or deterrence. rulers.csv has
+  `offense`.
+- Docs: rules/war.md, model-description.md, structural.md,
+  switch-inventory.md, running.md, run-log.md.
+
+**Runs.**
+- `wp5x_smoke`: branch, 300 years; deleted.
+- `wp5x_seed101`, `wp5x_seed103`: 8,000 years. Table in run-log.md.
+
+**Results** (seed 101 / 103):
+- Talented rulers (g over 0.3) take cities or vassals 1.4-1.9x as fast
+  as the rest.
+- The site effect is weak. Hard sites are sacked about half as often in
+  seed 103; seed 101 shows no clear pattern. Because of the siege
+  threshold, a hard site is attacked only at good odds.
+- Wars -29% / -24% against `war_odds` alone; not traced.
+- Population 92.6M / 154.8M against 104.9M / 135.2M, opposite
+  directions, so read as noise.
+
+**For U.**
+- Is the site spread wide enough? 1 in 200 sites is above 2.0x.
+- A ruler of a 1-2 city state never succeeds (succession runs only at
+  3+ cities), so a small state keeps its founder's talent until it
+  grows.

@@ -79,7 +79,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
-            "war_odds"]
+            "war_odds", "site_defence", "ruler_mil"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -893,6 +893,27 @@ ENM_K, IRR_K, WAR_COST = 1.5, 1.5, 0.005
 ODDS_MID, ODDS_W, ODDS_FLOOR = 0.7, 0.35, 0.05
 SIEGE_MIN, RAVAGE_K, WAR_STALL = 0.15, 0.1, 15.0
 SUBMIT_ODDS, SUBMIT_K = 0.6, 1.0
+# Site defence (`site_defence`, U 2026-11-18: a random per-city boost for
+# whatever in its ground makes it easier or harder to take than terrain
+# says; most alike, a few vulnerable, a few very hard; numbers C). Each
+# cell draws m = exp(SITE_DEF_SD x t) once, t Student-t with SITE_DEF_DF
+# degrees of freedom, clipped to SITE_DEF_LIM; m multiplies the terrain
+# defence of a city there wherever a siege, cession or deterrence reads
+# it. With these values half of sites lie within 0.91-1.10 and 9 in 10
+# within 0.75-1.33; 1 in 200 is below 0.5 (held there by the clip) and
+# 1 in 200 above 2.0, 1 in 700 at the cap of 3.
+SITE_DEF_SD, SITE_DEF_DF, SITE_DEF_LIM = 0.12, 3, (0.5, 3.0)
+# Ruler generalship (`ruler_mil`, U 2026-11-18: some rulers are better at
+# offense; it does not change the chance of war, but at war their state
+# punches above its weight, and the edge fades over later reigns; numbers
+# C). Each ruler draws a talent g ~ exponential(RULER_MIL_MEAN), capped
+# at RULER_MIL_CAP. A state's offense = 1 + g + legacy; at each
+# succession legacy becomes RULER_MIL_DECAY x (legacy + the old ruler's
+# g). It multiplies the strength the state brings when it besieges
+# (attacker's sieges, counter-offensives) and when it presses a cession,
+# not its defence nor its deterrence (so not the chance of declaring).
+# Half of rulers have g < 0.07; 1 in 20 over 0.3; 1 in 140 over 0.5.
+RULER_MIL_MEAN, RULER_MIL_CAP, RULER_MIL_DECAY = 0.1, 1.0, 0.5
 # Dragon hosts (`dragon_hosts`, U 2026-10-30): peoples flagged
 # dragon_host in the roster never ward off a dragon: their cells are never
 # warded (no confrontation), are always hunted (g(n) = n / (n + n0)), and

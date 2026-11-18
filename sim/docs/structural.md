@@ -1517,3 +1517,17 @@ Forms are from the upgrade review; every number is C. Stage A
   last-city cession reads "ceded".
 - New: `wars.csv` `ravages`; the death cause and city shock "ravage";
   the counter `war_ravage`; `growth.csv` `dead_ravage`.
+
+## 2026-11-18: site defence and ruler generalship (`site_defence`, `ruler_mil`)
+
+Both are U's (2026-11-18); forms and numbers are C. Details are in
+rules/war.md.
+- `site_defence`: `Sim.site_def` is one draw per cell on its own stream
+  (`new_state_v5`, also run by `upgrade()`). `Sim.city_def(c)` replaces
+  `W.defence[c]` wherever a city is the target. Raids between cells
+  still read the terrain alone.
+- `ruler_mil`: `P["gen"]` (this ruler) and `P["gen_legacy"]` are set in
+  `new_polity` and at each `reign_end`. `WarMixin.offense(P)` multiplies
+  the besieger's projected strength in `wars_step` (and in the cession
+  test) and in `counteroffensive`. `deter` does not read it, so
+  `war_chance` is unchanged. rulers.csv `offense` is each reign's g.

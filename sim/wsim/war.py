@@ -45,9 +45,22 @@ class WarMixin:
             Q = self.polities.get(q)
             if q != A["id"] and Q and Q["ended"] is None:
                 PB += 0.35 * self.projected(Q, t)
-        PB *= 1.4 * self.W.defence[t] * (1.25 if t == B["capital"] else 1)
+        PB *= 1.4 * self.city_def(t) * (1.25 if t == B["capital"] else 1)
         PB *= 1 + DEV_WALL * self.dev(B["lin"])
         return PA / max(PB, 1e-9), t
+
+    def offense(self, P):
+        """`ruler_mil`: what state P's rulers add to its strength when it
+        attacks: the ruler's own talent plus what earlier reigns left."""
+        if "ruler_mil" not in self.on:
+            return 1.0
+        return 1.0 + P.get("gen", 0.0) + P.get("gen_legacy", 0.0)
+
+    def draw_general(self):
+        """A ruler's talent for offense (`ruler_mil`): exponential, mean
+        RULER_MIL_MEAN, capped at RULER_MIL_CAP."""
+        return min(RULER_MIL_CAP,
+                   float(self.R("ruler_mil").exponential(RULER_MIL_MEAN)))
 
     def hardy(self, c):
         """war_hardy: share of the usual war losses that the people of
@@ -379,8 +392,8 @@ class WarMixin:
                 # a weaker defender may cede the goal rather than fight
                 # (`war_odds`: but not its last city, which would end it)
                 g = w["goal"]
-                ra = self.projected(A, g) / max(1.4 * self.W.defence[g] *
-                                               self.projected(B, g), 1e-9)
+                ra = self.projected(A, g) * self.offense(A) / max(
+                    1.4 * self.city_def(g) * self.projected(B, g), 1e-9)
                 if rng.random() < WAR_CEDE * min(1.0, max(0.0, ra - 1)):
                     w["moved"] = w.get("moved", 0.0) + self.city_fe(g)
                     # closed first: ceding a last city ends the defender,
@@ -401,7 +414,8 @@ class WarMixin:
                 t = targets[int(np.argmin(dists))]
                 if w.get("goal") in B["cities"] and not w.get("done"):
                     t = w["goal"]
-                PA = self.projected(A, t)
+                # a gifted commander makes the attack count for more
+                PA = self.projected(A, t) * self.offense(A)
                 PB = self.projected(B, t)
                 # defensive allies send help (not against their own allies)
                 for kk in self.allies:
@@ -422,7 +436,7 @@ class WarMixin:
                     if lord == w["dfn"] and v != w["att"] and \
                             v in self.polities:
                         PB += 0.35 * self.projected(self.polities[v], t)
-                PB *= 1.4 * self.W.defence[t] * \
+                PB *= 1.4 * self.city_def(t) * \
                     (1.25 if t == B["capital"] else 1)
                 # walls and works
                 PB *= 1 + DEV_WALL * self.dev(B["lin"])
@@ -566,7 +580,7 @@ class WarMixin:
         for v, lo in self.vassal.items():
             if lo == d and v != o and v in self.polities:
                 PD += 0.35 * self.projected(self.polities[v], t)
-        PD *= 1.4 * self.W.defence[t] * (1.25 if t == D["capital"] else 1)
+        PD *= 1.4 * self.city_def(t) * (1.25 if t == D["capital"] else 1)
         PD *= 1 + DEV_WALL * self.dev(D["lin"])
         return PD
 
@@ -586,7 +600,7 @@ class WarMixin:
             pool = lost or list(A["cities"])
             t = pool[int(np.argmin(gc_km(self.W.xyz, B["capital"],
                                          np.array(pool))))]
-            PB = self.projected(B, t)
+            PB = self.projected(B, t) * self.offense(B)
             PA = self.defence_at(A, B, t)
             pw = PB ** 2 / (PB ** 2 + PA ** 2 + 1e-9)
             if "war_odds" in self.on:

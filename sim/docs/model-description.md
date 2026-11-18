@@ -905,6 +905,11 @@ the first side at random:
     (1.2 − cohesion) × (0.5 + attacker's dominance) (otherwise: only
     at a 3:1 projected edge, at half that chance), and it never cedes
     its last city.
+  - `[site_defence]` terrain defence at a city × the site's own m =
+    clip(exp(0.12 × t₃), 0.5, 3), drawn once per cell.
+  - `[ruler_mil]` a besieging (or cession-pressing) state's projected
+    strength × (1 + g + legacy); g ~ exponential(0.1) capped at 1 per
+    ruler; legacy → 0.5 × (legacy + g) at each succession.
   - `[not war_odds]` deterrence = min(1, 2 R² / (1 + R²)), R = the attacker's strength
     projected to the target's city nearest the attacker's capital, over
     the target's there (with its allies at 0.35, × 1.4 × terrain defence

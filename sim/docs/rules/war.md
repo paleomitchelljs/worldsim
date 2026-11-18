@@ -71,6 +71,35 @@ by default. See [structural.md](../structural.md), "2026-11-18".
   cession ended the state first and the war was recorded as "defender
   fell".
 
+## Site defence (`site_defence`, 2026-11-18)
+
+U: each city gets a random defence boost for whatever in its ground
+makes it easier or harder to take than terrain says; most alike, a few
+vulnerable, a few very hard. Numbers C. Each cell draws m = exp(0.12 x
+t), with t Student-t (3 degrees of freedom), clipped to 0.5-3. The draw
+belongs to the site, so a city refounded there keeps it. m multiplies
+the terrain defence of a city there in sieges, counter-offensives,
+cessions and deterrence. Half of sites lie in 0.91-1.10 and 9 in 10 in
+0.75-1.33. 1 in 200 is at 0.5 (clipped) and 1 in 200 above 2.0.
+
+## Ruler generalship (`ruler_mil`, 2026-11-18)
+
+U: some rulers are better at offense. This does not change the chance
+of going to war, but at war their state punches above its weight, and
+the edge fades over later reigns. Numbers C.
+- Each ruler draws a talent g, exponential with mean 0.1, capped at 1.
+  Half are under 0.07, 1 in 20 over 0.3 and 1 in 140 over 0.5.
+- A state's offense is 1 + g + legacy. At each succession, legacy
+  becomes 0.5 x (legacy + the old ruler's g).
+- Offense multiplies the strength the state brings when it besieges
+  (its own sieges and its counter-offensives) and when it presses for a
+  cession.
+- It does not enter defence or deterrence, so the chance of declaring is
+  unchanged. It moves the siege odds, so it moves the siege threshold
+  and the defender's choice to submit.
+- Succession runs only in states of 3+ cities, so a smaller state keeps
+  its founder's g until it grows.
+
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 
 The winner chooses (U: built now; form and numbers C; structural.md,

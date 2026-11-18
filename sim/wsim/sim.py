@@ -289,6 +289,22 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.ac_made = np.zeros(self.nP)  # heads added from no cell
         self.ac_last = self.ac_dlast = self.ac_mlast = None
         self.ac_new()
+        self.new_state_v5()
+
+    def new_state_v5(self):
+        """State added 2026-11-18 (U): each site's own defence
+        (`site_defence`), a fixed draw per cell so that a city refounded
+        on the same site keeps it. exp(SITE_DEF_SD x t(SITE_DEF_DF)),
+        clipped to SITE_DEF_LIM: most sites near 1, a few weak, a few
+        very hard. Drawn on its own stream, so no other draw moves."""
+        t = self.R("site_defence").standard_t(SITE_DEF_DF, self.W.N)
+        self.site_def = np.clip(np.exp(SITE_DEF_SD * t), *SITE_DEF_LIM)
+
+    def city_def(self, c):
+        """Terrain defence of a city at cell c, times its site's own
+        (`site_defence`)."""
+        d = self.W.defence[c]
+        return d * self.site_def[c] if "site_defence" in self.on else d
 
     def R(self, name):
         """The run's random stream `name` (geo.stream), made when first
@@ -350,6 +366,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v3()
         if not hasattr(self, "growth_rows"):
             self.new_state_v4()
+        if not hasattr(self, "site_def"):
+            self.new_state_v5()
         if not hasattr(self, "td_on"):
             self.td_on = False
         if not hasattr(self, "uc_on"):

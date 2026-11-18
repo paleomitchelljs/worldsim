@@ -300,7 +300,8 @@ def write_rulers(sim, out):
         w.writerow(["ruler", "state", "people", "start", "end", "years",
                     "cities", "succession"] + (
                         ["dynasty", "violence", "dominance", "expansion",
-                         "statecraft", "w", "gap"] if sim.rt else []))
+                         "statecraft", "w", "gap"] if sim.rt else []) +
+                   ["offense"])
         w.writerows(sim.ruler_log)
 
 

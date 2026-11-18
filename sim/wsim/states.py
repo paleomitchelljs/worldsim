@@ -60,6 +60,8 @@ class StatesMixin:
                                   end_reason="", ended_by=None,
                                   n_cells=0, strength=0,
                                   pop=0, col=self.polity_color(c))
+        self.polities[pid]["gen"] = self.draw_general()
+        self.polities[pid]["gen_legacy"] = 0.0
         if self.rt:
             x, dyn = self.draw_ruler(pid, self.polities[pid])
             self.polities[pid]["ruler"] = dict(id=-1, start=self.year, x=x,
@@ -1490,7 +1492,11 @@ class StatesMixin:
             rec += (r["dyn"],) + tuple(round(float(v), 3) for v in x) + (
                 round(min(1.0, self.hier[L] * (1.5 - self.conf[L])), 3),
                 round(self.rt_gap(p, L), 3))
-        self.ruler_log.append(rec)
+        self.ruler_log.append(rec + (round(p.get("gen", 0.0), 3),))
+        # the new ruler's own talent; the old one's lives on, fading
+        p["gen_legacy"] = RULER_MIL_DECAY * (p.get("gen_legacy", 0.0) +
+                                             p.get("gen", 0.0))
+        p["gen"] = self.draw_general()
         self.n_ruler += 1
         p["ruler"] = dict(id=self.n_ruler, start=self.year)
         if self.rt:
