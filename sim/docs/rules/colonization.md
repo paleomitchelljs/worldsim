@@ -49,6 +49,16 @@ colonizability**:
 - **Band size.** min(200 food-equivalents, 20% of the source).
 - **New landmass.** Landing on a landmass the lineage has never held (over
   0.2M km²) founds a daughter lineage ([lineages.md](lineages.md)).
+- **Order within a tick** (C, 2026-11-17, a speed change). All of a
+  tick's voyages are drawn first: how many each lineage makes and from
+  which of its cells. Their targets' fixed weights (K, distance, terrain)
+  are computed together. The ships then land one after another, and each
+  rechecks its targets against the landings before it. Since then the
+  random draws come in a different order, so histories differ from
+  earlier runs. One small difference in rule: a cell becomes a target
+  (thin natives under 3,000 fe, not a city) only as the tick starts.
+  A source cell that drops under that line by sending colonists cannot
+  be landed on until the next tick.
 
 ## 4. Raid take-overs
 

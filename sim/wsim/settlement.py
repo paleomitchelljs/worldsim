@@ -470,99 +470,118 @@ class SettlementMixin:
         eat = self.peat[np.maximum(self.cul, 0)]
         cand = np.nonzero((self.lin >= 0) & W.coastal & (self.pop * eat > 400) &
                           (press > 0.5))[0]
-
-        def kept(cnd, L):
-            """The coast cells cnd colonists of L could take, and their
-            natives (food-equivalents)."""
+        groups = list(self.by_lineage(cand))
+        if not groups:
+            return
+        rng = self.R("migrate")
+        # every lineage's voyages drawn at once (WP1 stage D, 2026-11-17):
+        # how many, and from which of its crowded coast cells
+        Ls = np.array([L for L, _ in groups])
+        nsrc = np.array([len(src) for _, src in groups])
+        lam = 2.5 * self.expn[Ls] * (0.1 + self.sail[Ls]) * np.sqrt(nsrc)
+        k = np.minimum(rng.poisson(lam), 6)
+        if not k.any():
+            return
+        vL = np.repeat(Ls, k)
+        u = rng.random(len(vL))
+        flat = np.concatenate([src for _, src in groups])
+        off = np.repeat(np.cumsum(nsrc) - nsrc, k)
+        picks = flat[off + (u * np.repeat(nsrc, k)).astype(int)]
+        D = self.sail_km(vL)
+        rad = 2 * np.sin(np.minimum(4 * D, 9000) / R_EARTH / 2)
+        balls = W.coast_tree.query_ball_point(W.xyz[picks], rad)
+        # coast any voyage could take, as the tick starts: empty, or thin
+        # and not a city (whether the natives are another people is
+        # tested per voyage; a landing only removes cells from this)
+        nat0 = self.pop * eat * (self.lin >= 0)
+        open_ = (self.lin < 0) | ((self.cell_city != np.arange(W.N)) &
+                                  (nat0 < COL_THIN))
+        cells = [W.coast_idx[b] for b in balls]
+        cells = [c[open_[c]] for c in cells]
+        nv = np.array([len(c) for c in cells])
+        if not nv.any():
+            return
+        # what does not change while the tick's ships land: capacity
+        # (fixed cell terms and the lineage's), distance, terrain
+        vi = np.repeat(np.arange(len(vL)), nv)
+        C = np.concatenate(cells)
+        LC = vL[vi]
+        K = self.Kf(LC, C)
+        xs = W.xyz[C] - W.xyz[picks[vi]]
+        ch = np.sqrt((xs * xs).sum(1))
+        dist = 2 * R_EARTH * np.arcsin(np.clip(ch / 2, 0, 1))
+        w0 = K * np.exp(-dist / D[vi]) * self.colon(C, LC)
+        ok = np.isfinite(w0) & (K * self.peat[self.Lpeople[LC]] > 300)
+        ok &= w0 > 0
+        C, w0, vi = C[ok], w0[ok], vi[ok]
+        nv = np.bincount(vi, minlength=len(vL))
+        ends = np.cumsum(nv)
+        for v in range(len(vL)):
+            if not nv[v]:
+                continue
+            L, s = int(vL[v]), int(picks[v])
+            sl = slice(ends[v] - nv[v], ends[v])
+            cnd, wt = C[sl], w0[sl]
+            # re-test against landings earlier in the tick
             nat = self.pop[cnd] * eat[cnd] * (self.lin[cnd] >= 0)
             keep = (self.lin[cnd] < 0) | (
                 (self.cul[cnd] != self.Lpeople[L]) &
                 (self.cell_city[cnd] != cnd) & (nat < COL_THIN))
-            return cnd[keep], nat[keep]
-
-        for L, src in self.by_lineage(cand):
-            D = self.sail_km(L)
-            sea = self.expn[L]
-            lam = 2.5 * sea * (0.1 + self.sail[L]) * \
-                math.sqrt(len(src))
-            n = self.R("migrate").poisson(lam)
-            picks = self.R("migrate").choice(src, min(n, 6))
-            if not len(picks):
+            cnd, wt, nat = cnd[keep], wt[keep], nat[keep]
+            if not len(cnd):
                 continue
-            rad = 2 * math.sin(min(4 * D, 9000) / R_EARTH / 2)
-            balls = [W.coast_idx[W.coast_tree.query_ball_point(W.xyz[s], rad)]
-                     for s in picks]
-            # capacity once per lineage, on every cell any of its voyages
-            # could take: a landing only ever removes a cell from the
-            # candidates (it becomes the lineage's people's), so the cells
-            # kept now cover each later voyage's (so each voyage re-tests
-            # only those, in the ball's order)
-            kb = [kept(b, L)[0] for b in balls]
-            allc = np.unique(np.concatenate(kb))
-            Kall = self.Kf(L, allc) if len(allc) else None
-            for s, ball in zip(picks, kb):
-                cnd, nat = kept(ball, L)
-                if not len(cnd):
+            empty = nat <= 0
+            if empty.any():
+                # settlers take empty coast where they can
+                wt = np.where(empty, wt, 0.0)
+            else:
+                if rng.random() >= COL_OCC:
                     continue
-                wt = Kall[np.searchsorted(allc, cnd)]
-                ok = wt * self.peat[self.Lpeople[L]] > 300
-                cnd, wt, nat = cnd[ok], wt[ok], nat[ok]
-                if not len(cnd):
-                    continue
-                wt = wt * np.exp(-gc_km(W.xyz, s, cnd) / D) * self.colon(cnd, L)
-                wt = np.where(np.isfinite(wt), wt, 0.0)
-                empty = (nat <= 0) & (wt > 0)
-                if empty.any():
-                    # settlers take empty coast where they can
-                    wt = np.where(empty, wt, 0.0)
+                wt = wt * np.exp(-nat / COL_THIN)
+            if wt.sum() <= 0:
+                continue
+            t = int(rng.choice(cnd, p=wt / wt.sum()))
+            mv = min(200.0 / self.peat[self.Lpeople[L]], 0.2 * self.pop[s])
+            self.pop[s] -= mv
+            lm = W.landmass[t]
+            Lt = L
+            sp = int(self.cell_pol[s])
+            if sp >= 0 and self.cell_pol[t] != sp and \
+                    lm != W.landmass[s]:
+                Lc = self.colony_lin.get((sp, int(lm)), -1)
+                if Lc < 0 or self.Lended[Lc] >= 0:
+                    Lc = self.new_lineage(self.Lpeople[L], L, "colony",
+                                          sd=self.drift)
+                    self.Lcolony[Lc] = sp
+                    self.Lseen[Lc] = set(self.Lseen.get(L, set())) | {lm}
+                    self.colony_lin[(sp, int(lm))] = Lc
+                    self.count("colony_state")
+                Lt = Lc
+            if self.lin[t] >= 0:
+                fe_n = self.pop[t] * eat[t]
+                if fe_n < mv * self.peat[self.Lpeople[L]]:
+                    # thin natives pushed out
+                    self.count("colony_displace")
+                    self.lin[t], self.cul[t], self.pop[t] = \
+                        Lt, self.Lpeople[Lt], mv
                 else:
-                    if self.R("migrate").random() >= COL_OCC:
-                        continue
-                    wt = wt * np.exp(-nat / COL_THIN)
-                if wt.sum() <= 0:
-                    continue
-                t = int(self.R("migrate").choice(cnd, p=wt / wt.sum()))
-                mv = min(200.0 / self.peat[self.Lpeople[L]], 0.2 * self.pop[s])
-                self.pop[s] -= mv
-                lm = W.landmass[t]
-                Lt = L
-                sp = int(self.cell_pol[s])
-                if sp >= 0 and self.cell_pol[t] != sp and \
-                        lm != W.landmass[s]:
-                    Lc = self.colony_lin.get((sp, int(lm)), -1)
-                    if Lc < 0 or self.Lended[Lc] >= 0:
-                        Lc = self.new_lineage(self.Lpeople[L], L, "colony",
-                                              sd=self.drift)
-                        self.Lcolony[Lc] = sp
-                        self.Lseen[Lc] = set(self.Lseen.get(L, set())) | {lm}
-                        self.colony_lin[(sp, int(lm))] = Lc
-                        self.count("colony_state")
-                    Lt = Lc
-                if self.lin[t] >= 0:
-                    fe_n = self.pop[t] * eat[t]
-                    if fe_n < mv * self.peat[self.Lpeople[L]]:
-                        # thin natives pushed out
-                        self.count("colony_displace")
-                        self.lin[t], self.cul[t], self.pop[t] = \
-                            Lt, self.Lpeople[Lt], mv
-                    else:
-                        self.count("colony_minority")
-                        self.add_minority([t], int(self.Lpeople[Lt]), Lt, mv)
-                    continue
-                if Lt == L and lm not in self.Lseen[L]:
-                    self.Lseen[L].add(lm)
-                    if W.landmass_area[lm] > 2e5:
-                        Lt = self.new_lineage(self.Lpeople[L], L, "colony",
-                                              sd=self.drift)
-                        self.Lseen[Lt] = {lm}
-                        self.log("voyage", f"{self.lname(L)} sailors land "
-                                 f"on a new landmass at {self.place(t)} "
-                                 f"({W.landmass_area[lm]/1e6:.1f}M km2), "
-                                 f"founding {self.lname(Lt)}",
-                                 cell=t, lineages=[L, Lt],
-                                 n=W.landmass_area[lm])
-                self.lin[t], self.cul[t], self.pop[t] = \
-                    Lt, self.Lpeople[Lt], mv
+                    self.count("colony_minority")
+                    self.add_minority([t], int(self.Lpeople[Lt]), Lt, mv)
+                continue
+            if Lt == L and lm not in self.Lseen[L]:
+                self.Lseen[L].add(lm)
+                if W.landmass_area[lm] > 2e5:
+                    Lt = self.new_lineage(self.Lpeople[L], L, "colony",
+                                          sd=self.drift)
+                    self.Lseen[Lt] = {lm}
+                    self.log("voyage", f"{self.lname(L)} sailors land "
+                             f"on a new landmass at {self.place(t)} "
+                             f"({W.landmass_area[lm]/1e6:.1f}M km2), "
+                             f"founding {self.lname(Lt)}",
+                             cell=t, lineages=[L, Lt],
+                             n=W.landmass_area[lm])
+            self.lin[t], self.cul[t], self.pop[t] = \
+                Lt, self.Lpeople[Lt], mv
 
     def tidy(self):
         self.tidy_minorities()
