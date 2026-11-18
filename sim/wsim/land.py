@@ -410,9 +410,13 @@ class LandMixin:
                 coef = np.where(full, SHARE_ALPHA * wm / wM, 1.0)
             pm = self.mpop[mo]
             rm = self.Lr[Lm]
+            am = 0.6 + 0.4 * self.agri[Lm]
+            pm0 = logistic(pm, km, rm * am)     # records: without dragons
             rm = rm - self.dragon_pen(mo)
-            self.mpop[mo] = logistic(pm, km, rm * (0.6 + 0.4 *
-                                                   self.agri[Lm]))
+            self.mpop[mo] = logistic(pm, km, rm * am)
+            self.dead("hunger", mo, np.maximum(pm - pm0, 0), minority=True)
+            self.forgone(mo, np.maximum(pm0 - self.mpop[mo], 0),
+                         minority=True)
             food = np.zeros(self.W.N)
             food[mo] = coef * self.mpop[mo] * self.peat[self.mcul[mo]]
             k = np.maximum(k - food[occ] / self.peat[self.cul[occ]], 1e-3)
@@ -433,9 +437,10 @@ class LandMixin:
         lost = np.maximum(p0 - self.pop[occ], 0)
         self.dragon_kills = np.bincount(self.cul[occ], weights=lost,
                                         minlength=self.nP)
-        # records: a crowd above what the land feeds dies back
+        # records: a crowd above what the land feeds dies back; what
+        # dragons cut is growth that did not happen, not deaths
         self.dead("hunger", occ, np.maximum(p - p0, 0))
-        self.dead("dragon", occ, lost)
+        self.forgone(occ, lost)
         if self.cities:
             hc = occ[lost > 0.05 * np.maximum(p0, 1)]
             self.shock(hc[np.isin(hc, list(self.cities))], "dragon")

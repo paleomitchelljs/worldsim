@@ -1410,3 +1410,25 @@ of seed 101. It differs only in the order of a floating-point sum, and
 it ended at 126M, not 156M. A seed's history therefore moves by about
 20% from rounding alone. The on/off differences point the same way in
 both seeds, but two seeds do not give a size for them.
+
+## 2026-11-17: deaths and growth account (WP4 stage C)
+
+Records, and two small fixes to the bookkeeping. Forms are in
+[rules/population.md](rules/population.md#accounting-for-people-wp4-stage-c-2026-11-17).
+- Dragons' cut in the growth rate is no longer a cause of death. It is
+  `forgone_dragon` in `growth.csv`.
+- `growth.csv` closes a per-century account per people:
+  change = natural increase - removals + made + phase nets.
+- The account found five gaps, and all are now recorded or fixed:
+  - raid takeovers dropped half the old majority and any old minority
+    (now raid deaths);
+  - a cell sending two takeover bands paid for one (fixed);
+  - colonists refused by an occupied minority slot vanished (they now
+    stay home);
+  - natives pushed out by colonists (`displaced`), expelled minorities
+    (`expelled`) and tiny remnants cleared by `tidy` (`dwindled`) were
+    unrecorded.
+- Minority heads added from no cell are shown as `made`: merchant
+  quarters, trading posts, garrisons. They are an existing rule (C),
+  now visible: 8M over 8,000 years of seed 101, mostly Dwarves and Snake
+  folk, against 1,153M natural increase.

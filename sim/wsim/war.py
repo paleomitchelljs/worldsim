@@ -174,8 +174,13 @@ class WarMixin:
                            "raid takeover")
             si = att[take][first]
             mv = 0.25 * self.pop[si]
-            self.pop[si] -= mv
-            # the old people stays on as an underclass
+            # one cell may send two takeover bands: debit each
+            np.subtract.at(self.pop, si, mv)
+            # the old people stays on as an underclass; the other half
+            # and any old minority are lost (records)
+            self.dead("raid", ti, 0.5 * self.pop[ti])
+            self.dead("raid", ti, np.where(self.mlin[ti] >= 0,
+                                           self.mpop[ti], 0), minority=True)
             self.mcul[ti], self.mlin[ti] = self.cul[ti], self.lin[ti]
             self.mpop[ti] = 0.5 * self.pop[ti]
             self.mcap[ti] = False

@@ -560,13 +560,18 @@ class SettlementMixin:
             if self.lin[t] >= 0:
                 fe_n = self.pop[t] * eat[t]
                 if fe_n < mv * self.peat[self.Lpeople[L]]:
-                    # thin natives pushed out
+                    # thin natives pushed out (records: they leave the
+                    # account; a minority of the cell stays)
                     self.count("colony_displace")
+                    self.dead("displaced", t, self.pop[t])
                     self.lin[t], self.cul[t], self.pop[t] = \
                         Lt, self.Lpeople[Lt], mv
                 else:
                     self.count("colony_minority")
-                    self.add_minority([t], int(self.Lpeople[Lt]), Lt, mv)
+                    if not self.add_minority([t], int(self.Lpeople[Lt]),
+                                             Lt, mv, made=False).any():
+                        self.pop[s] += mv   # another minority holds it
+                                            # (2026-11-17: they were lost)
                 continue
             if Lt == L and lm not in self.Lseen[L]:
                 self.Lseen[L].add(lm)
@@ -586,6 +591,7 @@ class SettlementMixin:
     def tidy(self):
         self.tidy_minorities()
         dead = (self.pop < 5) & (self.lin >= 0)
+        self.dead("dwindled", None, self.pop * dead)
         self.pop[dead] = 0
         self.cul[dead] = -1
         self.lin[dead] = -1
@@ -625,14 +631,18 @@ class SettlementMixin:
                              f"{self.place(x)}",
                              cell=x,
                              peoples=[self.keys[self.cul[x]], self.keys[old]])
+        self.dead("dwindled", None, self.mpop * gone, minority=True)
         clear = gone | merge | (self.mcul < 0)
         self.mcul[clear], self.mlin[clear], self.mpop[clear] = -1, -1, 0
         self.mcap[clear] = False
 
-    def add_minority(self, cells, c, L, amount, capped=False):
+    def add_minority(self, cells, c, L, amount, capped=False, made=True):
         """Settle `amount` (per cell) of people c, lineage L, as the
         minority of cells, unless another minority is already there.
-        `capped`: a merchant quarter, held at MIN_CAP of the cell's K."""
+        `capped`: a merchant quarter, held at MIN_CAP of the cell's K.
+        `made`: the heads come from no other cell (merchants, posts,
+        garrisons), recorded as such in growth.csv. Returns which cells
+        took them."""
         cells = np.asarray(cells, int)
         ok = (self.cul[cells] != c) & ((self.mcul[cells] < 0) |
                                        (self.mcul[cells] == c))
@@ -642,6 +652,10 @@ class SettlementMixin:
                                                          self.mlin[cells])
         self.mcap[cells[new]] = capped
         self.mpop[cells] += amount
+        if made and len(cells):
+            self.ac_made += np.bincount(np.full(len(cells), c),
+                                        weights=amount, minlength=self.nP)
+        return ok
 
     def minorities(self):
         """Merchant quarters along lasting trade between peoples; expulsion
@@ -668,4 +682,5 @@ class SettlementMixin:
         foreign = (L >= 0) & (self.mcul[m] != pc[self.cell_pol[m]])
         pr = DT * MIN_EXPEL * self.hostile(L) * self.tolf(L, 1.0)
         out = m[foreign & (rng.random(len(m)) < pr)]
+        self.dead("expelled", out, self.mpop[out], minority=True)
         self.mcul[out], self.mlin[out], self.mpop[out] = -1, -1, 0

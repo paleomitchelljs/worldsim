@@ -212,7 +212,7 @@ class DragonsMixin:
             s, v, dt = sd_, self.dviol[d], self.dtol[d]
             b_pop = self.pop[c]
             self.pop[c] *= 1 - min(0.5, DRAGON_FIGHT * s * (0.5 + v))
-            self.dead("dragon", c, b_pop - self.pop[c])
+            self.dead("dragon attack", c, b_pop - self.pop[c])
             joint = (self.tol[L] + dt) / 2
             h = self.dragon_hist[self.did[d]]
             who = self.pname(pid) if pid >= 0 else self.lname(L)

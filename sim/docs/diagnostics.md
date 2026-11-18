@@ -122,6 +122,7 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | `food` | shares of city food from trade, rent, provincial spending, capital (last `cityfood.csv` year) |
 | `food_ledger` | from `food.csv`, by millennium: created food (trade food and the city boost) over produced and over city food; trade's share of created; eaten and taken over produced. Over the run: the gap and the unplaced take over the take; capital food that reached no ruling people. Under `trade_debit`: trade sold over produced and the share lost in carriage, by millennium |
 | `deaths` | deaths by cause, shares |
+| `growth_account` | from `growth.csv`, over the run: natural increase; removals, forgone growth under dragons and the change, each over natural increase; each phase's world net over natural increase (should be 0); the largest |residual| of a century |
 | `settlement` | population against land share by coast, river, alluvial fill, latitude band, biome; density percentiles; population, land area and land cells inside states |
 | `turnover` | per 500 years: share of cells whose people changed; occupied cells inside a state; cells emptied |
 | `price` | Price decomposition summed over the run |
@@ -182,7 +183,15 @@ crisis reaches the cities, not on hitting a number.
 - `deaths.csv` (every century, per people and cause): hunger (a crowd
   above what the land feeds dying back in growth), dragon, feud, raid,
   war levies, siege, sack, clearance, plague. Famine movers are not
-  deaths.
+  deaths. **From WP4 stage C (2026-11-17)** "dragon" (the growth that
+  dragons' cut in the growth rate prevented) is no longer a death; it is
+  `forgone_dragon` in `growth.csv`. "dragon attack" is a dragon's fight
+  with a settlement, and `displaced`, `expelled` and `dwindled` are new
+  ([rules/population.md](rules/population.md#accounting-for-people-wp4-stage-c-2026-11-17)).
+- `growth.csv` (every century, per people and the world, heads): the
+  growth account. Natural increase, removals by cause, heads made from
+  no cell, forgone growth, and each step phase's net change; it closes
+  (`residual` 0).
 - `polities.csv` `peak_km2` for every state (was blank below 120 cells).
 
 

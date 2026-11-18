@@ -131,6 +131,7 @@ APPEND = [
     ("food_rows", "cityfood.csv", None),
     ("death_rows", "deaths.csv", None),
     ("fl_rows", "food.csv", None),
+    ("growth_rows", "growth.csv", None),
 ]
 
 

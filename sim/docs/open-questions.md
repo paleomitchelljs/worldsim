@@ -540,3 +540,12 @@ Trade then feeds 3-4% of city food, against about 40%.
 - One form question first: carriage is now measured capital to capital.
   Most of the traded food (63%) is lost. A port-to-port distance would
   lose less on sea routes.
+
+## Feud and dragons dominate the people account (2026-11-17, WP4 stage C)
+
+`growth.csv` for seed 101:
+- feud is 56% of all removals (more than raids and wars together);
+- growth forgone under dragons is 1.35 x natural increase.
+
+Both are older rules (C) that the new account makes visible. Neither
+was changed. Worth a look when WP5 or WP6 touches violence and dragons.

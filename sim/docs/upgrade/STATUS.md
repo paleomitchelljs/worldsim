@@ -26,7 +26,7 @@ what an entry holds.
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
-| 4 | C deaths and growth account | not started | | |
+| 4 | C deaths and growth account | done | 2026-11-17 | HASHC |
 | 5 | A diagnosis | not started | | |
 | 5 | B odds-gated war | not started | | |
 | 5 | C time constants in years | not started | | |
@@ -1059,3 +1059,65 @@ noise.
 
 **Not done.** Making the switch the default (U). Port-to-port carriage.
 The minority leak from stage A (open-questions).
+
+### WP4 stage C: deaths and growth account (2026-11-17, HASHC)
+
+**Done.**
+- The dragon growth cut is moved out of `deaths.csv` into `growth.csv`
+  (`forgone_dragon`, majority and minority). A dragon's fight with a
+  settlement is now the cause "dragon attack".
+- `growth.csv` per century, per people and `ALL`: start, end, change,
+  natural, removals by cause, `made`, `forgone_dragon`, `net_<phase>`
+  for 13 step phases, and `residual`.
+  - `acct_mark` after each phase of `step` (two bincounts each) diffs
+    heads and the cumulative removals recorded by `dead()`.
+  - Natural increase is `grow`'s change plus its removals.
+- Item 3: `famine`'s remainder dies back in `grow` and is counted once
+  as hunger. A minority's die-back was not counted and now is.
+- Gaps found by the account:
+  - recorded as removals: raid takeover losses, `displaced`,
+    `expelled`, `dwindled`;
+  - shown as `made`: merchant quarters, posts and garrisons.
+- **Mechanic fixes (simple, as the brief allows):**
+  - a double takeover band is debited twice;
+  - refused colonists stay home.
+- A branched state's first century subtracts the deaths it carried in,
+  so it closes too.
+- New `metrics.growth_account`; `runio.Run.growth`; `upgrade()` adds the
+  account (`new_state_v4`).
+- Docs: rules/population.md (new section), structural.md, diagnostics.md,
+  running.md, run-log.md, open-questions.md.
+
+**Runs.**
+- `wp4c_smoke`: branches from year 5,000, used while finding the gaps.
+- `wp4c_seed101` and `wp4c_seed103`: 8,000 years, `--no-video`.
+  - The account closes: residual 0 in every row.
+  - All world phase nets are 0 except founding arrivals, about 5e-5 of
+    natural increase.
+  - Seed 101 ended at 109M (156M and 126M before, from two runs of the
+    same older code). Seed 103 ended at 161M (166M before).
+  - I read the seed 101 difference as noise, but did not run a batch.
+
+**Choices to check (C).**
+- The phases are grouped (for example, "states" covers tidy through
+  `pref_spread`). Expelled, displaced and dwindled are listed as
+  removals, though in a richer model they would go somewhere.
+- `made` is shown, not removed. Merchants and garrisons still appear
+  from nothing; making them come from the guest's cells would change
+  the mechanic.
+
+**WP4 "done when".**
+- `food.csv` closes with zero created trade food under `trade_debit`:
+  yes. `created_trade` is 0 and `gap_trade` 0. The city boost is still
+  created, as D6 keeps it.
+- The deaths account closes: yes.
+- Docs: yes.
+- The `trade_debit` default is put to U: open-questions.md, "Make
+  `trade_debit` the default?", with run-log's table.
+
+**For the morning (U).**
+1. Make `trade_debit` the default? I recommend yes.
+2. Port-to-port carriage for traded food: 63% is lost capital to
+   capital.
+3. Fix the minority leak in the take, from stage A
+   (open-questions.md)?

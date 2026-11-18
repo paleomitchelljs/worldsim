@@ -1523,3 +1523,37 @@ Standard settings, 8,000 years, `--no-video`; "on" is
 - Not expected: fewer states and wars.
 - Noise: `wp4a_seed101` (off, same mechanics, a different floating-point
   order in one sum) ended at 126M against `wp4b_off_seed101`'s 156M.
+
+### 2026-11-17 WP4 stage C: growth account (`wp4c_smoke`, `wp4c_seed101`, `wp4c_seed103`)
+
+Standard settings, 8,000 years, `--no-video`, default switches.
+- **The account closes.** `residual` is 0 in every row of both runs.
+  Every phase's world net is 0, except `arrivals`: the founding groups,
+  about 5e-5 of natural increase.
+- **Seed 101 over the run.**
+  - Natural increase 1,153M heads.
+  - Removals 0.91 of it. Feud is 56% of removals, raid 27%, hunger
+    9%, plague 5%.
+  - Growth forgone under dragons is 1.35 x natural increase, which is
+    larger than all removals.
+- **Seed 101, by millennium (M heads).**
+
+| Years | natural | removals | forgone (dragons) | change | hunger | feud | raid |
+|---|---|---|---|---|---|---|---|
+| 0-1000 | 20.9 | 7.3 | 30.6 | 13.7 | 0.3 | 5.5 | 1.5 |
+| 1000-2000 | 77.1 | 63.9 | 179.6 | 13.2 | 2.0 | 49.7 | 12.2 |
+| 2000-3000 | 96.4 | 93.7 | 244.0 | 2.7 | 3.8 | 69.3 | 20.5 |
+| 3000-4000 | 127.5 | 119.1 | 224.6 | 8.5 | 6.8 | 81.1 | 30.9 |
+| 4000-5000 | 156.8 | 151.9 | 218.8 | 5.0 | 10.2 | 96.4 | 43.6 |
+| 5000-6000 | 192.4 | 179.6 | 226.7 | 13.7 | 12.2 | 103.0 | 55.1 |
+| 6000-7000 | 230.1 | 212.9 | 236.5 | 20.1 | 22.7 | 99.8 | 60.5 |
+| 7000-8000 | 251.4 | 223.0 | 196.9 | 32.5 | 38.6 | 81.9 | 54.3 |
+
+- **Effect of the two fixes (raid double band, refused colonists).**
+  - Seed 101 ended at 109M, against 156M (`wp4b_off_seed101`) and
+    126M (`wp4a_seed101`). Those two runs have the same mechanics as
+    each other, the code before these fixes.
+  - Seed 103 ended at 161M against 166M, with the largest state 8.0
+    against 7.8M km2.
+  - So the drop in seed 101 is within the rounding noise those two
+    runs show; seed 103 barely moved.

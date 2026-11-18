@@ -278,6 +278,17 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.fl_rows = []                 # food.csv
         self.fl_new()
         self.tr_x = np.zeros(self.W.N)    # `trade_debit`: rate sold
+        self.new_state_v4()
+
+    def new_state_v4(self):
+        """State added in WP4 stage C (growth account). Also run by
+        upgrade() on an older state; its first century starts at the
+        first mark after loading."""
+        self.growth_rows = []             # growth.csv
+        self.ac_dead = np.zeros(self.nP)  # removals recorded, cumulative
+        self.ac_made = np.zeros(self.nP)  # heads added from no cell
+        self.ac_last = self.ac_dlast = self.ac_mlast = None
+        self.ac_new()
 
     def R(self, name):
         """The run's random stream `name` (geo.stream), made when first
@@ -337,6 +348,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v2()
         if not hasattr(self, "fl_rows"):
             self.new_state_v3()
+        if not hasattr(self, "growth_rows"):
+            self.new_state_v4()
         if not hasattr(self, "td_on"):
             self.td_on = False
         if not hasattr(self, "uc_on"):
@@ -437,11 +450,17 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         if self.ca_on:
             self.city_admin()
         self.prepare_capacity()
+        self.acct_mark("arrivals")
         self.famine()
+        self.acct_mark("famine")
         self.dragons()
+        self.acct_mark("dragons")
         self.grow()
+        self.acct_mark("grow")
         self.migrate()
+        self.acct_mark("migrate")
         self.raids()
+        self.acct_mark("raids")
         self.tidy()
         self.update_cities()
         self.territory()
@@ -454,18 +473,26 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.trade_posts()
         self.trade_ties()
         self.pref_spread()
+        self.acct_mark("states")
         self.minorities()
+        self.acct_mark("minorities")
         self.diplomacy()
+        self.acct_mark("diplomacy")
         self.wars_step()
+        self.acct_mark("wars")
         self.rebellions()
+        self.acct_mark("rebellions")
         if self.rt:
             self.ruler_pull()
         if self.cc_on:
             self.city_culture()
             if self.year % PRICE_EVERY == 0:
                 self.city_record()
+        self.acct_mark("culture")
         self.disasters()
+        self.acct_mark("disasters")
         self.tidy()
+        self.acct_mark("tidy")
         self.record()
         self.tick += 1
         self.year += DT

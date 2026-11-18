@@ -508,6 +508,26 @@ def deaths(run):
                 ascending=False).items()}
 
 
+def growth_account(run):
+    """The world's growth account over the run (growth.csv, WP4 stage
+    C), in heads: natural increase, removals and growth forgone under
+    dragons, each against natural increase; each phase's net change for
+    the world, which should be 0 (people only move between peoples), as
+    a share of natural increase; the largest |residual| of a century."""
+    g = run.growth
+    w = g[g.people == "ALL"]
+    s = w.sum(numeric_only=True)
+    nat = max(s.natural, 1e-9)
+    m = {"natural increase, run (M)": s.natural / 1e6,
+         "removals / natural": s.removals / nat,
+         "forgone under dragons / natural": s.forgone_dragon / nat,
+         "change / natural": s.change / nat}
+    for c in [c for c in w.columns if c.startswith("net_")]:
+        m[f"{c} (world) / natural"] = s[c] / nat
+    m["largest |residual| of a century"] = float(w.residual.abs().max())
+    return m
+
+
 def settlement(run):
     """Where people live at the end (final_state.npz): population share
     against land share by coast, river (as at the end), alluvial fill,
@@ -591,7 +611,8 @@ def price(run):
 
 SINGLE = [population, growth, volatility, landmass_volatility,
           city_hierarchy, city_lives, states, lifespans, contiguity, wars,
-          sieges, war_time, food, food_ledger, deaths, settlement, turnover,
+          sieges, war_time, food, food_ledger, deaths, growth_account,
+          settlement, turnover,
           price]
 
 

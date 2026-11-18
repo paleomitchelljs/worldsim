@@ -278,6 +278,8 @@ class DiagnosticsMixin:
                     self.keys[c] if c >= 0 else "", -1, "", 0, 0))
         if self.year % 100 == 0 and self.ff_on:
             self.food_rows_flush()
+        if self.year % 100 == 0:
+            self.growth_flush()
         if self.year % 100 == 0 and self.deaths:
             for cause, v in self.deaths.items():
                 for i in np.nonzero(v > 0)[0]:
@@ -298,7 +300,102 @@ class DiagnosticsMixin:
         acc = self.deaths.get(cause)
         if acc is None:
             acc = self.deaths[cause] = np.zeros(self.nP)
-        acc += np.bincount(c[ok], weights=lost[ok], minlength=self.nP)
+        v = np.bincount(c[ok], weights=lost[ok], minlength=self.nP)
+        acc += v
+        self.ac_dead += v
+
+    def forgone(self, cells, lost, minority=False):
+        """Records (WP4 stage C): growth that dragons' cut in the growth
+        rate prevented, per people, summed per century into growth.csv.
+        Not deaths: nobody was removed."""
+        c = (self.mcul if minority else self.cul)[cells]
+        ok = (c >= 0) & (lost > 0)
+        self.ac["forgone_dragon"] += np.bincount(
+            c[ok], weights=lost[ok], minlength=self.nP)
+
+    # phases of a step, in order, for the growth account (WP4 stage C)
+    PHASES = ["arrivals", "famine", "dragons", "grow", "migrate", "raids",
+              "states", "minorities", "diplomacy", "wars", "rebellions",
+              "culture", "disasters", "tidy"]
+
+    def heads(self):
+        """Heads per people, cell majorities and minorities."""
+        n = self.nP
+        a = self.cul >= 0
+        b = self.mlin >= 0
+        return np.bincount(self.cul[a], weights=self.pop[a], minlength=n) + \
+            np.bincount(self.mcul[b], weights=self.mpop[b], minlength=n)
+
+    def acct_mark(self, phase):
+        """Records (WP4 stage C): the change in heads per people since the
+        last mark, plus what was recorded as removed in between, is the
+        phase's net change before removals. For `grow` that is natural
+        increase; for any other phase it is people moving between peoples
+        (conversion, assimilation) or, if it does not net to zero for the
+        world, heads made or lost without a record. Heads added from no
+        cell (`made`: merchant quarters, posts, garrisons) are taken out
+        of the phase's net and shown on their own. Reads state only."""
+        h = self.heads()
+        if self.ac_last is not None:
+            dm = self.ac_made - self.ac_mlast
+            self.ac[phase] += h - self.ac_last + self.ac_dead - \
+                self.ac_dlast - dm
+            self.ac["made"] += dm
+        else:
+            # a branched state may hold deaths from before this mark
+            self.ac["pop_start"] = h.copy()
+            self.ac["d0"] = {c: v.copy() for c, v in self.deaths.items()}
+        self.ac_last, self.ac_dlast = h, self.ac_dead.copy()
+        self.ac_mlast = self.ac_made.copy()
+
+    def growth_flush(self):
+        """Records: growth.csv rows for the century just ended, per people
+        and for the world (heads): start, end, natural increase, removals
+        by cause, growth forgone under dragons, and each other phase's net
+        change; `residual` = change - (natural - removals + the nets),
+        which closes by construction up to rounding."""
+        ac = self.ac
+        if ac.get("pop_start") is None:
+            return
+        end = self.ac_last
+        causes = sorted(self.deaths)
+        rows = []
+        for i, key in list(enumerate(self.keys)) + [(None, "ALL")]:
+            def g(v):
+                return float(v.sum() if i is None else v[i])
+            r = dict(year=self.year, people=key,
+                     pop_start=g(ac["pop_start"]), pop_end=g(end))
+            r["change"] = r["pop_end"] - r["pop_start"]
+            r["natural"] = g(ac["grow"])
+            d0 = ac.get("d0", {})
+            dd = {c: g(self.deaths[c] - d0.get(c, 0)) for c in causes}
+            r["removals"] = sum(dd.values())
+            nets = {f"net_{ph}": g(ac[ph]) for ph in self.PHASES
+                    if ph != "grow"}
+            r["made"] = g(ac["made"])
+            r["residual"] = r["change"] - (r["natural"] - r["removals"] +
+                                           r["made"] + sum(nets.values()))
+            r["forgone_dragon"] = g(ac["forgone_dragon"])
+            r.update(nets)
+            for c in ("hunger", "feud", "raid", "war levies", "siege",
+                      "sack", "clearance", "plague", "dragon attack",
+                      "displaced", "expelled", "dwindled"):
+                r[f"dead_{c.replace(' ', '_')}"] = dd.get(c, 0.0)
+            if i is not None and r["pop_start"] <= 0 and r["pop_end"] <= 0:
+                continue
+            rows.append({k: (round(v) if isinstance(v, float) else v)
+                         for k, v in r.items()})
+        self.growth_rows += rows
+        self.ac_new()
+        self.ac["pop_start"] = end.copy()
+
+    def ac_new(self):
+        """A fresh growth-account accumulator for the century."""
+        z = np.zeros(self.nP)
+        self.ac = {ph: z.copy() for ph in self.PHASES}
+        self.ac["forgone_dragon"] = z.copy()
+        self.ac["made"] = z.copy()
+        self.ac["pop_start"] = None
 
     # food ledger lines (WP4 stage A): per-cell lines, then per-state ones
     FL_CELL = ["produced", "produced_land", "produced_boost", "eaten",

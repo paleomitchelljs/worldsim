@@ -71,3 +71,50 @@ faster.
   - 1 − 0.9 x separation, if the cell borders a foreign people.
 - **New land.** Empty land is taken by colonization, not by this flow
   ([colonization.md](colonization.md)).
+
+## Accounting for people (WP4 stage C, 2026-11-17)
+
+Records, except two fixes marked below. `growth.csv` closes a
+per-century, per-people account in heads (cell majorities plus
+minorities):
+
+    change = natural increase - removals + made + sum of phase nets
+
+- **Natural increase** is the change during `grow` plus the removals
+  recorded there (hunger, feud). It covers majorities and minorities.
+- **Removals** are the causes of `deaths.csv`:
+  - hunger: a crowd above what the land feeds dying back in `grow`,
+    counted once. `famine` only moves people, and its remainder dies
+    back in `grow` the next tick. From 2026-11-17 a minority's die-back
+    counts too.
+  - feud, raid, war levies, siege, sack, clearance, plague.
+  - dragon attack: a dragon's fight with a settlement, in `dragons`.
+  - three causes new on 2026-11-17, below.
+- **Forgone growth under dragons** is not a removal. Dragons cut the
+  growth rate, so it is growth that did not happen (majority and
+  minority). It was the "dragon" cause in `deaths.csv`, 54-58% of all
+  "deaths"; it is now `forgone_dragon` in `growth.csv`.
+- **Made**: heads added from no cell. A merchant quarter, a trading
+  post and a conqueror's garrison each add a minority without taking it
+  from anywhere (C, an existing mechanic; now shown).
+- **Phase nets.** Each phase's change plus its removals, less heads
+  made. For the world they must be 0, since people only move between
+  peoples. Over 300 years from year 5,000 of seed 101, every one is 0.
+
+**Fixes and new causes (2026-11-17, C).** Each was a bookkeeping gap
+that the account found.
+- Raid takeover: the half of the old majority that does not stay on is
+  now recorded as raid deaths, and so is an old minority overwritten by
+  the new underclass. Before, both vanished without a record.
+- Raid takeover, a mechanic fix: an attacking cell that sent two
+  takeover bands in one tick paid for only one. Each band is now
+  debited (`np.subtract.at`).
+- Voyages, a mechanic fix: colonists landing where another people's
+  minority already lives were taken from the source and never placed.
+  They now stay home.
+- Voyages: thin natives pushed out of a cell are recorded as
+  `displaced`.
+- Expulsion of a foreign minority (`minorities`) is recorded as
+  `expelled`.
+- `tidy` removes cells under 5 heads and tiny minorities. That is
+  recorded as `dwindled`.
