@@ -17,7 +17,7 @@ what an entry holds.
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
-| 2 | B run loader and metrics | not started | | |
+| 2 | B run loader and metrics | done | 2026-11-17 | see entry |
 | 2 | C tidy tables | not started | | |
 | 2 | D GIS export | not started | | |
 | 3 | A snapshots | not started | | |
@@ -544,3 +544,63 @@ states were remade under the default, from runs `wp1g_states_seed101` and
   to `events.jsonl` belongs with WP2 stage B's loader.
 
 **Next.** WP2 stage B (run loader and metrics).
+
+### WP2 stage B: run loader and metrics (2026-11-17)
+
+**Done.**
+- `wsim/runio.py`: `Run(name or path)` reads each table on first use and
+  keeps it. The tables are `timeseries`, `cities`, `polities`, `wars`,
+  `sieges`, `revolts`, `events` (from `events.jsonl`, else `events.txt`),
+  `city_sizes`, `cityfood`, `deaths`, `lineages`, `price`, `history`,
+  `final`, `config` and `metrics`. A file Dropbox has made online-only
+  (the `SF_DATALESS` flag, or a non-empty file with no blocks) raises
+  `Missing` instead of being read. `Run.W` builds the world on first use.
+- `wsim/metrics.py`: 17 single-run functions, listed in diagnostics.md.
+  They hold everything `realism.py` printed and the old `write_checks`
+  computed, plus the review measures of BASELINE.md. `cross(runs)` gives
+  the pairwise final-map measures.
+- Each run writes `metrics.json` at its end; `checks.txt` is formatted
+  from it. A metrics failure is printed and does not stop the other
+  outputs.
+- `realism.py` now prints `metrics.json`, and measures runs that lack
+  one. It has `--rebuild`, `--save`, `--only` and `--cross`.
+
+**Checks.**
+- On `al_seed103`, the functions reproduce BASELINE.md except three,
+  corrected there:
+  - Land in a state: 32% was the share of cells; by area it is 51%.
+  - The herding peak is 0.28 at year 2430, not 0.25 near 3000.
+  - Siege odds by side: the attacker's sieges have median 0.076,
+    counter-offensives 0.0066. The pooled 0.064 hid that split.
+- New: once pieces within a state's sailing range (1,900-2,400 km at the
+  end) are joined, the ten largest states are 1-3 groups each, against
+  1-26 land pieces.
+- `checks.txt` from `metrics.json` matches the old file for
+  `wp1f_fullclim_seed103`, except one price term that differs in the last
+  digit (price.csv stores rounded terms) and the rank-size source: the
+  last `city_sizes.csv` year rather than the live city list, with the
+  same slope.
+- `wp2b_short` (seed 101, 1,500 years) wrote `metrics.json` and
+  `checks.txt` at its end. `wars` and `sieges` are listed under
+  `_missing` because no war happened.
+- `metrics.json` was written into the five baseline runs. Their ranges,
+  and the contingency pairs, are in BASELINE.md's last section.
+
+**Choices to check (C).**
+- Volatility per landmass group comes from `history.npz`, whose
+  snapshots are 100 years apart. Its 200-year mean covers 3 snapshots,
+  so it is coarser than the world figure.
+- The sailing range is that of the lineage in `polities.csv`, which may
+  be the founder's rather than the current ruler's.
+- `cross` gives no chance level for the population correlation. Shuffling
+  cells gives about 0, which does not show how much the land alone fixes.
+- War counts and durations use every row of `wars.csv`, including wars
+  still going at the end, as BASELINE.md did. How wars end counts only
+  ended wars, as `realism.py` did.
+
+**Not done.**
+- `timeline.py`, `figures.py`, `landmass_report.py`, `bigcities.py` and
+  `turnover.py` still read files their own way. They can move to
+  `runio.Run` when next touched.
+
+**Next.** WP2 stage C (tidy tables).

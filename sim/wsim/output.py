@@ -13,73 +13,60 @@ from .geo import *  # noqa: F401,F403
 from .render import *  # noqa: F401,F403
 
 
-def write_checks(sim, path):
-    """Compare a run with rough historical regularities. The references
-    are orders of magnitude, not targets (docs/diagnostics.md)."""
-    P = [p for p in sim.polities.values() if p["peak_cities"] >= 3]
-    L = []
-    for p in P:
-        end = p["ended"] if p["ended"] is not None else sim.year
-        if p["ended"] is not None:          # finished lives only
-            L.append(end - p["founded"])
-    L = np.array(L, float)
+def write_checks(m, path):
+    """checks.txt: a few measures from metrics.json beside rough historical
+    regularities. The references are orders of magnitude, not targets
+    (docs/diagnostics.md)."""
+    L, S = m.get("lifespans", {}), m.get("states", {})
+    C, Wt = m.get("city_hierarchy", {}), m.get("war_time", {})
     lines = ["Stylized-fact checks (references are rough; see "
              "docs/diagnostics.md)", ""]
-    if len(L):
+    if L:
         lines += [f"State lifespans (states that held 3+ cities and ended; "
-                  f"n={len(L)}):",
-                  f"  mean {L.mean():.0f} yrs, median {np.median(L):.0f}, "
-                  f"CV {L.std() / max(L.mean(), 1):.2f}",
+                  f"n={L['ended 3+ city states']}):",
+                  f"  mean {L['lifespan mean (yr)']:.0f} yrs, median "
+                  f"{L['lifespan median (yr)']:.0f}, CV {L['lifespan CV']:.2f}",
                   "  reference: mean ~200-250 yrs, roughly exponential "
                   "(CV ~1) [Arbesman 2011]", ""]
-    sz = np.array(sorted((p["peak_cells"] for p in P), reverse=True), float)
-    if len(sz) >= 10:
-        lg = np.log(sz[sz > 0])
-        sk = float(((lg - lg.mean()) ** 3).mean() / max(lg.std(), 1e-9) ** 3)
+    if "peak cells, largest" in S:
         lines += [f"State sizes at peak (cells, states with 3+ cities; "
-                  f"n={len(sz)}):",
-                  f"  largest {sz[0]:.0f}, 10th {sz[9]:.0f}, median "
-                  f"{np.median(sz):.0f}; skew of log size {sk:+.2f}",
+                  f"n={S['states with 3+ cities']}):",
+                  f"  largest {S['peak cells, largest']:.0f}, 10th "
+                  f"{S['peak cells, 10th']:.0f}, median "
+                  f"{S['peak cells, median']:.0f}; skew of log size "
+                  f"{S['skew of log peak cells']:+.2f}",
                   "  reference: heavy-tailed, roughly log-normal (skew of "
                   "log size near 0) [Taagepera 1978-97]", ""]
-    cs = np.array(sorted(sim.city_size.values(), reverse=True), float)
-    cs = cs[cs > 0][:200]
-    if len(cs) >= 20:
-        slope = np.polyfit(np.log(np.arange(1, len(cs) + 1)), np.log(cs), 1)[0]
-        lines += [f"City rank-size (top {len(cs)} at the end): slope "
-                  f"{slope:.2f}",
+    if C.get("rank-size slope, end (top 200)") is not None:
+        lines += [f"City rank-size (top 200 cities in the last "
+                  f"city_sizes.csv year): slope "
+                  f"{C['rank-size slope, end (top 200)']:.2f}",
                   "  reference: about -1 (Zipf); pre-modern systems often "
                   "flatter, -0.6 to -1", ""]
-    ws = [r["at_war_share"] for r in sim.ts if "at_war_share" in r]
-    if ws:
+    if "at war, mean over run" in Wt:
         lines += [f"Share of states (2+ cities) at war, mean over run: "
-                  f"{np.mean(ws):.2f}",
+                  f"{Wt['at war, mean over run']:.2f}",
                   "  reference: high in pre-modern state systems; great "
                   "powers at war in most years [Levy 1983]. Uncertain.", ""]
-    if sim.price_rows:
-        lines += ["Price decomposition, summed over the run (ALL = world, "
+    P = m.get("price", {})
+    if P:
+        lines += ["Price decomposition, summed over the run (world, "
                   "lineages as units):",
                   f"  {'trait':12s} {'dz':>8s} {'selection':>10s} "
                   f"{'transmission':>13s}"]
         for t in TRAITS:
-            rows = [r for r in sim.price_rows
-                    if r["people"] == "ALL" and r["trait"] == t]
-            s = sum(r["selection"] for r in rows)
-            tr = sum(r["transmission"] for r in rows)
-            lines.append(f"  {t:12s} {s + tr:+8.3f} {s:+10.3f} {tr:+13.3f}")
+            if f"{t}: selection, world" in P:
+                s_, tr = P[f"{t}: selection, world"], \
+                    P[f"{t}: transmission, world"]
+                lines.append(f"  {t:12s} {s_ + tr:+8.3f} {s_:+10.3f} "
+                             f"{tr:+13.3f}")
         lines += ["", "  within peoples (mean over peoples of the summed "
                   "terms; selection | transmission):"]
         for t in TRAITS:
-            ss, tt = [], []
-            for k in sim.keys:
-                rows = [r for r in sim.price_rows
-                        if r["people"] == k and r["trait"] == t]
-                if rows:
-                    ss.append(sum(r["selection"] for r in rows))
-                    tt.append(sum(r["transmission"] for r in rows))
-            if ss:
-                lines.append(f"  {t:12s} {np.mean(ss):+.3f} | "
-                             f"{np.mean(tt):+.3f}")
+            if f"{t}: selection, mean over peoples" in P:
+                lines.append(
+                    f"  {t:12s} {P[f'{t}: selection, mean over peoples']:+.3f}"
+                    f" | {P[f'{t}: transmission, mean over peoples']:+.3f}")
     with open(path, "w") as fh:
         fh.write("\n".join(lines) + "\n")
 
@@ -459,8 +446,6 @@ def write_outputs(sim, out):
             if k in always or (set(e.get("polities", ())) & great) or \
                     (k in ("plague", "drought") and e.get("n", 0) >= 2e6):
                 fh.write(f"{e['year']:5d}  {k:10s} {e['text']}\n")
-    if "diagnostics" in sim.on:
-        write_checks(sim, os.path.join(out, "checks.txt"))
     np.savez_compressed(os.path.join(out, "final_state.npz"),
                         row=sim.W.row, col=sim.W.col, pop=sim.pop,
                         people=sim.cul, lineage=sim.lin, polity=sim.cell_pol,
@@ -475,6 +460,16 @@ def write_outputs(sim, out):
                             dragon_age=sim.dage, dragon_tol=sim.dtol,
                             dragon_viol=sim.dviol, dragon_str=sim.dstr))))
     write_run_json(sim, out)
+    # metrics.json from the files just written (WP2 stage B); a failure
+    # there must not lose the run's other outputs
+    try:
+        from .runio import Run
+        from . import metrics
+        m = metrics.write(Run(out, W=sim.W))
+        if "diagnostics" in sim.on:
+            write_checks(m, os.path.join(out, "checks.txt"))
+    except Exception as e:  # noqa: BLE001
+        print(f"metrics failed ({e!r})")
     if files:
         # 2x2 final.png and wars.png (figures.py); a failure there must
         # not lose the run's other outputs

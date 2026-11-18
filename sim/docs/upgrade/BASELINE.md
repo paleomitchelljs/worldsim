@@ -18,12 +18,17 @@ with the old `ub_` batch and with `wp1f_base_` (half-resolution field) are
 in `docs/run-log.md`, "2026-11-17 WP1 stage F". Median end population is
 147M (108-178M), against 137M (124-160M) for `ub_`. Saved states at years
 3,000 and 5,000 of seeds 101 and 103 (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`)
-are from the same settings (runs `wp1g_states_seed101`, `103`). The
-sections below still describe `al_seed103` and the old code; WP2 stage B
-recomputes them as functions on the new batch.
+are from the same settings (runs `wp1g_states_seed101`, `103`).
 
-Reproduce with `docs/upgrade/tools/analyze_run.py` (edit the run names at
-the top of each section; it reads only local files).
+**Update, 2026-11-17 (WP2 stage B).** Every measure below is now a
+function in `wsim/metrics.py`; each run writes them to `metrics.json`,
+and `realism.py` prints them (`--group`, `--cross`). Run on `al_seed103`,
+the functions reproduce every figure in the sections below except three,
+corrected in place and marked *corrected*: land in a state (32% was the
+share of cells; by area it is 51%), the herding peak, and the siege odds,
+now split by side. The last section gives the same measures on the new
+baseline batch. `docs/upgrade/tools/analyze_run.py` is kept only as the
+record of how the first figures were made.
 
 ## War and states (`al_seed103`)
 
@@ -35,16 +40,17 @@ the top of each section; it reads only local files).
 | Wars with 0-1 sieges | 57% | `sieges <= 1` |
 | Peer wars | 296 (3.8%) | `cities_att >= 5` and `cities_dfn >= 5` |
 | Sieges, share taken | 20,514; 21.5% | `sieges.csv`, `taken` |
-| Median siege win probability at launch | 0.064 | `sieges.csv`, `odds`; both sides pooled (not yet split by `side`) |
+| Median siege win probability at launch | 0.064 pooled; attacker's sieges 0.076 (n 19,087, 54% under 0.1); counter-offensives 0.0066 (n 1,427, 87% under 0.1) | `sieges.csv`, `odds`, by `side` (*corrected*: the pooled figure hid the split) |
 | States (2+ cities) at war, by millennium | 0.06-0.12 after year 3000 | `timeseries.csv`, `at_war_share` |
 | Wars per millennium | 14, 59, 235, 434, 927, 2,619, 3,587 | `wars.csv`, `start // 1000`, from year 1000 |
 | Polities | 5,872 | rows of `polities.csv` |
 | Never above one city | 66%, median life 35 yr | `peak_cities <= 1` |
 | Ended states with 3+ cities | 910; mean 300 yr, median 160 | `polities.csv` |
 | ... lasting over 1,000 yr | 54; longest 4,720 yr | same |
-| Largest state at the end | 1,909 cells in 23 pieces; largest piece 36% | `final_state.npz`, 8-connected components of `polity`; sea-linked pieces not separated |
+| Largest state at the end | 1,909 cells in 23 pieces; largest piece 36% | `final_state.npz`, 8-connected components of `polity` |
 | Top-10 states, pieces | 23, 26, 8, 20, 8, 15, 22, 1, 7, 13 | same |
-| Population in a state / land in a state | 89% / 32% | `final_state.npz` |
+| Top-10 states, groups once pieces within sailing range are joined | 2, 2, 2, 1, 1, 1, 1, 1, 3, 2; largest group 90-100% | range `SAIL_D0 + SAIL_D1 x sail^1.5` of the state's lineage: 1,900-2,400 km (added 2026-11-17) |
+| Population in a state / land in a state | 89% / 51% of land area (32% of land cells) | `final_state.npz` (*corrected*: 32% was cells) |
 
 ## Food and deaths (`al_seed103`, end of run)
 
@@ -65,7 +71,7 @@ city food.
 | Growth, %/yr by millennium from 2000 | 0.056, 0.018, 0.030, 0.031, 0.032, 0.050, 0.013 |
 | Log population, sd around its 200-yr mean after 3000 | 0.023 |
 | Largest 100-yr fall after 3000 (log) | -0.26 |
-| Herding share of population, peak | 0.25 near year 3000 |
+| Herding share of population, peak | 0.28 at year 2430 (*corrected*: was read as 0.25 near 3000) |
 | Pop share: coastal / river / coast or river | 0.22 / 0.42 / 0.61 on 0.075 / 0.107 / 0.179 of land |
 | Pop share on alluvial fill | 0.093 on 0.099 of land |
 | Pop share within 15° / 30° of the equator | 0.51 / 0.84 on 0.31 / 0.56 of land |
@@ -134,3 +140,46 @@ Reproduce:
 
 400 constants in `wsim/params.py` (362 numeric scalars), 27 switches in
 `FEATURES`.
+
+## The new baseline batch (`wp1f_fullclim_seed101`-`104`, `106`)
+
+Ranges across the five seeds, from their `metrics.json`
+(`realism.py --group 'wp1f_fullclim_seed10?'`). Contingency is over the
+ten pairs (`realism.py --cross`).
+
+| Measure | Range |
+|---|---|
+| World population at 8000 | 108-178M |
+| Growth by millennium, 2000-8000 (%/yr) | -0.005 to 0.064; each millennium spans 0.02-0.05 across seeds |
+| Log population, sd around 200-yr mean after 3000 | 0.014-0.040 |
+| Largest 100-yr fall after 3000 (log) | -0.32 to -0.07 |
+| Herding share, peak | 0.31-0.37, at years 1970-2310 |
+| Urban share at the end | 0.077-0.103 |
+| Rank-size slope at the end | -0.38 to -0.36 |
+| Largest city, share of world | 0.07-0.09% |
+| Minority share of heads, end | 0.8-1.5% |
+| Polities | 2,550-5,834 |
+| Never above one city | 67-76%; median life 35-100 yr |
+| Ended 3+ city states, lifespan | median 150-310 yr; mean 275-490; CV 1.1-1.5; over 1,000 yr 5-12%; longest 2,960-4,245 |
+| Largest state | 3.5-7.9M km² (2.9-6.5% of land) |
+| Top-10 states, median land pieces / groups joined by sea | 5.5-9.5 / 1-2 |
+| Wars | 1,760-7,383 |
+| Wars ending inside one tick / within 5 yr | 65-71% / 81-85% |
+| Wars with 0-1 sieges | 54-60% |
+| Peer wars | 1.5-2.4% |
+| Sieges taken | 23-24% |
+| Siege odds at launch, median: attacker / counter-offensive | 0.068-0.122 / 0.006-0.022 |
+| ... share under 0.1: attacker / counter-offensive | 46-55% / 82-90% |
+| States at war, by millennium after 3000 | 0.03-0.11 |
+| City food: trade / rent / provincial / capital | 0.35-0.44 / 0.30-0.34 / 0.12-0.16 / 0.13-0.15 |
+| Deaths: dragon / feud / raid / hunger / plague | 0.56-0.64 / 0.17-0.22 / 0.07-0.10 / 0.02-0.06 / 0.02-0.11 |
+| Pop share coast or river (land 0.18) | 0.62-0.65 |
+| Pop share alluvial fill (land 0.099) | 0.082-0.097 |
+| Population in a state / land area / land cells | 0.81-0.91 / 0.35-0.52 / 0.22-0.35 |
+| Same people, cell by cell (chance) | 0.57-0.73 (0.21-0.27) |
+| City sites within one cell (chance) | 0.45-0.76 (0.08-0.12) |
+| Correlation of log(1 + cell population) | 0.91-0.94 |
+
+Against `al_seed103`, which ran with different levers: city food leans
+more on trade and rent and less on the capital's take, and the defender
+falls far less often when it holds 5+ cities (0.01-0.08 against 0.11).

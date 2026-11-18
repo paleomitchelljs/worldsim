@@ -195,13 +195,18 @@ figures.
 | `city_sizes.csv` | every city and ruin every 25 years ([structural.md](structural.md#city-histories-bookkeeping-only)); from 2026-11-09 `size` is the urban population and `size_old` the old 0.08/0.04 formula ([diagnostics.md](diagnostics.md#records-of-2026-11-09)) |
 | `cityfood.csv` | every city every 25 years: where its food comes from (land, trade, rent, provincial tax, the capital's take) and its urban population (2026-11-09) |
 | `deaths.csv` | deaths per century by people and cause (2026-11-09) |
-| `checks.txt` | the run against rough historical regularities, plus a summary of `price.csv` ([diagnostics.md](diagnostics.md)) |
+| `checks.txt` | the run against rough historical regularities, plus a summary of `price.csv` ([diagnostics.md](diagnostics.md)); since 2026-11-17 formatted from `metrics.json`, its city rank-size from the last `city_sizes.csv` year |
+| `metrics.json` | every measure of `wsim/metrics.py` (WP2 stage B, 2026-11-17), as `{function: {measure: value}}`, computed from the files above at the end of the run; `_missing` names measures whose files were absent ([diagnostics.md](diagnostics.md#run-measures-wsimmetricspy-2026-11-17)) |
 
-Analysis tools: `realism.py RUNS [--group]` prints the realism checks
-side by side ([diagnostics.md](diagnostics.md#realism-checks-realismpy-2026-11-09));
-a run still going, or killed, is measured up to its last flush (its
-`years` row says how far). It skips runs whose files Dropbox has made
-online-only (reading those can hang), and names them.
+Analysis tools: `realism.py RUNS [--group] [--only wars,sieges]`
+prints each run's `metrics.json` side by side
+([diagnostics.md](diagnostics.md#run-measures-wsimmetricspy-2026-11-17)).
+A run without one (older runs, or a run still going, measured up to its
+last flush) is measured from its files; `--rebuild` forces that, `--save`
+writes the result into the run, and `--cross` prints the pairwise
+final-map measures instead. Scripts read run folders through
+`wsim.runio.Run(name)`, which reads each table once and reports a file
+Dropbox has made online-only as missing (reading one can hang).
 `landmasses.py` holds short codes per landmass (S, W1-W5,
 N1-N4, E1, X1-X4; groups S, W, N, E, X) and draws `docs/landmass_key.png`.
 `landmass_report.py RUNS --lm W` reports peoples, cities, states, wars,

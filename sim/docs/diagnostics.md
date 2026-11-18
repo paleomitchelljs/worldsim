@@ -88,10 +88,44 @@ The references are rough orders of magnitude, not tuning targets.
 Unlike `events.txt` and `events.jsonl`, which log only events involving larger states,
 these counters include every event.
 
+## Run measures (`wsim/metrics.py`, 2026-11-17)
+
+`wsim/metrics.py` holds every measure of a finished run, one function per
+group, each taking a `wsim.runio.Run` and returning a flat dict; the run
+writes them all to `metrics.json` at its end. They took in the realism
+checks of 2026-11-09 (`realism.py`, below), the old `checks.txt`
+computations, and the review measures of `docs/upgrade/BASELINE.md`:
+
+| Function | What |
+|---|---|
+| `population` | world population at each 1000 years, urban share, cities below URBAN_MIN, herding peak, minority share of heads |
+| `growth` | %/yr over each millennium |
+| `volatility` | sd of log world population around its 200-year mean after 3000; largest 100-year fall; worst 300-year fall and what cities did over it |
+| `landmass_volatility` | the first two per landmass group (`landmasses.py`), from `history.npz` (100-year snapshots, so coarser) |
+| `city_hierarchy` | rank-size slope at 2000-year marks and at the end; largest city against the 10th and the world |
+| `city_lives` | cities founded, ended, abandoned; of those alive at 4000, ended within 2000 years |
+| `states` | polities; never above one city (share, median life); largest state against land and the 10th; size distribution of 3+ city states; multi-people states; vassals |
+| `lifespans` | ended 3+ city states: mean, median, CV, share over 1000 years, longest |
+| `contiguity` | ten largest states at the end: land pieces (8-connected, joined across the date line) and groups once pieces within the state's sailing range are joined, each with its largest share |
+| `wars` | count; ending inside one tick, within 5 years; 0-1 sieges; peer wars; wars per millennium; how ended wars ended |
+| `sieges` | share taken; terms; win probability at launch (`odds`): n, median, share under 0.1, for all and by `side` (`att` the attacker's sieges, `dfn` counter-offensives) |
+| `war_time` | share of 2+ city states at war, over the run and by millennium |
+| `food` | shares of city food from trade, rent, provincial spending, capital (last `cityfood.csv` year) |
+| `deaths` | deaths by cause, shares |
+| `settlement` | population against land share by coast, river, alluvial fill, latitude band, biome; density percentiles; population, land area and land cells inside states |
+| `turnover` | per 500 years: share of cells whose people changed; occupied cells inside a state; cells emptied |
+| `price` | Price decomposition summed over the run |
+
+`metrics.cross(runs)` compares final maps pairwise: cells held by the same
+people, city sites within one cell, correlation of log(1 + cell
+population); the first two with a chance level. `realism.py` prints
+these (`--cross`).
+
 ## Realism checks (`realism.py`, 2026-11-09)
 
-Reads finished runs and prints, side by side, the measures behind the
-realism review of 2026-11-09 (open-questions.md): rank-size slope of
+Prints the measures above side by side, from each run's `metrics.json`
+(computing them for runs without one). The realism review of 2026-11-09
+(open-questions.md) read: rank-size slope of
 cities over time, the largest city against the 10th and against the
 world, the largest state as a share of the land (122M km²) and against
 the 10th, standing vassals, how wars end (overall and by the defender's
@@ -101,7 +135,7 @@ population after year 3000 with the change in cities over it, the lowest
 urban population against before, and the cities below URBAN_MIN before
 and at most (per seed), and deaths by cause.
 
-    ~/.venvs/worldsim/bin/python realism.py runs/base_seed10? runs/ff_seed10? --group
+    ~/.venvs/worldsim/bin/python realism.py --group 'base_seed10?' 'ff_seed10?'
 
 `--group` pools runs named alike up to `_seed` and prints the range
 across seeds. Rough historical references, not targets: pre-modern
