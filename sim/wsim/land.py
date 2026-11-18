@@ -239,6 +239,26 @@ class LandMixin:
                 logged=False, ended=False))
             t += rng.exponential(1 / ABRUPT_RATE)
 
+    def local_field(self, rng):
+        """The climate's local field at the land cells: white noise on a
+        grid CLIM_LOCAL_COARSE times coarser on each axis, smoothed with
+        the same sigma in km (CLIM_LOCAL_SIGMA fine cells), and read off
+        bilinearly (wrapping in longitude). The smoothing costs about a
+        sixteenth of doing it on the full grid; the field's scale is the
+        same."""
+        W, f = self.W, CLIM_LOCAL_COARSE
+        ny, nx = NY // f, NX // f
+        g = ndimage.gaussian_filter(rng.normal(size=(ny, nx)),
+                                    CLIM_LOCAL_SIGMA / f, mode="wrap")
+        # fine cell centres in coarse cell coordinates
+        y = np.clip((W.row + 0.5) / f - 0.5, 0, ny - 1)
+        x = (W.col + 0.5) / f - 0.5
+        y0, x0 = np.minimum(y.astype(int), ny - 2), np.floor(x).astype(int)
+        wy, wx = y - y0, x - x0
+        x0, x1 = x0 % nx, (x0 + 1) % nx
+        return (1 - wy) * ((1 - wx) * g[y0, x0] + wx * g[y0, x1]) + \
+            wy * ((1 - wx) * g[y0 + 1, x0] + wx * g[y0 + 1, x1])
+
     def climate(self):
         """This tick's moisture anomaly and what it does: rain-fed yields,
         foraging and herding, river discharge (from the whole catchment),
@@ -246,9 +266,7 @@ class LandMixin:
         W, rng = self.W, self.crng
         tick = min(self.tick, self.clim_ser.shape[1] - 1)
         m = self.clim_pat.T @ self.clim_ser[:, tick]
-        g = ndimage.gaussian_filter(rng.normal(size=(NY, NX)),
-                                    CLIM_LOCAL_SIGMA, mode="wrap")
-        g = g[W.row, W.col]
+        g = self.local_field(rng)
         m += self.clim_loc * g / max(g.std(), 1e-9)
         for ev in self.events_abrupt:
             dt = self.year - ev["start"]

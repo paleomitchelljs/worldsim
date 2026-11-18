@@ -307,7 +307,10 @@ the draws depended on --years).
   | background | red noise, 400 years | 0.15 | — |
 
 - **A local field drawn fresh each tick** (sigma 6 cells, about 330 km;
-  weight 0.45). This is the old drought's role.
+  weight 0.45). This is the old drought's role. Since WP1 stage D
+  (2026-11-17, U->C) it is drawn on a grid with every second row and
+  column (sigma 3 coarse cells, the same km) and interpolated bilinearly
+  to the land cells, for speed (C: the factor 2).
 - **Abrupt dry spells.** About one per 2,000 years: 150–400 years long,
   1.5–2.5 sd deep, setting in over 25 years and lifting over 75. A quarter
   are world-wide; the rest have a regional footprint. Modelled on the 8.2,

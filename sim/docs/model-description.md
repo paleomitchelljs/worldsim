@@ -425,7 +425,9 @@ K. Growth, migration pressure and room use K × pref.
   events.
 - Patterns (each standardized), weights normalized with the local term:
   world 0.35, latitude (cos 4·lat) 0.25, inland (distance to coast) 0.25,
-  4 regional Gaussian fields (σ 20 cells) 0.35 each; local field 0.45.
+  4 regional Gaussian fields (σ 20 cells) 0.35 each; local field 0.45
+  (σ 6 cells, drawn at half resolution on each axis and interpolated,
+  `CLIM_LOCAL_COARSE` 2; U->C 2026-11-17).
 - Each pattern's series sums five standardized components: white 30%;
   damped oscillator period 60 yr damping 60 yr 15%; period 200, damping
   250, 20%; period 1500, damping 1500, 20%; red noise τ 400 yr 15%.
