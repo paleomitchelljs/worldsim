@@ -68,6 +68,7 @@ Code (split into modules 2026-11-02; the single-file v1 is in
 | `../worldsim.py` | command line (`main`; `make_sim` builds a Sim from the same arguments) |
 | `../snapcheck.py` | checks a code change against a saved late-game state ([running.md](running.md)) |
 | `../realism.py` | realism checks on finished runs, side by side ([diagnostics.md](diagnostics.md)) |
+| `../export.py` | a finished run as NetCDF, GeoPackage and a blank names table for QGIS ([running.md](running.md#gis-export-exportpy)) |
 | `../wsim/params.py` | constants and the remaining switches |
 | `../wsim/geo.py` | world grid, distances, small math helpers |
 | `../wsim/sim.py` | `Sim`: state, setup, the yearly `step` |

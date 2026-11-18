@@ -19,7 +19,7 @@ what an entry holds.
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
 | 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
-| 2 | D GIS export | not started | | |
+| 2 | D GIS export | done | 2026-11-17 | (this commit) |
 | 3 | A snapshots | not started | | |
 | 3 | B renderer and projection | not started | | |
 | 3 | C state colours and change layers | not started | | |
@@ -654,4 +654,58 @@ states were remade under the default, from runs `wp1g_states_seed101` and
 
 **Next.** WP2 stage D (GIS export), which needs U on D4 (`xarray`,
 `netCDF4`, `geopandas`).
+
+### WP2 stage D: GIS export (2026-11-17)
+
+D4 (U, 2026-11-17): yes. Installed xarray, netCDF4 (with cftime),
+geopandas, shapely and pyogrio. numpy did not change (2.5.4). The
+environment's versions are pinned in `sim/requirements.txt`.
+
+**Done.** `export.py RUN` writes `<run>/export/`:
+- `run.nc`: CF-1.8 NetCDF on the full 360 x 720 grid. Over time it holds
+  `people`, `population`, `density` and `polity`; at the end, `road`,
+  `improvements`, `land` and `salt`. Time is `days since 0001-01-01` on
+  a noleap calendar, so each snapshot is its run year's 1 January. Sea
+  is the fill value: NaN for numbers, -9 for ids, so -1 keeps its
+  meaning of "none".
+- `run.gpkg`: `cities`, `states` (one multipolygon per state per
+  snapshot, built with `shapely.coverage_union_all` over cell boxes),
+  `roads` (neighbour-to-neighbour lines over the travel graph, road
+  over 0.3) and `events` (from `events.jsonl`). Each temporal layer has
+  `t_start` / `t_end` as GeoPackage DATETIME. They are written from
+  `datetime64[s]`, because pandas' default nanosecond unit cannot hold
+  years before 1677. Year 0 is written as year 1, because Python dates
+  start there.
+- `names.csv`: cities, states and the 15 coded landmasses, with an empty
+  `name` column.
+- The script reads both files back and checks that city points fall on
+  land.
+
+**Runs (exports only; no simulation).**
+- `wp1f_fullclim_seed101` (8,000 years): 8 s. `run.nc` 28 MB (80
+  snapshots), `run.gpkg` 8 MB (1,880 cities, 7,197 state snapshots,
+  4,213 road segments). All 1,880 cities are on land, and every state
+  polygon is valid. There is no events layer, because the run predates
+  `events.jsonl`. Population summed from the grid at 8,000: 140.5M.
+- `wp2c_branch` (5,000 to 5,600) and `wp2c_sanity_seed101`: both have
+  events layers (185 and 226 points). All cities are on land.
+
+**Not opened in QGIS.** I checked the files only with xarray and
+geopandas. Whether QGIS's temporal controller takes the noleap NetCDF
+time axis and the DATETIME fields as intended is untested. GDAL's
+NetCDF driver may show time as bands rather than as a time axis; the
+mesh layer should read the time axis.
+
+**Choices to check (C).**
+- Density uses the cell's land area (`area_km2` in the world file), not
+  the full 0.5° square.
+- Roads join each pair of neighbouring cells whose stock is over 0.3. They
+  are not routed along the actual travel paths, so parallel neighbours
+  give a ladder pattern in dense road areas.
+- State snapshots come from `history.npz` (every 100 years); the
+  `people` and `cities` values come from its `st_*` arrays.
+
+**Next.** WP2 is complete. In the README's order, WP3 (visualization)
+can start now; WP4 needs WP1, which is partial (see the stage B and D
+entries).
 

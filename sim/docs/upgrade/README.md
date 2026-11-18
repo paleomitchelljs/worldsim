@@ -75,7 +75,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D1 | Where the git metadata lives (a `.git` folder inside Dropbox can be corrupted by sync) | `git init --separate-git-dir ~/git/worldsim.git` in `art/world` | 2026-11-17 (U): the project moved out of Dropbox to `~/Desktop/world`, so a plain `.git` there; remote `origin` = github.com/paleomitchelljs/worldsim, pushing allowed |
 | D2 | Where runs live | `~/worldsim_runs` (outside Dropbox), with `WORLDSIM_RUNS` to override; keep only `metrics.json`, `run.json` and chosen figures in Dropbox | 2026-11-17 (U): `sim/runs/` in the project (git-ignored), `WORLDSIM_RUNS` overrides |
 | D3 | What to do with the ~900 existing run folders | keep the batches the run log cites; delete or archive the rest to an external disk | 2026-11-17 (U): leave all 446 in the old Dropbox folder untouched; read them by full path |
-| D4 | New Python packages in `~/.venvs/worldsim` (xarray + netCDF4, geopandas, SALib) | yes; pin in a `requirements.txt` | |
+| D4 | New Python packages in `~/.venvs/worldsim` (xarray + netCDF4, geopandas, SALib) | yes; pin in a `requirements.txt` | 2026-11-17 (U): yes to xarray + netCDF4 and geopandas (+ shapely, pyogrio); installed and pinned in `sim/requirements.txt`. SALib not yet asked for (WP9) |
 | D5 | Trade food must come from somewhere, and world population will fall when it does | accept the fall; do not retune to restore city sizes | |
 | D6 | Keep the base city-cell boost (1.5 x development), which also adds capacity from nothing | keep, but show it as its own ledger line | |
 | D7 | Lower growth rates, which stretches the early timeline (first cities arrive later) | try a few settings first; decide on the results | |

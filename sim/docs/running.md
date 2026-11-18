@@ -218,6 +218,22 @@ landmasses. `timeline.py RUN --landmass W1,W2` takes the same codes.
 (runs before 2026-11-01 lack `posts.csv`; their posts are rebuilt from
 the events still standing at the end).
 
+## GIS export (`export.py`)
+
+`export.py RUN [RUN ...]` (WP2 stage D, 2026-11-17) writes three files
+into `<run>/export/` from `history.npz`, `final_state.npz` and the CSVs,
+without rerunning anything. An 8,000-year run takes about 8 s, giving a
+28 MB `run.nc` and an 8 MB `run.gpkg`. Needs the packages in
+`requirements.txt` (xarray, netCDF4, geopandas, shapely).
+
+| File | What |
+|---|---|
+| `run.nc` | NetCDF, CF-1.8, on the full 360 x 720 half-degree grid (`lat` from north to south, `lon` from -180), sea cells as the fill value (NaN for numbers, -9 for ids). Over `time` (one step per `history.npz` snapshot, every 100 years; `year` holds the run year): `people` (index into the file's `peoples` attribute; -1 empty land), `population` (heads), `density` (heads per km² of the cell's land), `polity` (state id; -1 none). At the end only: `road`, `improvements`, `land`, `salt`. Time is `days since 0001-01-01` on a 365-day calendar, so step Y is Y-01-01. QGIS opens it as a raster or mesh layer with the temporal controller. xarray decodes the fill value to NaN, which turns `people` and `polity` into floats; `mask_and_scale=False` keeps them as integers |
+| `run.gpkg` | GeoPackage, EPSG:4326. `cities`: points with id, cell, people, founded, ended, end reason, peak size (urban fe) and peak year. `states`: one multipolygon per state per snapshot, dissolved from its 0.5° cells, with state id, snapshot year, people, cities, capital cell, cells, area (km²) and population (heads); `--states-every N` keeps every Nth snapshot, `--no-states` none. `roads`: a line between each pair of neighbouring cells whose road stock at the end is over 0.3 (C), with the lower stock. Lines are not drawn across the date line. `events`: points for events with a place (`events.jsonl`; runs before 2026-11-17 have none), with year, kind, text, cell, the ids in `polities`, `peoples` and `cities` as space-separated text, `n` and the landmass code. Each layer but roads has `t_start` and `t_end` (DATETIME, run year Y as Y-01-01; year 0 as year 1). A range runs from `t_start` up to, but not including, `t_end`. A state snapshot lasts until the next one. An event lasts one tick. A city standing at the end lasts until the run's last year |
+| `names.csv` | a blank table of names: `id, kind` (city, state, landmass), `lon, lat` (city; state's last capital; landmass cell mean), `size` with `size_unit` (city: peak urban fe; state: peak km²; landmass: km²), and an empty `name`. The book assigns names in its own pass; the code never fills `name` |
+
+After writing, the script reads both files back and prints the counts and how many city points fall on land cells.
+
 ## Table columns and units
 
 Every table a run writes, with its columns (WP2 stage C, 2026-11-17).

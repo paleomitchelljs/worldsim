@@ -42,7 +42,8 @@ These come from the user (`docs/README.md`, "Principles").
 ## Environment
 
 - Python: `~/.venvs/worldsim/bin/python` (3.12; numpy, scipy, pillow,
-  matplotlib, pandas). No numba, no pytest. Ask before installing anything
+  matplotlib, pandas; from 2026-11-17 also xarray, netCDF4, geopandas,
+  shapely; versions pinned in `sim/requirements.txt`). No numba, no pytest. Ask before installing anything
   not approved in the decision register (`README.md`, D4).
 - `ffmpeg` and `git` are installed.
 - **Commit and push to `origin` (GitHub) after every commit (U,
