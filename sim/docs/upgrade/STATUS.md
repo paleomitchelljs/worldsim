@@ -16,7 +16,7 @@ what an entry holds.
 | 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
-| 2 | A structured events | done | 2026-11-17 | see entry |
+| 2 | A structured events | done | 2026-11-17 | 1f51f62 |
 | 2 | B run loader and metrics | not started | | |
 | 2 | C tidy tables | not started | | |
 | 2 | D GIS export | not started | | |
@@ -504,7 +504,7 @@ baseline is therefore `wp1f_fullclim_` (BASELINE.md). The four saved
 states were remade under the default, from runs `wp1g_states_seed101` and
 `103`.
 
-### WP2 stage A: structured events (2026-11-17)
+### WP2 stage A: structured events (2026-11-17, 1f51f62)
 
 **Done.**
 - `Sim.log(kind, text, **data)` stores a dict: year, kind, text, and
