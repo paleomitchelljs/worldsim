@@ -499,7 +499,8 @@ against the old model):
 Five seeds with the local climate field drawn at half resolution
 (`CLIM_LOCAL_COARSE` 2, the default since WP1) ended at a median of 116M
 people (86-164M). The same five seeds with the full-resolution field ended
-at 147M (108-178M); rank-sum p about 0.15. The field's statistics, and the
+at 147M (108-178M); rank-sum p about 0.15. Urban share, cities ended and
+the dragon share of deaths move back with it; all follow population. The field's statistics, and the
 drought shares they produce, match. Most likely seed noise, but unresolved.
 Recheck with a larger batch once WP2's metrics exist (`run-log.md`,
 2026-11-17 WP1 stage F).

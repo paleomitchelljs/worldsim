@@ -1424,18 +1424,18 @@ the climate field, not from earlier drift. Saved states for branching:
 | population end, M (by seed 101/102/103/104/106) | 137/125/159/160/124 | 86/164/120/110/116 | 140/147/165/178/108 |
 | population end, median | 137 | 116 | 147 |
 | population yr 6000, median | 79 | 61 | 76 |
-| urban share, end | 0.089-0.093 | 0.061-0.093 | - |
-| largest city (k fe) | 96-131 | 75-123 | - |
-| largest state, M km2 | 4.9-6.7 | 2.7-8.7 | - |
-| wars | 4,690-8,557 | 2,666-8,300 | - |
-| wars settled within a tick | 0.66-0.72 | 0.61-0.68 | - |
-| cities founded | 1,549-2,577 | 1,761-2,244 | - |
-| cities ended, share | 0.50-0.64 | 0.62-0.76 | - |
-| deaths: dragon | 0.53-0.61 | 0.60-0.64 | - |
-| deaths: feud | 0.20-0.22 | 0.18-0.21 | - |
+| urban share, end | 0.089-0.093 | 0.061-0.093 | 0.077-0.103 |
+| largest city (k fe) | 96-131 | 75-123 | 76-162 |
+| largest state, M km2 | 4.9-6.7 | 2.7-8.7 | 3.5-7.9 |
+| wars | 4,690-8,557 | 2,666-8,300 | 1,758-7,372 |
+| wars settled within a tick | 0.66-0.72 | 0.61-0.68 | 0.65-0.72 |
+| cities founded | 1,549-2,577 | 1,761-2,244 | 1,674-2,187 |
+| cities ended, share | 0.50-0.64 | 0.62-0.76 | 0.50-0.68 |
+| deaths: dragon | 0.53-0.61 | 0.60-0.64 | 0.56-0.64 |
+| deaths: feud | 0.20-0.22 | 0.18-0.21 | 0.17-0.22 |
 
-(`-`: not run through `realism.py`.) War endings, siege terms and the other
-death causes overlap between `ub` and `wp1f_base`.
+War endings, siege terms and the other death causes overlap among the
+three.
 
 - **The spread across seeds is wider than before** (end population 86-164M
   against 124-160M), and the median is lower. With five seeds a side
@@ -1447,8 +1447,11 @@ death causes overlap between `ub` and `wp1f_base`.
   0.546, mean share of people under drought 0.092 against 0.091, ticks
   with over 30% of people under drought 0.051 against 0.049, 7-10 against
   6-12 great droughts per run. Spatial correlation at lags of 1-12 cells
-  matched to within 0.015 (stage D check). No mechanism is apparent, so I
-  read it as seed noise (C), and kept the faster field. Recheck when WP2's
+  matched to within 0.015 (stage D check). The other measures that moved
+  in `wp1f_base` (urban share, cities ended, dragon share of deaths) also
+  move back toward `ub` with the full field. They all follow population,
+  so this is one signal, not several. No mechanism is apparent, so I
+  read it as probably seed noise (C), and kept the faster field. Recheck when WP2's
   metrics give a larger batch; `CLIM_LOCAL_COARSE=1` restores the old
   field exactly.
 - 8,000 years now take 7.5-8.5 minutes on a lightly loaded machine (the
