@@ -215,7 +215,8 @@ def run_info(sim):
     """run.json's contents: the run's settings, code, switches and
     constants as used, and, for a branched run, its branch record."""
     man = getattr(sim, "manifest", {})
-    return dict(seed=sim.seed, years=sim.years, dt=DT,
+    return dict(seed=sim.seed, stream_seed=getattr(sim, "rseed", sim.seed),
+                years=sim.years, dt=DT,
                 year_reached=sim.year,
                 code=man.get("code"), command=man.get("command"),
                 python=man.get("python"), numpy=man.get("numpy"),

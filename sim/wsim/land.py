@@ -184,7 +184,7 @@ class LandMixin:
     def climate_setup(self):
         """Fixed patterns, their time series for the whole run, and the
         abrupt events, all from the climate's own random stream."""
-        W, rng = self.W, self.crng
+        W, rng = self.W, self.R("climate")
         span = max(self.years, CLIM_YEARS)     # not the run's own length
         nt = span // DT + 2
 
@@ -263,7 +263,7 @@ class LandMixin:
         """This tick's moisture anomaly and what it does: rain-fed yields,
         foraging and herding, river discharge (from the whole catchment),
         biome edges, granaries, and rivers changing course."""
-        W, rng = self.W, self.crng
+        W, rng = self.W, self.R("climate")
         tick = min(self.tick, self.clim_ser.shape[1] - 1)
         m = self.clim_pat.T @ self.clim_ser[:, tick]
         g = self.local_field(rng)
@@ -336,7 +336,7 @@ class LandMixin:
     def avulse(self, i):
         """The river at cell i breaks its banks and takes a new course to a
         lower (or nearly as low) neighbour, or straight to the sea."""
-        W, rng = self.W, self.crng
+        W, rng = self.W, self.R("climate")
         old = int(W.flow[i])
         cand, el = [], []
         for k in range(8):
@@ -436,7 +436,7 @@ class LandMixin:
         """When a cell holds more people than its land now feeds, part of
         the surplus leaves: up to FAMINE_RANGE cells away, to empty land
         or kin with room. The rest dies back as the land allows."""
-        W, rng = self.W, self.rng
+        W, rng = self.W, self.R("famine")
         occ = np.nonzero(self.lin >= 0)[0]
         K = self.Kf(self.lin[occ], occ)
         ex = self.pop[occ] - 1.05 * K
@@ -524,7 +524,7 @@ class LandMixin:
         np.clip(self.imp, 0, 1, out=self.imp)
 
     def disasters(self):
-        rng = self.rng
+        rng = self.R("disasters")
         self.drought += (1 - self.drought) * 0.35
         self.imm *= math.exp(-IMM_DECAY * DT)
         if self.cities:

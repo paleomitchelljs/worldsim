@@ -62,10 +62,10 @@ class StatesMixin:
     def polity_color(self, c):
         base = self.colors[c].astype(float)
         wide = self.nP <= 5
-        j = self.rng.uniform(0.55, 1.25) if wide else \
-            self.rng.uniform(0.7, 1.15)
-        h = self.rng.uniform(-28, 28, 3) if wide else \
-            self.rng.uniform(-15, 15, 3)
+        j = self.R("colour").uniform(0.55, 1.25) if wide else \
+            self.R("colour").uniform(0.7, 1.15)
+        h = self.R("colour").uniform(-28, 28, 3) if wide else \
+            self.R("colour").uniform(-15, 15, 3)
         return np.clip(base * j + h, 20, 245).astype(np.uint8)
 
     def end_city(self, cell, why):
@@ -175,16 +175,16 @@ class StatesMixin:
             join = False
             if op is not None and op["ended"] is None:
                 if op["culture"] == c:
-                    join = self.rng.random() < \
+                    join = self.R("cities").random() < \
                         0.3 + 0.7 * self.eff(op, "state")
                 else:
-                    join = self.rng.random() < 0.7
+                    join = self.R("cities").random() < 0.7
             elif self.Lcolony[L] >= 0:
                 op = self.polities.get(int(self.Lcolony[L]))
                 if op is not None and op["ended"] is None and \
                         op["culture"] == c:
                     owner = op["id"]
-                    join = self.rng.random() < \
+                    join = self.R("cities").random() < \
                         0.3 + 0.7 * self.eff(op, "state")
                     if join:
                         self.count("colony_city")
@@ -308,7 +308,7 @@ class StatesMixin:
         rl = pl[np.maximum(pol, 0)]
         kin = m & own & (self.lin >= 0) & (self.lin != rl)
         pk = (0.5 + self.pros[rl]) if "proselytism" in self.on else 1.0
-        conv = kin & (self.rng.random(W.N) <
+        conv = kin & (self.R("polity").random(W.N) <
                       DT * 0.008 * (0.5 + self.state[rl]) * pk)
         self.lin[conv] = rl[conv]
         # borders
@@ -671,7 +671,7 @@ class StatesMixin:
         """Alliances form between neighbours who tolerate each other; long
         alliances can fuse into one state. Within a people moderate
         tolerance suffices; across peoples both must be highly tolerant."""
-        rng = self.rng
+        rng = self.R("diplomacy")
         self.vassal_politics()
         threat = self.threats()
         for k in list(self.allies):
@@ -768,7 +768,7 @@ class StatesMixin:
 
     def vassal_politics(self):
         """Vassals throw off weak lords; lords annex small kin vassals."""
-        rng = self.rng
+        rng = self.R("diplomacy")
         for v, o in list(self.vassal.items()):
             V, O = self.polities.get(v), self.polities.get(o)
             if not V or not O or V["ended"] is not None or \
@@ -1066,7 +1066,7 @@ class StatesMixin:
         self.pevent[pid] = SPIKE_EVENT
 
     def rebellions(self):
-        rng = self.rng
+        rng = self.R("revolt")
         for pid in list(self.polities):
             p = self.polities[pid]
             if p["ended"] is not None or len(p["cities"]) < 2:
@@ -1174,7 +1174,7 @@ class StatesMixin:
             dyn = self.n_dyn
             P["dyn"] = self.year
         s = RT_SD * (1.5 - self.conf[L])
-        y = c + s * self.rrng.standard_t(RT_DF, len(RT_TRAITS))
+        y = c + s * self.R("rulers").standard_t(RT_DF, len(RT_TRAITS))
         for _ in range(3):
             y = np.where(y < 0.01, 0.02 - y, np.where(y > 0.99, 1.98 - y, y))
         return np.clip(y, 0.01, 0.99), dyn
@@ -1269,7 +1269,7 @@ class StatesMixin:
         largest provincial city out of the state."""
         if "rulers" in self.on:
             return self.reign_end(pid, p)
-        rng = self.rng
+        rng = self.R("succession")
         p["next_succ"] = self.year + max(DT, rng.exponential(SUCC_GEN))
         L = p["lin"]
         q = SUCC_P * (1.3 - 0.6 * self.eff(p, "state"))
@@ -1281,7 +1281,7 @@ class StatesMixin:
     def reign_end(self, pid, p):
         """A ruler dies (`rulers`): inheritance, the new ruler's testing
         time, alliances and vassals up for renewal, union of crowns."""
-        rng = self.rng
+        rng = self.R("succession")
         L = p["lin"]
         exp_reign = SUCC_GEN * self.plife[self.Lpeople[L]]
         r = p.get("ruler") or dict(id=-1, start=p["founded"])
@@ -1352,7 +1352,7 @@ class StatesMixin:
         largest cities far from the others); every city goes to the
         nearest seat; each seat but the capital becomes a state of the
         same lineage. Returns the number of heirs."""
-        rng = self.rng
+        rng = self.R("revolt")
         cc = list(p["cities"])
         nh = int(min(2 + rng.integers(0, 3), max(2, len(cc) // 2)))
         seats = [p["capital"]]
@@ -1396,7 +1396,7 @@ class StatesMixin:
 
     def disputed(self, pid, p):
         """A disputed succession."""
-        rng = self.rng
+        rng = self.R("diplomacy")
         p["cohesion"] *= 0.8
         p["elite"] = max(0.3, 0.85 * p["elite"])
         p["dyn"] = self.year
@@ -1449,7 +1449,7 @@ class StatesMixin:
                                               np.array(others)))
             for y, a, b in zip(others, dn, dc):
                 if (a < 400 or seat) and a < b and \
-                        self.rng.random() < 0.6:
+                        self.R("revolt").random() < 0.6:
                     self.cities[y].setdefault("lost", {})[pid] = self.year
                     p["cities"].discard(y)
                     self.cities[y]["polity"] = new

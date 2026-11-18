@@ -41,8 +41,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.sites_file = sites
         self.size_food = size_food
         self.vary = 0.0
-        self.rng = np.random.default_rng(seed)
         self.seed = seed
+        # every draw comes from a named stream (R); rseed seeds them, and
+        # a branch may set a fresh one (reseed)
+        self.rseed, self.rngs = seed, {}
         self.years = years
         self.frame_every = frame_every
         self.out = out
@@ -116,11 +118,6 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.conf, self.pros = self.LX[:, 2], self.LX[:, 3]
         self.dom = self.LX[:, 4]
         self.crafts = self.LX[:, 5]
-        self.xrng = np.random.default_rng(80_000 + seed)
-        self.prng = np.random.default_rng(85_000 + seed)
-        self.srng = np.random.default_rng(89_000 + seed)
-        self.rrng = np.random.default_rng(91_000 + seed)   # ruler draws
-        self.crng2 = np.random.default_rng(93_000 + seed)  # city culture
         nK = len(TRAITS) + len(XTRAITS)
         self.CE = np.full((CITY_MAX, nK), 0.5)   # city elites
         self.CM = np.full((CITY_MAX, nK), 0.5)   # city commons
@@ -212,12 +209,9 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.n_revolts = 0
         self.cnt = {}                     # event counts this tick
         self._pretender = False
-        # climate has its own random stream: the same seed gives the same
-        # climate history whatever else is switched on
-        self.crng = np.random.default_rng(50_000 + seed)
+        # the climate's stream ("climate") is its own, like every other:
+        # the same seed gives the same climate whatever else is on
         self.climate_setup()
-        # dragons have their own random stream too
-        self.drng = np.random.default_rng(70_000 + seed)
         self.d_by_pid = {}
         self.dragon_kills = np.zeros(nP)
         self.dragon_setup()
@@ -276,6 +270,20 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.death_rows = []              # deaths.csv
         self.food_rows = []               # cityfood.csv
 
+    def R(self, name):
+        """The run's random stream `name` (geo.stream), made when first
+        asked for."""
+        g = self.rngs.get(name)
+        if g is None:
+            g = self.rngs[name] = stream(self.rseed, name)
+        return g
+
+    def reseed(self, seed):
+        """Start every stream afresh from `seed` (a branch's own seed).
+        What was drawn at setup (climate series, abrupt events, sites,
+        founders) stays as saved."""
+        self.rseed, self.rngs = seed, {}
+
     def flags(self):
         """The shorthand flags for switches in self.on (set again when a
         branched run switches mechanics off)."""
@@ -321,6 +329,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.uc_on = "urban_city" in self.on
         if not hasattr(self, "lver"):
             self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
+        if not hasattr(self, "rngs"):
+            # before WP1 stage F: one shared stream and a few offsets;
+            # such a state continues on fresh named streams
+            self.rseed, self.rngs = self.seed, {}
         if not hasattr(self, "pver"):
             self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):

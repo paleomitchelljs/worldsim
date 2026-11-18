@@ -35,7 +35,7 @@ class EconomyMixin:
         self.res_reserve = np.ones(len(R))
         self.kind_prec = np.array([any(self.res_prec[self.res_kind == k])
                                    for k in range(nk)], bool)
-        grng = np.random.default_rng(87_000 + self.seed)
+        grng = stream(self.seed, "prefs")
         self.ppref = np.exp(grng.normal(0, PREF_SD, (self.nP, nk)))
         for c, key in enumerate(self.keys):
             b = PREF_BIAS.get(key, {})
@@ -151,7 +151,7 @@ class EconomyMixin:
         self.site_score = W.area[None] * dens * fit[:, W.biome]
         groups = [(c, k) for c in range(self.nP)
                   for k in range(self.P[c].get("starts", self.starts))]
-        groups = [groups[i] for i in self.rng.permutation(len(groups))]
+        groups = [groups[i] for i in self.R("start").permutation(len(groups))]
         self.chosen, self.first_site = [], {}
         self.sep0 = float(np.clip(3500 / math.sqrt(len(groups)), 500, 1800))
         H = max(p.get("head", 0) for p in self.P)
@@ -186,7 +186,7 @@ class EconomyMixin:
     def trade_posts(self):
         """Merchant states plant posts in distant foreign ports
         (`trade_posts`); posts lapse when their merchants are gone."""
-        W, rng = self.W, self.rng
+        W, rng = self.W, self.R("trade")
         for k, (o, c, y) in list(self.posts.items()):
             h = k[1] if k[0] == o else k[0]
             rec = self.cities.get(c)

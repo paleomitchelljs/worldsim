@@ -398,7 +398,7 @@ class TechnologyMixin:
     def guarded(self, A, crow, ccol, cval, nc):
         """Guarded techniques: invented by skilled rulers of large states,
         leaking slowly to contacts (pairs crow <- ccol at contact cval)."""
-        rng = self.rng
+        rng = self.R("tech")
         G = self.guard[A]
         if G.any():
             hw = (1.5 - self.coh[A]) * (1.5 - self.conf[A])

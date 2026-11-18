@@ -9,11 +9,11 @@ from .geo import *  # noqa: F401,F403
 class WarMixin:
     def devastate(self, t, holder):
         """A siege at city t may lay waste one cell (`devastation`)."""
-        if self.rng.random() >= WASTE_P:
+        if self.R("raid").random() >= WASTE_P:
             return
         c = [t] + [int(x) for x in self.W.nb[t]
                    if x >= 0 and self.cell_pol[x] == holder]
-        x = c[int(self.rng.integers(len(c)))]
+        x = c[int(self.R("raid").integers(len(c)))]
         self.waste[x] = 0.0
         self.count("devastation")
         if x in self.cities:
@@ -125,7 +125,7 @@ class WarMixin:
             p = p * np.where(self.herding[att], 1.5, 1)
             # and so do the hungry
             p = p * (1 + HUNGER_RAID * np.clip(pa - 1, 0, 1))
-            hit = self.rng.random(len(att)) < np.clip(p, 0, 0.9)
+            hit = self.R("raid").random(len(att)) < np.clip(p, 0, 0.9)
             self.count("raid", int(hit.sum()))
             rel = np.sqrt(self.psize[self.cul[att]] / self.psize[self.cul[dfn]])
             dmg = 0.12 * self.viol[La] * rel / W.defence[dfn]
@@ -165,7 +165,7 @@ class WarMixin:
             suffered.append(dfn[hit])
             pd = self.pop[dfn] / np.maximum(Kd, 1e-3)
             take = hit & (pd < 0.15) & (pa > 0.6) & \
-                (self.rng.random(len(att)) < self.viol[La])
+                (self.R("raid").random(len(att)) < self.viol[La])
             ti, first = np.unique(dfn[take], return_index=True)
             if self.cities:
                 self.shock(ti[np.isin(ti, list(self.cities))],
@@ -277,7 +277,7 @@ class WarMixin:
         return p, (g, m / x)
 
     def wars_step(self):
-        rng = self.rng
+        rng = self.R("war")
         pairs = self.adj
         allies = {}
         for x, y in self.allies:
@@ -490,7 +490,7 @@ class WarMixin:
             j = ALLY_J0 + (1 - ALLY_J0) * min(
                 1.0, (Q["strength"] + B["strength"]) /
                 max(A["strength"], 1e-9))
-            if self.rng.random() < j:
+            if self.R("war").random() < j:
                 w["joined"].add(q)
                 self.count("ally_join")
             else:
@@ -528,7 +528,7 @@ class WarMixin:
 
     def counteroffensive(self, k, w, A, B):
         """The defender B strikes back at the attacker A (two_sided)."""
-        rng = self.rng
+        rng = self.R("war")
         R = B.get("strength", 0.0) / max(A.get("strength", 0.0), 1e-9)
         if rng.random() >= COUNTER_K * R * R / (1 + R * R):
             return
@@ -671,7 +671,7 @@ class WarMixin:
         # a conqueror may carry off the secret
         take = self.guard[B["lin"]] & ~self.guard[La]
         for g in np.nonzero(take)[0]:
-            if self.rng.random() < GUARD_TAKE * (2 if was_cap else 1):
+            if self.R("war").random() < GUARD_TAKE * (2 if was_cap else 1):
                 self.guard[La, g] = True
                 self.log("craft", f"{self.pname(att)} takes the secret "
                          f"of {GUARD_NAMES[g]} from {self.pname(dfn)}")
@@ -688,7 +688,7 @@ class WarMixin:
         self.dead("sack", t, b_pop - self.pop[t])
         self.dead("sack", t, b_mpop - self.mpop[t], minority=True)
         A["cohesion"] = min(1, A["cohesion"] + 0.03)
-        if rec["culture"] != ca and self.rng.random() < \
+        if rec["culture"] != ca and self.R("war").random() < \
                 (1 - self.eff(A, "tol")) * self.eff(A, "viol") * \
                 (1 - self.eff(A, "dom")):
             hint = (self.cell_city == t) & (self.cul == rec["culture"])
@@ -724,7 +724,7 @@ class WarMixin:
                     A["cities"].add(c)
                 B["cities"] = set()
                 self.kill_polity(dfn, f"absorbed by {self.pname(att)}")
-            elif self.rng.random() < SHATTER_P:
+            elif self.R("war").random() < SHATTER_P:
                 rest = list(B["cities"])
                 B["cities"] = set()
                 self.kill_polity(dfn, "shattered after its capital fell")
@@ -755,7 +755,7 @@ class WarMixin:
         elif kind == "rule":
             wa *= TERMS_GOAL
             wt *= TERMS_GOAL
-        u = self.rng.random() * (wa + wt + ws)
+        u = self.R("war").random() * (wa + wt + ws)
         return "annex" if u < wa else "tributary" if u < wa + wt \
             else "sack"
 
@@ -778,7 +778,7 @@ class WarMixin:
         self.imp[t] *= 1 - IMP_SACK * self.eff(A, "viol")
         take = self.guard[B["lin"]] & ~self.guard[A["lin"]]
         for g in np.nonzero(take)[0]:
-            if self.rng.random() < GUARD_TAKE * (2 if was_cap else 1):
+            if self.R("war").random() < GUARD_TAKE * (2 if was_cap else 1):
                 self.guard[A["lin"], g] = True
                 self.log("craft", f"{self.pname(att)} takes the secret "
                          f"of {GUARD_NAMES[g]} from {self.pname(dfn)}")

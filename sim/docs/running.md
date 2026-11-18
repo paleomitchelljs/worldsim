@@ -33,7 +33,14 @@ An 8,000-year run (seed 101, the sweep's settings) takes about 14 minutes
 with two running side by side (2026-11-07; 23 minutes before that day's
 speed-ups). The machine has 4 performance and 4 efficiency cores, so
 runs beyond about 8 at once only queue.
-The same seed gives the same history. From 2026-11-07 the climate no
+The same seed gives the same history. Since WP1 stage F (2026-11-17)
+each subsystem draws from its own named stream (`geo.stream`: start,
+migrate, famine, raid, war, diplomacy, revolt, succession, climate,
+dragons, rulers, city_culture and so on), seeded from the run seed and
+the stream's name. A change that alters how often one subsystem draws
+leaves every other stream's draws as they were, though the history
+still diverges once the changed subsystem's effects reach the others.
+Runs from before stage F do not repeat under the same seed. From 2026-11-07 the climate no
 longer depends on `--years`, so a shorter run of a seed is the start of a
 longer one's climate (the rest of the history matches only while nothing
 else differs).
@@ -85,6 +92,11 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
   `--vary` and the rest) are the state's and are ignored. So is a
   constant that was read only at setup: the climate series, the sites,
   the founders' placement.
+- `--branch-seed N` starts every random stream afresh from seed N at
+  the branch year, for replicates from one state. Whatever was drawn at
+  setup stays as saved: the climate's series and abrupt events, sites
+  and founders. A branch's local climate noise and river avulsions
+  change, though, because they are drawn each tick.
 - The branch's tables hold the whole history, from year 0. Its frames and
   `history.gif` cover only the years after the branch. `run.json` gains
   `branch`: the state file, the branch year, the `--set` and `--off`
@@ -131,6 +143,7 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
 | `--out` | `seed<N>` | output folder; a bare name goes in the runs root |
 | `--save-state YEAR PATH` | none | save the whole Sim after the tick that reaches YEAR (repeatable); see [Branching](#branching-from-a-saved-state) |
 | `--from-state PATH` | none | continue a saved state as a new run; see [Branching](#branching-from-a-saved-state) |
+| `--branch-seed N` | the state's | with `--from-state`: fresh random streams from seed N after the branch year (replicates from one state) |
 
 With `--off all --city-cap 3 40` the model reproduces the pre-structural one draw for draw
 (checked: identical `events.txt` and `polities.csv` over 1,500 years, seed

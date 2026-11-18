@@ -24,7 +24,7 @@ class CultureMixin:
             return parent if parent >= 0 else 0
         L = self.nL
         self.nL += 1
-        rng = self.rng
+        rng = self.R("lineage")
         sd = sd * self.pvar[people]       # a people's own variability
         if "conformity" in self.on and sd > 0:
             # faithful transmission: conformist parents pass customs on
@@ -41,18 +41,18 @@ class CultureMixin:
             self.Lpart[L] = PART0
             self.Lsup[L] = self.psup[people]
         if sd > 0:
-            self.Lsup[L] = self.drift_trait(self.Lsup[L], sd, self.srng)
+            self.Lsup[L] = self.drift_trait(self.Lsup[L], sd, self.R("lineage_sup"))
         if hasattr(self, "Lpref"):
             self.Lpref[L] = self.Lpref[parent] if parent >= 0 else \
                 self.ppref[people]
             if sd > 0:
-                e = self.prng.normal(0, sd, self.Lpref.shape[1])
+                e = self.R("lineage_pref").normal(0, sd, self.Lpref.shape[1])
                 e = e - sd * sd / 2
                 self.Lpref[L] = self.Lpref[L] * np.exp(e)
         if sd > 0 and "rulers" in self.on:
-            self.Lpart[L] = self.drift_trait(self.Lpart[L], sd, self.prng)
+            self.Lpart[L] = self.drift_trait(self.Lpart[L], sd, self.R("lineage_pref"))
         if sd > 0:
-            self.LX[L] = self.drift_trait(self.LX[L], sd, self.xrng, len(XTRAITS))
+            self.LX[L] = self.drift_trait(self.LX[L], sd, self.R("lineage_x"), len(XTRAITS))
         if parent >= 0:
             T, r, aff = self.LT[parent], self.Lr[parent], self.Laff[parent]
             for a in ("agri", "metal", "sail", "fishing", "admin", "bronze", "iron",

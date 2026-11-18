@@ -178,7 +178,13 @@ def make_sim(argv=None):
                     "--off apply from the branch year on; settings of the "
                     "founding (--seed, --peoples, --starts, ...) are the "
                     "state's and are ignored")
+    ap.add_argument("--branch-seed", type=int, default=None,
+                    help="with --from-state: draw everything after the "
+                    "branch year from fresh streams of this seed "
+                    "(replicates from one state); default: the state's")
     a = ap.parse_args(argv)
+    if a.branch_seed is not None and not a.from_state:
+        ap.error("--branch-seed needs --from-state")
     saves = {}
     for y, p in a.save_state:
         p = os.path.abspath(runroot.path(p))
@@ -258,6 +264,8 @@ def branch(a, ap, off, saves, code, t0, argv):
     was_off = sorted(set(params.FEATURES) - sim.on)
     sim.on -= set(off)
     sim.flags()
+    if a.branch_seed is not None:
+        sim.reseed(a.branch_seed)
     if a.years is not None:
         span = (sim.clim_ser.shape[1] - 2) * params.DT
         if a.years > span:
@@ -283,6 +291,7 @@ def branch(a, ap, off, saves, code, t0, argv):
         branch=dict(
             state=src, year=year0, state_run=base,
             set=a.set, off=sorted(set(off) - set(was_off)),
+            seed=a.branch_seed,
             constants_changed={k: [old.get(k), v] for k, v in now.items()
                                if old.get(k) != v},
             years=sim.years))

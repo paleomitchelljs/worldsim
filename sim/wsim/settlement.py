@@ -46,7 +46,7 @@ class SettlementMixin:
         self.wpos, self.wfrom = {}, {}
         for c, k in groups:
             ok = np.nonzero(suit[c] > 0)[0]
-            self.wpos[(c, k)] = self.wfrom[(c, k)] = int(self.rng.choice(ok))
+            self.wpos[(c, k)] = self.wfrom[(c, k)] = int(self.R("start").choice(ok))
         self.wander(groups, self.wander_steps, avoid=False)
 
     def region_mask(self, region):
@@ -74,7 +74,7 @@ class SettlementMixin:
             q = self.pstay[cs, pos]
             if avoid:
                 q = np.where(self.lin[pos] >= 0, 0, q)
-            move = self.rng.random(len(pos)) >= q
+            move = self.R("start").random(len(pos)) >= q
             if not move.any():
                 continue
             nb = W.nb[pos[move]]
@@ -86,7 +86,7 @@ class SettlementMixin:
             w = np.where(w.sum(1, keepdims=True) > 0, w,
                          (nb >= 0).astype(float))
             tot = w.sum(1)
-            pick = (w.cumsum(1) < (self.rng.random(len(nb)) * tot)[:, None]
+            pick = (w.cumsum(1) < (self.R("start").random(len(nb)) * tot)[:, None]
                     ).sum(1)
             pick = np.minimum(pick, 7)
             new = nb[np.arange(len(nb)), pick]
@@ -163,7 +163,7 @@ class SettlementMixin:
                 return
             n = max(60, int(self.start_pool * len(pos)))
             top = pos[np.argsort(s[pos])[-n:]]
-            i = int(self.rng.choice(top, p=s[top] / s[top].sum()))
+            i = int(self.R("start").choice(top, p=s[top] / s[top].sum()))
         self.first_site.setdefault(c, i)
         self.chosen.append(i)
         L = self.new_lineage(c, -1, "start", sd=self.start_vary)
@@ -327,7 +327,7 @@ class SettlementMixin:
         c = self.Lpeople[L]
         thr = 0.45 - 0.35 * self.expn[L]
         can = occ & (press > thr) & (self.pop > 2 * FOUND_MIN)
-        noise = self.rng.uniform(0.6, 1.4, (N, 8))
+        noise = self.R("migrate").uniform(0.6, 1.4, (N, 8))
         # only cells that can bud are scored (elsewhere every score is 0)
         R = np.nonzero(can)[0]
         LR, cR = L[R], c[R]
@@ -399,15 +399,15 @@ class SettlementMixin:
         cand = np.nonzero((self.lin >= 0) & (self.pop * eat > 300))[0]
         for L, cells in self.by_lineage(cand):
             lam = 3.0 * self.expn[L] ** 2 * (1 + math.log10(1 + len(cells)))
-            n = self.rng.poisson(lam)
+            n = self.R("migrate").poisson(lam)
             if not n:
                 continue
             wts = self.pop[cells] * np.clip(press[cells], 0.05, 2)
-            for s in self.rng.choice(cells, n, p=wts / wts.sum()):
-                if W.river[s] and self.rng.random() < RIV_LEAP:
+            for s in self.R("migrate").choice(cells, n, p=wts / wts.sum()):
+                if W.river[s] and self.R("migrate").random() < RIV_LEAP:
                     self.river_leap(L, s)
                     continue
-                dr, dc = self.rng.integers(-6, 7, 2)
+                dr, dc = self.R("migrate").integers(-6, 7, 2)
                 if max(abs(dr), abs(dc)) < 2:
                     continue
                 r2, c2 = W.row[s] + dr, (W.col[s] + dc) % NX
@@ -415,7 +415,7 @@ class SettlementMixin:
                     continue
                 t = W.idx2[r2, c2]
                 if t < 0 or self.lin[t] >= 0 or \
-                        self.rng.random() > self.colon(t, L) or \
+                        self.R("migrate").random() > self.colon(t, L) or \
                         W.landmass[t] != W.landmass[s] or \
                         self.Kf(L, t) * self.peat[self.Lpeople[L]] < 200:
                     continue
@@ -428,7 +428,7 @@ class SettlementMixin:
         empty cell on the way."""
         W = self.W
         n = int(RIV_STEPS[0] + RIV_STEPS[1] * self.sail[L])
-        downstream = self.rng.random() < 0.5
+        downstream = self.R("migrate").random() < 0.5
         x, path = s, []
         for _ in range(n):
             if downstream:
@@ -438,15 +438,15 @@ class SettlementMixin:
                 if not ups:
                     break
                 q = W.Q[ups] + 1
-                x = int(self.rng.choice(ups, p=q / q.sum()))
+                x = int(self.R("migrate").choice(ups, p=q / q.sum()))
             if x < 0:
                 break
             path.append(x)
         cand = [t for t in path[1:] if self.lin[t] < 0]
         if not cand:
             return
-        t = int(self.rng.choice(cand))
-        if self.rng.random() > self.colon(t, L) or \
+        t = int(self.R("migrate").choice(cand))
+        if self.R("migrate").random() > self.colon(t, L) or \
                 self.Kf(L, t) * self.peat[self.Lpeople[L]] < 200:
             return
         mv = min(120.0 / self.peat[self.Lpeople[L]], 0.2 * self.pop[s])
@@ -482,8 +482,8 @@ class SettlementMixin:
             sea = self.expn[L]
             lam = 2.5 * sea * (0.1 + self.sail[L]) * \
                 math.sqrt(len(src))
-            n = self.rng.poisson(lam)
-            picks = self.rng.choice(src, min(n, 6))
+            n = self.R("migrate").poisson(lam)
+            picks = self.R("migrate").choice(src, min(n, 6))
             if not len(picks):
                 continue
             rad = 2 * math.sin(min(4 * D, 9000) / R_EARTH / 2)
@@ -513,12 +513,12 @@ class SettlementMixin:
                     # settlers take empty coast where they can
                     wt = np.where(empty, wt, 0.0)
                 else:
-                    if self.rng.random() >= COL_OCC:
+                    if self.R("migrate").random() >= COL_OCC:
                         continue
                     wt = wt * np.exp(-nat / COL_THIN)
                 if wt.sum() <= 0:
                     continue
-                t = int(self.rng.choice(cnd, p=wt / wt.sum()))
+                t = int(self.R("migrate").choice(cnd, p=wt / wt.sum()))
                 mv = min(200.0 / self.peat[self.Lpeople[L]], 0.2 * self.pop[s])
                 self.pop[s] -= mv
                 lm = W.landmass[t]
@@ -620,7 +620,7 @@ class SettlementMixin:
     def minorities(self):
         """Merchant quarters along lasting trade between peoples; expulsion
         of foreign minorities by intolerant, separatist rulers."""
-        rng = self.rng
+        rng = self.R("migrate")
         for (x, y), t in self.ties.items():
             if t < 0.5:
                 continue

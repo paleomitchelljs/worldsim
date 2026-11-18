@@ -2,11 +2,21 @@
 import math
 import os
 import sqlite3
+import zlib
 import numpy as np
 from scipy import ndimage, sparse
 from scipy.spatial import cKDTree
 
 from .params import *  # noqa: F401,F403
+
+
+def stream(seed, name):
+    """The random stream `name` of a run with this seed (WP1 stage F): a
+    child of the seed keyed on the name, so each subsystem's draws depend
+    only on the seed and its own name, never on how often another
+    subsystem drew."""
+    return np.random.default_rng(np.random.SeedSequence(
+        seed, spawn_key=(zlib.crc32(name.encode()),)))
 
 
 def unit_xyz(lon, lat):
@@ -31,7 +41,7 @@ def vary_peoples(peoples, seed, amount):
     middle. Intrinsic traits (r, biome affinity, size) are left as given."""
     if amount <= 0:
         return [dict(p) for p in peoples]
-    rng = np.random.default_rng(10_000 + seed)
+    rng = stream(seed, "vary")
     out = []
     for p in peoples:
         q = dict(p)
@@ -40,7 +50,7 @@ def vary_peoples(peoples, seed, amount):
             z = math.log(x / (1 - x)) + rng.normal(0, 2.5 * amount)
             q[t] = round(float(1 / (1 + math.exp(-z))), 2)
         out.append(q)
-    xr = np.random.default_rng(20_000 + seed)
+    xr = stream(seed, "vary_x")
     for p, q in zip(peoples, out):
         for t in XTRAITS:
             x = np.clip(p.get(t, 0.5), 0.02, 0.98)

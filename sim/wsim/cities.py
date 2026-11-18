@@ -287,9 +287,9 @@ class CitiesMixin:
                 dM += dH
             else:
                 dM += dX
-        noise = self.crng2.normal(0, CITY_NOISE * math.sqrt(DT), (n, K))
+        noise = self.R("city_culture").normal(0, CITY_NOISE * math.sqrt(DT), (n, K))
         M = np.clip(M + DT * dM + noise, 0.01, 0.99)
-        E = np.clip(E + DT * dE + self.crng2.normal(
+        E = np.clip(E + DT * dE + self.R("city_culture").normal(
             0, CITY_NOISE * math.sqrt(DT), (n, K)), 0.01, 0.99)
         self.CM[ids], self.CE[ids] = M, E
         self.city_revolts(recs, ids, cells, pol)
@@ -376,7 +376,7 @@ class CitiesMixin:
         M, E = self.CM[ids], self.CE[ids]
         gap = np.sqrt(np.mean((E - M) ** 2, 1))
         pr = DT * CITY_REVOLT * M[:, cc] * (gap / CITY_GAP0) ** 2
-        hit = np.nonzero(self.crng2.random(len(ids)) < np.minimum(pr, 0.9))[0]
+        hit = np.nonzero(self.R("city_culture").random(len(ids)) < np.minimum(pr, 0.9))[0]
         for j in hit:
             i, cell = ids[j], int(cells[j])
             self.CE[i] = self.CM[i] + CITY_REVOLT_KEEP * (self.CE[i] -
@@ -396,7 +396,7 @@ class CitiesMixin:
                 if len(P["cities"]) >= 5:
                     self.log("revolt", f"the people of {self.place(cell)} "
                              f"overthrow the court of {self.pname(P['id'])}")
-            elif cell in P["cities"] and self.crng2.random() < \
+            elif cell in P["cities"] and self.R("city_culture").random() < \
                     CITY_REVOLT_SECEDE:
                 self.count("city_revolt_secede")
                 self.revolt(P["id"], cell)
@@ -480,7 +480,7 @@ class CitiesMixin:
         Lpop = np.bincount(self.lin[occ], weights=self.pop[occ],
                            minlength=self.nL)
         sep, tol = TI["separation"], TI["tolerance"]
-        rng = self.crng2
+        rng = self.R("city_culture")
         cos_km = math.cos(FUSE_KM / 6371.0)
         busy = set()
         for k in sorted(keys):

@@ -15,7 +15,7 @@ class DragonsMixin:
         dragons: a random packing of homes DRAGON_SPACE_KM apart, of which
         DRAGON_START are held. Each dragon has its own tolerance, violence
         and strength."""
-        W, rng = self.W, self.drng
+        W, rng = self.W, self.R("dragons")
         self.d_tree = cKDTree(W.xyz)
 
         def csr(km):
@@ -109,7 +109,7 @@ class DragonsMixin:
     def dragon_site(self, c0, warded, taken):
         """A free home for a dragon leaving c0: no other home within
         DRAGON_SPACE_KM, no warded cell in reach. -1 if none found."""
-        W, rng = self.W, self.drng
+        W, rng = self.W, self.R("dragons")
         la1, lo1 = math.radians(W.lat[c0]), math.radians(W.lon[c0])
         for _ in range(12):
             dk = DRAGON_SPACE_KM + DRAGON_DISP_KM * rng.exponential()
@@ -132,7 +132,7 @@ class DragonsMixin:
     def dragons(self):
         """Dragons hunt, age, breed, and are slain, driven off or taken as
         allies where people have grown too many for them."""
-        W, rng, N = self.W, self.drng, self.W.N
+        W, rng, N = self.W, self.R("dragons"), self.W.N
         # ageing and other deaths (allied dragons are kept from the latter)
         self.dage += DT
         old = self.dage >= DRAGON_LIFE
@@ -287,7 +287,7 @@ class DragonsMixin:
     def host_alliances(self, taken):
         """Wild dragons among dragon-host peoples inside a state may be
         taken as allies (no fight)."""
-        rng = self.drng
+        rng = self.R("dragons")
         hostc = (self.lin >= 0) & (self.cell_pol >= 0) & \
             self.phost[np.maximum(self.cul, 0)]
         wi = np.nonzero(self.dally < 0)[0]
