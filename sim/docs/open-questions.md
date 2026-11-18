@@ -505,3 +505,18 @@ drought shares they produce, match. Most likely seed noise, but unresolved.
 The default went back to 1 (U, 2026-11-17).
 Recheck with a larger batch once WP2's metrics exist (`run-log.md`,
 2026-11-17 WP1 stage F).
+
+## Food taken from minorities vanishes (2026-11-17, WP4 stage A)
+
+`Kf` debits a minority's capacity at the rate its people pay (`ff_xo` or
+`ext_x`), but `food_flows` works out the take `T` from the main
+lineage's capacity only, with a rate blended by the shares of the two
+peoples. The minority's payment is never counted and never arrives
+anywhere: 89k fe a tick at year 5,000 of seed 101, or 4.5% of the take
+(`food.csv` `taken_capacity` against `taken`, 3.7-4.8% from 5,000 to
+6,000). Simplest fix (C): work out `T` per lineage, the main lineage
+and the minority each on its own capacity at its own rate, and drop the
+blend. Not fixed: stage A changes no mechanics.
+
+A smaller leak: food sent to a capital cell where no ruling people
+live feeds nobody (`cap_unused`, 1.1% of capital food over the run).

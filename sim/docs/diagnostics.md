@@ -120,6 +120,7 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | `sieges` | share taken; terms; win probability at launch (`odds`): n, median, share under 0.1, for all and by `side` (`att` the attacker's sieges, `dfn` counter-offensives) |
 | `war_time` | share of 2+ city states at war, over the run and by millennium |
 | `food` | shares of city food from trade, rent, provincial spending, capital (last `cityfood.csv` year) |
+| `food_ledger` | from `food.csv`, by millennium: created food (trade food and the city boost) over produced and over city food; trade's share of created; eaten and taken over produced. Over the run: the gap and the unplaced take over the take; capital food that reached no ruling people |
 | `deaths` | deaths by cause, shares |
 | `settlement` | population against land share by coast, river, alluvial fill, latitude band, biome; density percentiles; population, land area and land cells inside states |
 | `turnover` | per 500 years: share of cells whose people changed; occupied cells inside a state; cells emptied |
@@ -184,3 +185,47 @@ crisis reaches the cities, not on hitting a number.
   deaths.
 - `polities.csv` `peak_km2` for every state (was blank below 120 cells).
 
+
+## Food ledger (`food.csv`)
+
+WP4 stage A, 2026-11-17; records only, with `food_flow` on. Columns are
+in [running.md](running.md#table-columns-and-units).
+
+Each tick, `food_flows` passes its unsmoothed per-cell flows to
+`food_ledger`. That method sums them for the world, per people and per
+state. `record()` writes the century means. The lines are:
+- **Produced**: the raw capacity (`Kf(..., raw=True)` x food per head)
+  of every occupied cell, for its main lineage, split into land and the
+  city boost. The boost is `Q x (1 - 1/cboost)`, exact while CITY_CAP is
+  off.
+- **Eaten**: what the cell's people and its minority need.
+- **Taken**: rent, tax and tribute.
+- **Lost**: the 1 - EXT_EFF share, and a vassal's tribute lost over the
+  distance to its lord.
+- **Received**: what reaches cities and capitals.
+- **Created**: trade food and the city boost.
+
+Attribution (C): a cell's lines go to its main people and its state. A
+minority's needs go to the minority's people. Received and created go
+to the receiving city's people and state. A state's vassal lines go to
+its ruling people.
+
+What the ledger shows (`wp4a_seed101`, 8,000 years):
+- **On the unsmoothed flows, taken = received + lost exactly.** The gap
+  is 0 in every century. No capital's take went unplaced. That holds
+  largely by construction, since `received` and `lost` are worked out
+  from `T`, so it is no proof that food is conserved.
+- **The tax that does not reach the capital is not lost.** It is spent
+  in the cell's own city (`loc`), which the brief had counted as a loss.
+- **Leaks outside the flows**, which the extra columns show:
+  - `taken_capacity` is what the rates in `Kf` remove from capacity. It
+    runs 3.7-4.8% above `taken` (`wp4a_branch`, 5,000-6,000). All of
+    the excess is minorities. Kf debits a minority's own capacity at its
+    rate, but `T` is worked out on the main lineage's capacity alone, so
+    that food is taken and never arrives anywhere. In mixed cells the
+    main lineage's debit matches `T` to within 0.4%.
+  - `cap_unused`: food sent to a capital where no ruling people live.
+    It feeds nobody. It is 1.1% of capital food over the run.
+  - `received_smoothed` (what capacity reads) lags the flows because of
+    FISC_EMA. It also holds trade food, so compare it with
+    `received + created_trade`.

@@ -34,6 +34,7 @@ FILES = {
     "city_sizes": "city_sizes.csv",
     "cityfood": "cityfood.csv",
     "deaths": "deaths.csv",
+    "food": "food.csv",
     "lineages": "lineages.csv",
     "price": "price.csv",
     "events": "events.jsonl",

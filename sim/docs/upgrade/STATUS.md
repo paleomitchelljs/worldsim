@@ -24,7 +24,7 @@ what an entry holds.
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
-| 4 | A ledger (records only) | not started | | |
+| 4 | A ledger (records only) | done | 2026-11-17 | see entry |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
 | 5 | A diagnosis | not started | | |
@@ -945,3 +945,53 @@ U, 2026-11-17: yes to the viewer, and `history.gif` is not needed.
 not continuous. Events are listed newest-last, with the first 400
 shown.
 
+
+### WP4 stage A: food ledger (2026-11-17, commit: see git log, "WP4 stage A")
+
+**Done.**
+- `food_flows` passes its unsmoothed flows to `food_ledger`
+  (`diagnostics.py`), which sums each tick per world, people and state.
+  `record()` writes the century means to `food.csv`.
+- The lines are produced (land, city boost), eaten, taken (rent, tax,
+  tribute), lost (EXT_EFF, vassal carriage), received (local, capital,
+  vassal) and created (trade, boost). Two shares go with them, and some
+  leak checks: `gap`, `unplaced`, `cap_unused`, `received_smoothed` and
+  `taken_capacity`.
+- New `metrics.food_ledger`, by millennium, in `metrics.json`.
+  `runio.Run.food`.
+- `upgrade()` adds the accumulator to old states (`new_state_v3`).
+- Documented in `running.md` (outputs, table columns),
+  `diagnostics.md` (new section and metrics row), `open-questions.md`
+  and `run-log.md`.
+
+**Runs.**
+- `wp4a_short` (600 years): a smoke test.
+- `wp4a_seed101` (8,000 years, `--no-video`, 475 s): 126.34M people
+  and 644 cities, identical to `wp1d_voy_seed101`, so the records
+  change nothing.
+  - Created food as a share of produced: 0.001 in the first millennium
+    rising to 0.095 in the last.
+  - As a share of city food: 0.31-0.42.
+  - Trade is 0-27% of created food; the city boost is the rest. Table
+    in `run-log.md`.
+- `wp4a_branch` (`wp1f_s101_y5000.pkl` to 6,000): exercises `upgrade()`
+  and the `taken_capacity` column.
+
+**Findings.**
+- Taken = received + lost exactly on the unsmoothed flows (gap 0 in
+  every century). That holds by construction, since both sides come
+  from `T`.
+- The brief's "1 - exp(-d/FF_CAP_KM) share that never reaches a
+  capital" is not lost. The code spends it in the cell's own city.
+- **Leak:** a minority's capacity is debited at its people's rate, but
+  `T` counts only the main lineage. That food (3.7-4.8% of the take)
+  vanishes. A one-off split at year 5,000: main-lineage debit 1.9647M
+  against T 1.9650M; minority debit 0.089M, uncounted.
+- Capital food at a cell with no ruling people feeds nobody (1.1%).
+- Neither leak is fixed (records-only stage). Both are logged in
+  `open-questions.md`.
+
+**Decisions for stage B (U, 2026-11-17).** D5: accept the population
+fall. D6: keep the city boost ("city limit") with the modifications.
+U also asked for stages B and C to follow tonight, with provisional
+decisions marked for review.

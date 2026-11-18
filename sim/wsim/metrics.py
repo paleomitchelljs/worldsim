@@ -465,6 +465,35 @@ def food(run):
     return m
 
 
+def food_ledger(run):
+    """The world food account (food.csv, WP4 stage A), by millennium,
+    from the century means: food created (trade food and the city boost)
+    as a share of food produced and of food in cities; the account's gap
+    (taken - received - lost) and the take with no city to arrive in, as
+    shares of the take; capital food that reached no ruling people."""
+    f = run.food
+    w = f[f.scope == "world"]
+    m = {}
+    yr = w.year.to_numpy()
+    for y in range(0, _end(yr), 1000):
+        s = w[(w.year > y) & (w.year <= y + 1000)].sum(numeric_only=True)
+        if s.produced <= 0:
+            continue
+        t = f"{y}-{y + 1000}"
+        m[f"created / produced, {t}"] = s.created / s.produced
+        m[f"created / city food, {t}"] = s.created / max(s.city_food, 1e-9)
+        m[f"trade / created, {t}"] = s.created_trade / max(s.created, 1e-9)
+        m[f"eaten / produced, {t}"] = s.eaten / s.produced
+        m[f"taken / produced, {t}"] = s.taken / s.produced
+    s = w.sum(numeric_only=True)
+    tk = max(s.taken, 1e-9)
+    m["gap / taken, run"] = s.gap / tk
+    m["unplaced / taken, run"] = s.unplaced / tk
+    m["capital food reaching no ruling people / received capital, run"] = \
+        s.cap_unused / max(s.received_capital, 1e-9)
+    return m
+
+
 def deaths(run):
     """Deaths by cause, as shares of all counted deaths over the run."""
     d = run.deaths
@@ -557,7 +586,8 @@ def price(run):
 
 SINGLE = [population, growth, volatility, landmass_volatility,
           city_hierarchy, city_lives, states, lifespans, contiguity, wars,
-          sieges, war_time, food, deaths, settlement, turnover, price]
+          sieges, war_time, food, food_ledger, deaths, settlement, turnover,
+          price]
 
 
 def measure(run, only=None):

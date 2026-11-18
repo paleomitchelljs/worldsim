@@ -571,6 +571,7 @@ class StatesMixin:
         to_cap = np.bincount(pol[m], weights=(tax * ecap)[m],
                              minlength=n) * EXT_EFF
         # a vassal sends part of its capital's take to its lord
+        vs, va = np.zeros(n), np.zeros(n)          # records: sent, arrived
         for v, lord in self.vassal.items():
             V, O = self.polities.get(v), self.polities.get(lord)
             if V is None or O is None or V["ended"] is not None or \
@@ -578,8 +579,11 @@ class StatesMixin:
                 continue
             d = self.food_dist(O)[V["capital"]]
             sent = FF_VASSAL * to_cap[v]
+            got = sent * math.exp(-float(d) / FF_CAP_KM)
             to_cap[v] -= sent
-            to_cap[lord] += sent * math.exp(-float(d) / FF_CAP_KM)
+            to_cap[lord] += got
+            vs[v] += sent
+            va[lord] += got
         new_cap = np.zeros(N)
         for pid in live:
             cap = self.polities[pid]["capital"]
@@ -619,6 +623,10 @@ class StatesMixin:
         fr["trade"] += a * (new_trade - fr["trade"])
         self.city_c[:] = -1
         self.city_c[cc] = self.cul[cc]
+        trib = Ts * (1 - rs)
+        self.food_ledger(dict(
+            Q=Q, rent=rent, tax=tax - trib, trib=trib, to_cap=to_cap,
+            vs=vs, va=va, loc=new_loc, cap=new_cap, trade=new_trade, cc=cc))
         for pid in live:
             self.polities[pid]["extract"] = float(to_cap[pid])
         self.count("ext_food", float(T.sum()))

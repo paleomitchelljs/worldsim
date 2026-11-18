@@ -276,6 +276,8 @@ class DiagnosticsMixin:
                     "ruin, empty" if c < 0 else "ruin, settled", 0,
                     round(float(self.pop[cell])),
                     self.keys[c] if c >= 0 else "", -1, "", 0, 0))
+        if self.year % 100 == 0 and self.ff_on:
+            self.food_rows_flush()
         if self.year % 100 == 0 and self.deaths:
             for cause, v in self.deaths.items():
                 for i in np.nonzero(v > 0)[0]:
@@ -297,6 +299,136 @@ class DiagnosticsMixin:
         if acc is None:
             acc = self.deaths[cause] = np.zeros(self.nP)
         acc += np.bincount(c[ok], weights=lost[ok], minlength=self.nP)
+
+    # food ledger lines (WP4 stage A): per-cell lines, then per-state ones
+    FL_CELL = ["produced", "produced_land", "produced_boost", "eaten",
+               "taken_rent", "taken_tax", "taken_tribute", "lost_eff",
+               "received_local", "received_capital", "created_trade",
+               "city_food", "cap_unused", "received_smoothed",
+               "taken_capacity"]
+    FL_STATE = ["lost_vassal", "received_vassal", "unplaced"]
+
+    def food_ledger(self, f):
+        """Records (WP4 stage A): one tick's food account, in
+        food-equivalents, from food_flows' unsmoothed flows (f), summed
+        for the world, per people and per state into fl_acc; record()
+        writes the century means to food.csv. Produced is the raw
+        capacity of every occupied cell (the main lineage's), split into
+        land and the city boost; eaten is what its people and minority
+        need; taken is rent, tax and tribute; lost is the 1 - EXT_EFF
+        share and a vassal's carriage to its lord; received is what
+        reaches cities and capitals; unplaced is a capital's take that
+        has no city to arrive in. Reads state only."""
+        W, N, n = self.W, self.W.N, self.next_pid
+        pol, eat = self.cell_pol, self.peat
+        occ = self.lin >= 0
+        Q = f["Q"].copy()
+        un = np.nonzero(occ & (pol < 0))[0]
+        if len(un):
+            Q[un] = self.Kf(self.lin[un], un, raw=True) * eat[self.cul[un]]
+        boost = Q * (1 - 1 / self.cboost)
+        fe = self.pop * eat[np.maximum(self.cul, 0)] * occ
+        mok = self.mlin >= 0
+        mfe = self.mpop * eat[np.maximum(self.mcul, 0)] * mok
+        T = f["rent"] + f["tax"] + f["trib"]
+        cc = f["cc"]
+        city = np.zeros(N, bool)
+        city[cc] = True
+        recv = f["loc"] + f["cap"]
+        cols = [Q, Q - boost, boost, fe + mfe, f["rent"], f["tax"],
+                f["trib"], (1 - EXT_EFF) * T, f["loc"], f["cap"],
+                f["trade"], (Q + recv + f["trade"]) * city,
+                f["cap"] * (self.cul != self.rul_c),
+                self.ext_in + self.loc_in]
+        # what the rates Kf applies remove from capacity: the main
+        # lineage pays the ruling or the subject rate in full, not the
+        # blend that T is worked out with; a minority pays on its own K
+        m = pol >= 0
+        own = self.cul == self.rul_c
+        tc = Q * np.where(own, self.ff_xo, self.ext_x) * m
+        mo = np.nonzero(mok & m)[0]
+        if len(mo):
+            Km = self.Kf(self.mlin[mo], mo, raw=True) * eat[self.mcul[mo]]
+            tc[mo] += Km * np.where(self.mcul[mo] == self.rul_c[mo],
+                                    self.ff_xo[mo], self.ext_x[mo])
+        cols.append(tc)
+        C = np.vstack(cols)
+        pc = np.maximum(self.ptab()[1], 0)
+        placed = np.bincount(np.maximum(pol[cc], 0), weights=f["cap"][cc],
+                             minlength=n) if len(cc) else np.zeros(n)
+        S = np.vstack([f["vs"] - f["va"], f["va"],
+                       np.maximum(f["to_cap"] - placed, 0)])
+        nP = self.nP
+        # world
+        w = np.concatenate([C.sum(1), S.sum(1)])
+        # per people: a cell's lines go to its people, a minority's
+        # needs to the minority's, a state's lines to its ruling people
+        c = np.maximum(self.cul, 0)
+        Pp = np.vstack([np.bincount(c, weights=v * occ, minlength=nP)
+                        for v in C])
+        i = self.FL_CELL.index("eaten")
+        Pp[i] = np.bincount(c, weights=fe, minlength=nP) + \
+            np.bincount(np.maximum(self.mcul, 0), weights=mfe, minlength=nP)
+        i = self.FL_CELL.index("received_smoothed")
+        Pp[i] = np.bincount(c, weights=C[i] * occ, minlength=nP)
+        Sp = np.vstack([np.bincount(pc[:n], weights=v, minlength=nP)
+                        for v in S])
+        # per state: cells it rules
+        Ps = np.vstack([np.bincount(pol[m], weights=v[m], minlength=n)
+                        for v in C])
+        acc = self.fl_acc
+        acc["ticks"] += 1
+        acc["world"] += w
+        acc["people"] += np.vstack([Pp, Sp])
+        st = acc["state"]
+        if st.shape[1] < n:
+            st = acc["state"] = np.pad(st, ((0, 0), (0, n - st.shape[1])))
+        st[:, :n] += np.vstack([Ps, S])
+
+    def food_rows_flush(self):
+        """Records: food.csv rows for the century just ended (mean per
+        tick, food-equivalents), world, each people and each state that
+        produced or received food, then a fresh accumulator."""
+        acc = self.fl_acc
+        k = acc["ticks"]
+        if not k:
+            return
+        names = self.FL_CELL + self.FL_STATE
+
+        def row(scope, key, v):
+            d = dict(zip(names, v / k))
+            taken = d["taken_rent"] + d["taken_tax"] + d["taken_tribute"]
+            lost = d["lost_eff"] + d["lost_vassal"]
+            recv = d["received_local"] + d["received_capital"]
+            made = d["created_trade"] + d["produced_boost"]
+            out = dict(year=self.year, scope=scope, key=key)
+            out.update({x: round(d[x]) for x in names})
+            out.update(taken=round(taken), lost=round(lost),
+                       received=round(recv), created=round(made),
+                       gap=round(taken - recv - lost),
+                       created_share=round(made / max(d["produced"], 1e-9),
+                                           5),
+                       created_share_city=round(
+                           made / max(d["city_food"], 1e-9), 5))
+            return out
+
+        rows = self.fl_rows
+        rows.append(row("world", "ALL", acc["world"]))
+        for i, key in enumerate(self.keys):
+            v = acc["people"][:, i]
+            if v[0] > 0:
+                rows.append(row("people", key, v))
+        st = acc["state"]
+        for pid in np.nonzero((st[0] > 0) | (st[8] + st[9] > 0))[0]:
+            rows.append(row("state", int(pid), st[:, pid]))
+        self.fl_new()
+
+    def fl_new(self):
+        """A fresh food-ledger accumulator."""
+        m = len(self.FL_CELL) + len(self.FL_STATE)
+        self.fl_acc = dict(ticks=0, world=np.zeros(m),
+                           people=np.zeros((m, self.nP)),
+                           state=np.zeros((m, 0)))
 
     def urban(self, cc):
         """Urban population of city cells cc, in food-equivalents

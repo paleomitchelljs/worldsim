@@ -160,7 +160,7 @@ ticks (C: 100 ticks, 500 years) and at the end, the append-only tables
 (`events.txt`, `events.jsonl`, `timeseries.csv`, `timeseries_long.csv`,
 `city_sizes.csv`, `sieges.csv`,
 `revolts.csv`, `relations.csv`, `price.csv`, `cityfood.csv`, `deaths.csv`,
-`citylevel.csv`, `citygaps.csv`, `citytraits.csv`, `lineage_events.csv`,
+`food.csv`, `citylevel.csv`, `citygaps.csv`, `citytraits.csv`, `lineage_events.csv`,
 `lineage_pairs.csv`) get their new rows. `wars.csv`, `rulers.csv`,
 `cities.csv`, `polities.csv`, `lineages.csv`, `dragons.csv`, `posts.csv`,
 `history.npz` and `run.json` are rewritten under a temporary name and then
@@ -202,6 +202,7 @@ figures.
 | `city_sizes.csv` | every city and ruin every 25 years ([structural.md](structural.md#city-histories-bookkeeping-only)); from 2026-11-09 `size` is the urban population and `size_old` the old 0.08/0.04 formula ([diagnostics.md](diagnostics.md#records-of-2026-11-09)) |
 | `cityfood.csv` | every city every 25 years: where its food comes from (land, trade, rent, provincial tax, the capital's take) and its urban population (2026-11-09) |
 | `deaths.csv` | deaths per century by people and cause (2026-11-09) |
+| `food.csv` | the food ledger (WP4 stage A, 2026-11-17): per century, for the world, each people and each state, what was produced, eaten, taken, lost in carriage, received and created (below; [diagnostics.md](diagnostics.md#food-ledger-foodcsv)). Only with `food_flow` on |
 | `checks.txt` | the run against rough historical regularities, plus a summary of `price.csv` ([diagnostics.md](diagnostics.md)); since 2026-11-17 formatted from `metrics.json`, its city rank-size from the last `city_sizes.csv` year |
 | `metrics.json` | every measure of `wsim/metrics.py` (WP2 stage B, 2026-11-17), as `{function: {measure: value}}`, computed from the files above at the end of the run; `_missing` names measures whose files were absent ([diagnostics.md](diagnostics.md#run-measures-wsimmetricspy-2026-11-17)) |
 
@@ -344,6 +345,7 @@ ids match across tables. Population counts are of two kinds:
 | `lineages.csv` | lineage | `id, people, parent, parent2, how, founded, ended, fate, peak_pop` (heads); `stage, agri, metal, sail, fishing`; memories `war_mem` ... `raid_mem`; `admin`, `r` (growth per year); cultural traits (0-1) |
 | `lineage_events.csv`, `lineage_pairs.csv` | fusion or absorption; pair of lineages sharing a state | `year, kind, people, a, b, to, state, years_together, pop_a, pop_b, share, distance` ...; `hazard` |
 | `deaths.csv` | people x cause, every century | `year, people, cause, deaths` (heads over the century) |
+| `food.csv` | scope x key, every century | `year`; `scope` (`world`, `people`, `state`) and `key` (`ALL`, a people's key, a state id). Every other column is a mean per tick over the century ending at `year`, in fe (how many food-equivalents that food feeds), except the two shares. Produced: `produced` = `produced_land` + `produced_boost` (the city boost). `eaten` (people and minority). Taken: `taken` = `taken_rent` + `taken_tax` + `taken_tribute`. Lost: `lost` = `lost_eff` (the 1 - EXT_EFF share) + `lost_vassal` (tribute to a lord lost over the distance). Received: `received` = `received_local` (in the cell's own city) + `received_capital` (at capitals; includes `received_vassal`). Created: `created` = `created_trade` + `produced_boost`. `city_food` (produced on city cells plus everything received there); `cap_unused` (capital food at a cell where no ruling people live); `received_smoothed` (`ext_in` + `loc_in`, what capacity reads); `taken_capacity` (what the rates in `Kf` remove from capacity, minorities included); `unplaced` (a capital's take with no city to arrive in); `gap` = `taken - received - lost`; `created_share` = created / produced; `created_share_city` = created / city food |
 | `price.csv` | people (and world) x trait, every century | Price-equation terms ([diagnostics.md](diagnostics.md#price-decomposition-pricecsv)) |
 | `citylevel.csv`, `citygaps.csv`, `citytraits.csv` | trait, city | city-level cultural measures ([diagnostics.md](diagnostics.md)) |
 | `dragons.csv` | dragon | `id, born, parent, home0` (cell), traits, `ended, fate, ally, ally_people, ally_year, moves` |

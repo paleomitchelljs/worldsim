@@ -1460,3 +1460,37 @@ three.
   `wp1f_fullclim_` is the baseline. The saved states were remade under it
   (`wp1g_states_seed101`, `103`): up to year 3,000 their `events.txt` is
   identical to `wp1f_fullclim_`'s.
+
+### 2026-11-17 WP4 stage A: food ledger (`wp4a_seed101`, `wp4a_branch`)
+
+Records only. `wp4a_seed101` (seed 101, standard settings, 8,000 years,
+`--no-video`) ends at 126.34M people and 644 cities, the same as
+`wp1d_voy_seed101`, so the ledger changes nothing. World totals from
+`food.csv`, by millennium:
+
+| Years | created / produced | created / city food | trade / created | eaten / produced | taken / produced |
+|---|---|---|---|---|---|
+| 0-1000 | 0.001 | 0.32 | 0.00 | 0.33 | 0.000 |
+| 1000-2000 | 0.001 | 0.31 | 0.00 | 0.44 | 0.001 |
+| 2000-3000 | 0.005 | 0.32 | 0.01 | 0.47 | 0.004 |
+| 3000-4000 | 0.012 | 0.34 | 0.02 | 0.55 | 0.009 |
+| 4000-5000 | 0.024 | 0.35 | 0.08 | 0.61 | 0.021 |
+| 5000-6000 | 0.048 | 0.38 | 0.18 | 0.66 | 0.044 |
+| 6000-7000 | 0.069 | 0.40 | 0.22 | 0.72 | 0.061 |
+| 7000-8000 | 0.095 | 0.42 | 0.27 | 0.79 | 0.079 |
+
+- Created food is up to a tenth of all food and 31-42% of city food.
+- Most of it is the city boost. Trade food is 0 to 27% of created food,
+  rising with the trade ties.
+- Trade food as a share of all food brought into cities (trade plus
+  received): 0.04 at year 3,000, 0.20 at 5,000, 0.31 at 7,000 and 0.39
+  at 7,900. That is the range of BASELINE.md (27.5% in `al_seed103`,
+  0.36-0.41 in the realism batch).
+- The boost alone is at least a third of a city cell's own production,
+  because it multiplies by at least 1.5.
+- On the unsmoothed flows the account closes: gap 0 in every century.
+
+`wp4a_branch` continues `wp1f_s101_y5000.pkl` to 6,000 with the
+`taken_capacity` column. It shows that minorities pay 3.7-4.8% more
+than the take counts, and that this food vanishes
+([open-questions](open-questions.md)).

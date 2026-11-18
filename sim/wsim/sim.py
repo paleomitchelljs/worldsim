@@ -270,6 +270,13 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.deaths = {}                  # cause -> deaths per people
         self.death_rows = []              # deaths.csv
         self.food_rows = []               # cityfood.csv
+        self.new_state_v3()
+
+    def new_state_v3(self):
+        """State added in WP4 stage A (food ledger). Also run by upgrade()
+        on an older state."""
+        self.fl_rows = []                 # food.csv
+        self.fl_new()
 
     def R(self, name):
         """The run's random stream `name` (geo.stream), made when first
@@ -326,6 +333,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         if not hasattr(self, "ff_on"):
             self.ff_on = self.dom_on and "food_flow" in self.on
             self.new_state_v2()
+        if not hasattr(self, "fl_rows"):
+            self.new_state_v3()
         if not hasattr(self, "uc_on"):
             self.uc_on = "urban_city" in self.on
         if not hasattr(self, "lver"):
