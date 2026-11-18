@@ -29,7 +29,7 @@ what an entry holds.
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
-| 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | COMMIT |
+| 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
 | 5 | D yearly political step | not started | | |
 | 5 | E army stock | not started | | |
 | 5 | F cityless polities | not started | | |
@@ -1321,7 +1321,7 @@ waits on the batch, per open-questions.md.
   3+ cities), so a small state keeps its founder's talent until it
   grows.
 
-### WP5 stage C: time constants in years (2026-11-18, COMMIT)
+### WP5 stage C: time constants in years (2026-11-18, c04c487)
 
 **Asked by U (2026-11-18), alongside the stage:** widen SITE_DEF_SD a
 bit; let rulers of small states have successions, so that a gifted ruler
