@@ -32,7 +32,7 @@ what an entry holds.
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
-| 5 | F cityless polities | done (on by default) | 2026-11-18 | FCOMMIT |
+| 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
 | 6 | A experiment batch | not started | | |
 | 6 | B adopt | not started | | |
 | 7 | A design note | not started | | |
@@ -1490,7 +1490,7 @@ chose its war could start with its army partly raised. Not built.
 **Stage F.** Design note `WP5F-camps-design.md`, with three decisions
 for U. No code.
 
-### WP5 stage F: polities without cities (2026-11-18, FCOMMIT)
+### WP5 stage F: polities without cities (2026-11-18, 0c236c7)
 
 **Decisions (U, 2026-11-18):** camps outside the city table; a defeated
 camp scatters or becomes a vassal; no number in mind for the threshold.
