@@ -25,7 +25,7 @@ what an entry holds.
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
-| 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | HASHB |
+| 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | not started | | |
 | 5 | A diagnosis | not started | | |
 | 5 | B odds-gated war | not started | | |
@@ -996,7 +996,7 @@ fall. D6: keep the city boost ("city limit") with the modifications.
 U also asked for stages B and C to follow tonight, with provisional
 decisions marked for review.
 
-### WP4 stage B: debited trade (2026-11-17, HASHB)
+### WP4 stage B: debited trade (2026-11-17, 672415b)
 
 D5 and D6 answered by U (above). U asked for B and C to follow tonight,
 with provisional decisions marked for review in the morning.
