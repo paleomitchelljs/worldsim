@@ -191,13 +191,14 @@ class SettlementMixin:
         return np.minimum(1, c * (1 + IMP_SETTLE * self.imp[j]))
 
     def adjacency_by_people(self):
+        """adj[c, i]: some neighbour of cell i is held by people c."""
         W = self.W
         adj = np.zeros((self.nP, W.N), bool)
         for k in range(8):
-            j = W.nb[:, k]
-            cn = np.where(j >= 0, self.cul[np.maximum(j, 0)], -1)
-            for c in range(self.nP):
-                adj[c] |= cn == c
+            i = np.nonzero(W.nb[:, k] >= 0)[0]
+            cn = self.cul[W.nb[i, k]]
+            ok = cn >= 0
+            adj[cn[ok], i[ok]] = True
         return adj
 
     def migrate(self):
@@ -335,21 +336,25 @@ class SettlementMixin:
         for k in range(8):
             j = W.nb[R, k]
             jj = np.maximum(j, 0)
-            ok = (j >= 0) & (self.lin[jj] < 0)
-            # only where a band could go
-            Kt = np.zeros(len(R))
-            ii = np.nonzero(ok)[0]
-            if len(ii):
-                Kt[ii] = self.Kf(LR[ii], jj[ii])
-            foreign = (nadj[jj] - adj[cR, jj]) > 0
-            s = ok * np.sqrt(np.maximum(Kt, 0)) / W.edgecost[R, k] * \
-                self.colon(jj, LR) * \
-                (1 + RIV_BUD * (W.river[R] & W.river[jj])) * \
-                (1 - 0.95 * self.hostile(LR) * foreign) * noise[R, k] * \
-                (Kt > 2 * FOUND_MIN)
-            better = s > best
-            best = np.where(better, s, best)
-            tgt = np.where(better, j, tgt)
+            # scored only where a band could go: an empty neighbour with
+            # room for one (elsewhere the score is 0)
+            ii = np.nonzero((j >= 0) & (self.lin[jj] < 0))[0]
+            if not len(ii):
+                continue
+            Kt = self.Kf(LR[ii], jj[ii])
+            q = Kt > 2 * FOUND_MIN
+            ii, Kt = ii[q], Kt[q]
+            if not len(ii):
+                continue
+            ji, Li, Ri = jj[ii], LR[ii], R[ii]
+            foreign = (nadj[ji] - adj[cR[ii], ji]) > 0
+            s = np.sqrt(np.maximum(Kt, 0)) / W.edgecost[Ri, k] * \
+                self.colon(ji, Li) * \
+                (1 + RIV_BUD * (W.river[Ri] & W.river[ji])) * \
+                (1 - 0.95 * self.hostile(Li) * foreign) * noise[Ri, k]
+            b = s > best[ii]
+            best[ii[b]] = s[b]
+            tgt[ii[b]] = j[ii[b]]
         go = tgt >= 0
         src, tgt = R[go], tgt[go]
         Ls = L[src]
@@ -487,10 +492,12 @@ class SettlementMixin:
             # capacity once per lineage, on every cell any of its voyages
             # could take: a landing only ever removes a cell from the
             # candidates (it becomes the lineage's people's), so the cells
-            # kept now cover each later voyage's
-            allc = np.unique(np.concatenate([kept(b, L)[0] for b in balls]))
+            # kept now cover each later voyage's (so each voyage re-tests
+            # only those, in the ball's order)
+            kb = [kept(b, L)[0] for b in balls]
+            allc = np.unique(np.concatenate(kb))
             Kall = self.Kf(L, allc) if len(allc) else None
-            for s, ball in zip(picks, balls):
+            for s, ball in zip(picks, kb):
                 cnd, nat = kept(ball, L)
                 if not len(cnd):
                     continue

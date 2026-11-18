@@ -90,14 +90,16 @@ class WarMixin:
         kinf = np.ones(len(a))
         if kin.any():
             la, lb = self.lin[a[kin]], self.lin[b[kin]]
-            pairs = np.unique(np.stack([np.minimum(la, lb),
-                                        np.maximum(la, lb)], 1), axis=0)
-            sm = {(int(x), int(y)): self.similarity(int(x), int(y))
-                  for x, y in pairs}
-            kinf[kin] = KIN_RAID * (0.5 + 0.5 * (1 - np.array(
-                [sm[(min(x, y), max(x, y))]
-                 for x, y in zip(la.tolist(), lb.tolist())])))
-        for x, y in set(zip(ca[ca != cb].tolist(), cb[ca != cb].tolist())):
+            pairs, inv = np.unique(np.stack([np.minimum(la, lb),
+                                             np.maximum(la, lb)], 1),
+                                   axis=0, return_inverse=True)
+            sm = np.array([self.similarity(int(x), int(y))
+                           for x, y in pairs])
+            kinf[kin] = KIN_RAID * (0.5 + 0.5 * (1 - sm[inv.ravel()]))
+        xc = ca != cb
+        new = xc.any() and not self.contact_seen[ca[xc], cb[xc]].all()
+        for x, y in (set(zip(ca[xc].tolist(), cb[xc].tolist())) if new
+                     else ()):
             if not self.contact_seen[x, y]:
                 self.contact_seen[x, y] = self.contact_seen[y, x] = True
                 self.log("contact", f"first contact: {self.keys[x]} meets "
@@ -105,7 +107,10 @@ class WarMixin:
         suffered = []
         # capacity does not depend on population: computed once for each
         # side, redone only where a raid or takeover changes a cell
-        Ka, Kb = self.Kf(self.lin[a], a), self.Kf(self.lin[b], b)
+        # (worked out once per cell: a cell borders several others)
+        u, inv = np.unique(np.concatenate([a, b]), return_inverse=True)
+        Ku = self.Kf(self.lin[u], u)
+        Ka, Kb = Ku[inv[:len(a)]], Ku[inv[len(a):]]
         for att, dfn in ((a, b), (b, a)):
             Kt, Kd = (Ka, Kb) if att is a else (Kb, Ka)
             La, Ld = self.lin[att], self.lin[dfn]

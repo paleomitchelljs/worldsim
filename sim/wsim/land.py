@@ -117,11 +117,30 @@ class LandMixin:
         est = np.where(self.Lpeople[L] == self.rul_c[j], self.rul_est[j], 0)
         return (1 + SH_TECH * tech) * (1 + SH_STATE * est)
 
+    def lterms(self, L):
+        """K2's factors that depend on the lineage alone: agri, tools, sod
+        factor, food per head, fishing, wetland skill, development and
+        herding share. For a long L (one entry per cell) they are worked
+        out once per lineage and gathered, which gives the same values."""
+        big = np.ndim(L) > 0 and np.size(L) > self.nL
+        X = np.arange(self.nL) if big else L
+        a = self.agri[X]
+        tools = 1 + TOOLS[0] * self.iron[X] + TOOLS[1] * self.steel[X]
+        sf = np.where(self.iron[X], 1.0,
+                      np.where(self.bronze[X], SOD_BR, SOD0))
+        c = self.Lpeople[X]
+        eat = self.peat[c]
+        fk = FISH0 + FISH1 * self.fishing[X]
+        pw = WET_K * self.pwet[c]
+        dv = 1 + DEV_K * self.dev(X)
+        h = np.clip((a - HERD_AGRI[0]) / (HERD_AGRI[1] - HERD_AGRI[0]), 0, 1)
+        out = (a, tools, sf, eat, fk, pw, dv, h)
+        return tuple(v[L] for v in out) if big else out
+
     def K2(self, L, j):
         """(farming K, herding K or None) of cells j for lineages L."""
         W = self.W
-        a = self.agri[L]
-        tools = 1 + TOOLS[0] * self.iron[L] + TOOLS[1] * self.steel[L]
+        a, tools, sf, eat, fk, pw, dv, h = self.lterms(L)
         cm = self.cm
         rain = W.rain_ws[j]
         forage = W.forage[j] * cm[2, j]
@@ -134,8 +153,6 @@ class LandMixin:
             W.fish[j]
         rainc = rain * cm0 * (1 + IMP_RAIN * imp)
         # grassland sod resists the plough until bronze, then iron
-        sf = np.where(self.iron[L], 1.0,
-                      np.where(self.bronze[L], SOD_BR, SOD0))
         grass = W.biome[j] == BIOMES.index("Grassland")
         farm = farm - grass * (1 - sf) * rainc
         farm = farm * self.land[j]
@@ -147,19 +164,17 @@ class LandMixin:
         farm = farm * (DOM_FLOOR + (1 - DOM_FLOOR) * cr)
         herd = herd * (DOM_HFLOOR + (1 - DOM_HFLOOR) * an)
         dens = forage * (1 - a) + farm * a * tools
-        eat = self.peat[self.Lpeople[L]]
         fit = FIT[L, b]
         # near a biome edge, a dry or wet spell moves the edge
         f = self.eco_f[j]
         fit = fit + f * (FIT[L, np.maximum(self.eco_tgt[j], 0)] - fit)
-        coast = 1 + (FISH0 + FISH1 * self.fishing[L]) * W.water[j]
+        coast = 1 + fk * W.water[j]
         if self.pwet.any():
-            fit = fit * (1 + WET_K * self.pwet[self.Lpeople[L]] * W.wet[j])
+            fit = fit * (1 + pw * W.wet[j])
         cap = self.Kcap[j] / eat
-        coast = coast * (1 + DEV_K * self.dev(L))
+        coast = coast * dv
         Kc = np.minimum(W.area[j] * dens * fit * self.Kcell[j] * coast / eat,
                         cap)
-        h = np.clip((a - HERD_AGRI[0]) / (HERD_AGRI[1] - HERD_AGRI[0]), 0, 1)
         # herders forage too; animals make the difference
         hd = forage * (1 - h) + herd * h
         Kh = np.minimum(W.area[j] * hd * fit * self.Kcell[j] * coast / eat,

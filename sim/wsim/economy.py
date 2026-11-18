@@ -253,6 +253,7 @@ class EconomyMixin:
                 cc = np.fromiter(p["cities"], int)
                 rc = cc[W.river[cc]]
                 riv[pid] = (len(rc) / len(cc), set(W.basin[rc].tolist()))
+        devv = self.dev(np.arange(self.nL))     # unchanged in the loop
         for k in (sorted(pairs) if pairs is not self.adj else self.adj):
             if k in self.wars:
                 continue
@@ -274,7 +275,7 @@ class EconomyMixin:
                               self.eff(ab[1], "tol"))) * acc * \
                 (1 + RIV_TRADE * (ra + rb) / 2) * \
                 (1 + BASIN_TRADE * bool(ba & bb)) * xb
-            g *= 1 + DEV_TRADE * (self.dev(La) + self.dev(Lb)) / 2
+            g *= 1 + DEV_TRADE * (devv[La] + devv[Lb]) / 2
             g *= 1.25 - 0.25 * (self.eff(ab[0], "dom") +
                                 self.eff(ab[1], "dom"))
             t = self.ties.get(k, 0.0)
