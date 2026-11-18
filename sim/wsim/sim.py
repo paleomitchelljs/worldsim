@@ -47,6 +47,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.rseed, self.rngs = seed, {}
         self.years = years
         self.frame_every = frame_every
+        self.hist_every = HIST_EVERY
         self.out = out
         P = self.P = peoples
         self.nP = nP = len(P)
@@ -337,6 +338,17 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             # before WP1 stage F: one shared stream and a few offsets;
             # such a state continues on fresh named streams
             self.rseed, self.rngs = self.seed, {}
+        if not hasattr(self, "hist_every"):
+            # before WP3 stage A: snapshots every 20 ticks, as tuples
+            # (year, people, pop, polity, states, ties)
+            self.hist_every = 20
+            N = self.W.N
+            self.hist = [dict(
+                year=h[0], people=h[1], lineage=np.full(N, -1, np.int32),
+                polity=h[3], minority=np.full(N, -1, np.int8),
+                pop_log1p=np.log1p(h[2]).astype(np.float16),
+                herding=np.zeros(N, bool), st=h[4], tie=h[5],
+                city=np.zeros((0, 5))) for h in self.hist]
         if not hasattr(self, "pver"):
             self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):
@@ -446,20 +458,33 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.year += DT
 
     def snapshot(self):
-        """Map state for history.npz (figures.py's war and trade maps):
-        people, population and state per cell, each live state's capital,
-        people and size, and the trade ties. Reads state only."""
+        """Map state for history.npz, enough for a renderer to need
+        nothing else (WP3 stage A): per cell, people, lineage, state,
+        minority people, population (float16 of log1p; under 0.5% off
+        after expm1) and the herding flag; each live state's capital,
+        people and cities; the trade ties; each city's cell, id, size
+        (urban, food-equivalents), state and capital flag. Reads state
+        only."""
         st = [(pid, P["capital"], P["culture"], len(P["cities"]))
               for pid, P in self.polities.items()
               if P["ended"] is None and P.get("capital") is not None
               and P["capital"] >= 0]
         ti = [(a, b, t) for (a, b), t in self.ties.items() if t > 0 and
               self.live((a, b))]
-        self.hist.append((self.year, self.cul.astype(np.int8),
-                          self.pop.astype(np.float32),
-                          self.cell_pol.astype(np.int32),
-                          np.array(st, int).reshape(-1, 4),
-                          np.array(ti, float).reshape(-1, 3)))
+        caps = {P["capital"] for P in self.polities.values()
+                if P["ended"] is None}
+        ct = [(c, r["id"], self.city_size.get(c, 0.0), r["polity"],
+               c in caps) for c, r in self.cities.items()]
+        self.hist.append(dict(
+            year=self.year, people=self.cul.astype(np.int8),
+            lineage=self.lin.astype(np.int32),
+            polity=self.cell_pol.astype(np.int32),
+            minority=self.mcul.astype(np.int8),
+            pop_log1p=np.log1p(np.maximum(self.pop, 0)).astype(np.float16),
+            herding=self.herding.copy(),
+            st=np.array(st, int).reshape(-1, 4),
+            tie=np.array(ti, float).reshape(-1, 3),
+            city=np.array(ct, float).reshape(-1, 5)))
 
     def run(self, verbose=True, saves=None):
         """Run from the current tick to the end (a loaded state continues
@@ -483,7 +508,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             if self.tick % self.frame_every == 0 or self.tick == nt:
                 stream.frame(render(self))
                 self.relations()
-            if self.tick % HIST_EVERY == 0 or self.tick == nt:
+            if self.tick % self.hist_every == 0 or self.tick == nt:
                 self.snapshot()
             if self.tick % FLUSH_EVERY == 0 or self.tick == nt:
                 stream.flush()

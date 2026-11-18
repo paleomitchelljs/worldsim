@@ -138,8 +138,9 @@ class Stream:
     """Writes a run's output while it runs (2026-11-17, WP0 stage D).
     Append-only tables get their new rows at each flush; tables whose rows
     change later (wars, rulers, cities, polities, lineages, dragons, posts)
-    and history.npz are rewritten whole under a temporary name. Frames are
-    saved as they are rendered. Reads the Sim only. Not stored on the Sim,
+    are rewritten whole under a temporary name. The new map snapshots go
+    into one more file in history_parts/, joined into history.npz at the
+    end (WP3 stage A). Frames are saved as they are rendered. Reads the Sim only. Not stored on the Sim,
     so a saved state stays picklable."""
 
     def __init__(self, sim, out):
@@ -149,6 +150,9 @@ class Stream:
         for f in os.listdir(self.fdir):     # a previous run in this folder
             if f.startswith("f") and f.endswith(".png"):
                 os.remove(os.path.join(self.fdir, f))
+        shutil.rmtree(os.path.join(out, HIST_PARTS), ignore_errors=True)
+        if os.path.exists(os.path.join(out, "history.npz")):
+            os.remove(os.path.join(out, "history.npz"))
         self.done = {}                      # attribute -> rows written
         self.nframes = 0
         write_run_json(sim, out)
@@ -192,7 +196,8 @@ class Stream:
         write_polities(sim, out)
         write_dragons(sim, out)
         write_posts(sim, out)
-        write_history(sim, out)
+        write_history_part(sim, out, self.done.get("hist", 0))
+        self.done["hist"] = len(sim.hist)
         write_run_json(sim, out)
 
     def flush_long(self):
@@ -252,6 +257,8 @@ def run_info(sim):
     return dict(seed=sim.seed, stream_seed=getattr(sim, "rseed", sim.seed),
                 years=sim.years, dt=DT,
                 year_reached=sim.year,
+                frame_every=sim.frame_every,
+                hist_every=getattr(sim, "hist_every", HIST_EVERY),
                 code=man.get("code"), command=man.get("command"),
                 python=man.get("python"), numpy=man.get("numpy"),
                 wall_seconds=round(time.time() - man["t0"], 1)
@@ -398,22 +405,54 @@ def write_posts(sim, out):
                         sim.keys[sim.polities[h]["culture"]]])
 
 
-def write_history(sim, out):
-    H = sim.hist
+HIST_PARTS = "history_parts"
+
+
+def history_arrays(H, t0=0):
+    """Snapshots H (dicts from Sim.snapshot) as history.npz's arrays.
+    Per-cell layers are stacked (snapshot, cell); the per-snapshot tables
+    are flat, each row with its snapshot index (t0 + position)."""
+    def flat(k):
+        rows = np.concatenate([h[k] for h in H])
+        t = np.concatenate([np.full(len(h[k]), t0 + i)
+                            for i, h in enumerate(H)])
+        return rows, t
+    S, st_t = flat("st")
+    T, tie_t = flat("tie")
+    C, city_t = flat("city")
+    out = {k: np.stack([h[k] for h in H]) for k in
+           ("people", "lineage", "polity", "minority", "pop_log1p",
+            "herding")}
+    out.update(
+        year=np.array([h["year"] for h in H]),
+        st_t=st_t, st_id=S[:, 0], st_cap=S[:, 1], st_people=S[:, 2],
+        st_cities=S[:, 3], tie_t=tie_t, tie_a=T[:, 0].astype(int),
+        tie_b=T[:, 1].astype(int), tie=T[:, 2], city_t=city_t,
+        city_cell=C[:, 0].astype(np.int32), city_id=C[:, 1].astype(np.int32),
+        city_size=C[:, 2].astype(np.float32),
+        city_polity=C[:, 3].astype(np.int32), city_capital=C[:, 4] > 0)
+    return out
+
+
+def write_history_part(sim, out, n):
+    """Snapshots from index n on, as one more part (a killed run keeps
+    them; write_history joins the parts at the end)."""
+    H = sim.hist[n:]
     if not H:
         return
-    cat = lambda k: np.concatenate([h[k] for h in H])
-    idx = lambda k: np.concatenate([np.full(len(h[k]), t)
-                                    for t, h in enumerate(H)])
-    S, T = cat(4), cat(5)
+    d = os.path.join(out, HIST_PARTS)
+    os.makedirs(d, exist_ok=True)
+    with atomic(os.path.join(d, f"h{n:05d}.npz"), "wb") as fh:
+        np.savez_compressed(fh, **history_arrays(H, n))
+
+
+def write_history(sim, out):
+    """The whole history.npz, at the end of the run; the parts go."""
+    if not sim.hist:
+        return
     with atomic(os.path.join(out, "history.npz"), "wb") as fh:
-        np.savez_compressed(
-            fh,
-            year=np.array([h[0] for h in H]), people=np.stack([h[1] for h in H]),
-            pop=np.stack([h[2] for h in H]), polity=np.stack([h[3] for h in H]),
-            st_t=idx(4), st_id=S[:, 0], st_cap=S[:, 1], st_people=S[:, 2],
-            st_cities=S[:, 3], tie_t=idx(5), tie_a=T[:, 0].astype(int),
-            tie_b=T[:, 1].astype(int), tie=T[:, 2])
+        np.savez_compressed(fh, **history_arrays(sim.hist))
+    shutil.rmtree(os.path.join(out, HIST_PARTS), ignore_errors=True)
 
 
 def write_outputs(sim, out):
@@ -436,6 +475,7 @@ def write_outputs(sim, out):
                     optimize=False)
         shutil.copyfile(os.path.join(fdir, files[-1]),
                         os.path.join(out, "final_maps.png"))
+    write_history(sim, out)
     legacy_map(sim).save(os.path.join(out, "legacy.png"))
     lineage_map(sim).save(os.path.join(out, "lineages.png"))
     population_plot(sim, os.path.join(out, "population.png"))

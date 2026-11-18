@@ -13,14 +13,14 @@ what an entry holds.
 | 1 | A polity table | done | 2026-11-17 | 48ce872 |
 | 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
 | 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
-| 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b |
+| 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b, 4466cfd |
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
 | 2 | B run loader and metrics | done | 2026-11-17 | 8b516c7 |
 | 2 | C tidy tables | done | 2026-11-17 | 8499650 |
 | 2 | D GIS export | done | 2026-11-17 | 3b8fe04 |
-| 3 | A snapshots | not started | | |
+| 3 | A snapshots | done | 2026-11-17 | AHASH |
 | 3 | B renderer and projection | not started | | |
 | 3 | C state colours and change layers | not started | | |
 | 3 | D video and viewer | not started | | |
@@ -708,4 +708,91 @@ mesh layer should read the time axis.
 **Next.** WP2 is complete. In the README's order, WP3 (visualization)
 can start now; WP4 needs WP1, which is partial (see the stage B and D
 entries).
+
+### WP1 stage D, voyages (2026-11-17, 4466cfd)
+
+U, 2026-11-17: do it, the change in histories is fine.
+
+**Done.** `voyages` no longer works lineage by lineage:
+- It draws all of a tick's voyages at once: one Poisson draw for the
+  number per lineage, and one uniform draw for each voyage's source cell.
+- It runs one `query_ball_point` with a radius per voyage.
+- It works out the fixed part of each target's weight in one pass: `Kf`,
+  distance, terrain and the K x eat > 300 floor. A landing changes none
+  of these, because K depends on the lineage and the cell's land, not
+  on who lives there.
+- Ships then land one at a time, and each rechecks its remaining targets
+  against the landings before it.
+
+Random draws come in a new order, so histories differ. One small change
+in rule (C): a cell counts as a target (thin natives, not a city) only
+from the start of the tick. A source cell that drops under COL_THIN
+while sending colonists cannot be landed on until the next tick.
+Documented in `docs/rules/colonization.md`.
+
+**Runs.**
+- Profile, 40 ticks from `wp1f_s101_y5000.pkl`: `voyages` went from
+  0.96 s to 0.64 s (-33%). Its share of step time fell from 7.9% to
+  5.6%. `Kf` calls dropped from 2,502 to 40. Most of what is left is
+  the per-voyage loop: about 70-140 voyages a tick reach it, at about
+  65 us each.
+- `wp1d_voy_seed101` (8,000 years, 463 s, sharing the machine with
+  another run): 126M people at the end against 140M for
+  `wp1f_fullclim_seed101`. The five baseline seeds ranged from 108 to
+  178M. It had 644 cities and all ten peoples. The realism measures
+  fall within the baseline's spread. The largest state is bigger (4.45M
+  against 3.49M km2), and more of the cities alive at year 4,000 had
+  ended by 6,000 (0.48 against 0.32). With one seed I cannot tell
+  whether either is more than noise.
+- Its war maps were redrawn with `figures.py`. The run had loaded
+  `runio` before `load_history` was added to it (WP3 stage A was being
+  edited during the run).
+
+### WP3 stage A: snapshots (2026-11-17, AHASH)
+
+**Done.**
+- `--hist-every` (ticks). The default HIST_EVERY is now 5, or 25
+  years (C; it was 20). `run.json` records `hist_every` and
+  `frame_every`.
+- `Sim.snapshot` stores a dict per snapshot:
+  - per cell: people (int8), lineage (int32), polity (int32), minority
+    people (int8), population as float16 log1p, and the herding flag;
+  - per snapshot: the state and trade-tie tables as before, plus a city
+    table (cell, id, urban size, polity, capital flag).
+  `upgrade()` turns an older state's tuples into these dicts, with
+  lineage and minority set to -1, herding to False and no cities, and
+  keeps its cadence at 20.
+- Writing: each flush writes only its new snapshots, to
+  `history_parts/h<first index>.npz`. The end of the run writes
+  `history.npz` whole and deletes the parts. A new run in an old folder
+  first clears the old parts and `history.npz`. The flushes no longer
+  recompress the whole history each time.
+- `runio.load_history` reads the whole file or, for a killed run, the
+  parts. It always returns `pop` as float32 heads, decoding
+  `pop_log1p`. `Run.history`, `figures.py` and `turnover.py` use it.
+- Readers that assumed 100-year spacing:
+  - `tradewars.gif` keeps one frame per GIF_STEP = 100 years.
+  - `export.py` has `--every-years` (default 100), which replaces
+    `--states-every`. 320 snapshots of float grids would be about 1 GB.
+  - `metrics.turnover` and `turnover.py` find their windows by year.
+  - `landmass_volatility` takes the spacing from the file; its numbers
+    are now less coarse.
+
+**Runs.** `wp3a_seed101` (8,000 years, 482 s, on a shared machine)
+gives 126.34M people and 644 cities at the end, the same as
+`wp1d_voy_seed101`, so snapshots read state only.
+- `history.npz`: 32.2 MB for 320 snapshots, against 13.5 MB for 80
+  before. That is under the brief's 60 MB, so I did not store polity or
+  lineage as changes between snapshots. Population is 21.4 MB of it;
+  lineage 6.2 MB; herding 1.3 MB; people 1.2 MB; polity 0.7 MB.
+- The float16 log1p round trip: largest relative error 0.39% (median
+  0.18%) on 1M values from 5 to 40,000 heads. The last snapshot against
+  `final_state.npz` also differs by at most 0.39%.
+- The last snapshot holds 644 cities (216 capitals). 29% of cells are
+  herding and 1,505 have a minority.
+- `export.py` and `turnover.py` still read the older 100-year files
+  (`wp2c_sanity_seed101`).
+
+**Next.** Stage B (offline renderer, Mollweide). It is mostly written in
+the working tree and not committed; see its entry.
 

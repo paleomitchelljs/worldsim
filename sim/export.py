@@ -1,13 +1,14 @@
 """
 Export a finished run for GIS software (WP2 stage D, 2026-11-17).
 
-    python export.py RUN [RUN ...] [--states-every 1] [--no-states]
+    python export.py RUN [RUN ...] [--every-years 100] [--no-states]
 
 Writes into <run>/export/, from history.npz, final_state.npz and the
 CSVs, without rerunning anything:
 
 - run.nc: NetCDF (CF-1.8) on the full 360 x 720 half-degree grid, sea as
-  the fill value. Over time (the history.npz snapshots, every 100 years):
+  the fill value. Over time (the history.npz snapshots, one per
+  --every-years, default 100, and the last):
   people (index into run.json's peoples; -1 empty land), population
   (heads), density (heads per km2 of land), polity (state id; -1 none).
   At the end only: road, improvements, land, salt. QGIS opens it as a
@@ -68,9 +69,19 @@ def grid(vals, row, col, fill):
     return out
 
 
-def write_netcdf(r, path):
+def snaps(r, every):
+    """Indices of the snapshots kept: years that are multiples of
+    `every`, and the last (runs from WP3 stage A snapshot every 25
+    years, which over 8,000 years would be about 1 GB of grids)."""
+    y = r.history["year"]
+    return np.array([t for t in range(len(y))
+                     if y[t] % every == 0 or t == len(y) - 1])
+
+
+def write_netcdf(r, path, sel):
     import xarray as xr
-    H, F = r.history, r.final
+    H0, F = r.history, r.final
+    H = {k: H0[k][sel] for k in ("year", "people", "pop", "polity")}
     row, col = F["row"], F["col"]
     area = r.W.area
     years = H["year"].astype(int)
@@ -134,9 +145,9 @@ def cells_poly(row, col):
     return shapely.box(lon - 0.25, lat - 0.25, lon + 0.25, lat + 0.25)
 
 
-def states_layer(r, every):
-    """One multipolygon per live state per snapshot, dissolved from its
-    cells (shapely coverage union: the cells tile, never overlap)."""
+def states_layer(r, sel):
+    """One multipolygon per live state per kept snapshot, dissolved from
+    its cells (shapely coverage union: the cells tile, never overlap)."""
     import shapely
     H, F = r.history, r.final
     row, col, area = F["row"], F["col"], r.W.area
@@ -147,7 +158,7 @@ def states_layer(r, every):
                        ("t", "id", "cap", "people", "cities")})
     keys = r.keys
     rows, geoms = [], []
-    for t in range(0, len(years), every):
+    for i, t in enumerate(sel):
         pol = H["polity"][t]
         pop = H["pop"][t]
         m = pol >= 0
@@ -158,8 +169,8 @@ def states_layer(r, every):
         ids, starts = np.unique(pol[order], return_index=True)
         info = st[st.t == t].set_index("id")
         # each snapshot holds until the next; the last for one step
-        step = int(years[1] - years[0]) if len(years) > 1 else 100
-        t_end = years[t + every] if t + every < len(years) else \
+        step = int(years[sel[1]] - years[sel[0]]) if len(sel) > 1 else 100
+        t_end = years[sel[i + 1]] if i + 1 < len(sel) else \
             max(last, int(years[t])) + step
         for pid, grp in zip(ids, np.split(order, starts[1:])):
             geoms.append(shapely.coverage_union_all(boxes[grp]))
@@ -175,7 +186,7 @@ def states_layer(r, every):
     return rows, geoms
 
 
-def write_gpkg(r, path, every, states=True):
+def write_gpkg(r, path, sel, states=True):
     import geopandas as gpd
     import shapely
     if os.path.exists(path):
@@ -199,7 +210,7 @@ def write_gpkg(r, path, every, states=True):
         shapely.points(c["lon"], c["lat"]), "cities")
 
     if states:
-        rows, geoms = states_layer(r, every)
+        rows, geoms = states_layer(r, sel)
         if rows:
             layer(pd.DataFrame(rows), geoms, "states")
 
@@ -285,8 +296,9 @@ def check(out):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("runs", nargs="+")
-    ap.add_argument("--states-every", type=int, default=1,
-                    help="snapshots between state-polygon layers")
+    ap.add_argument("--every-years", type=int, default=100,
+                    help="years between exported snapshots (NetCDF time "
+                    "steps and state polygons)")
     ap.add_argument("--no-states", action="store_true")
     ap.add_argument("--no-check", action="store_true")
     a = ap.parse_args()
@@ -295,9 +307,9 @@ def main():
         out = os.path.join(r.dir, "export")
         os.makedirs(out, exist_ok=True)
         print(r.name)
-        write_netcdf(r, os.path.join(out, "run.nc"))
-        write_gpkg(r, os.path.join(out, "run.gpkg"), a.states_every,
-                   not a.no_states)
+        sel = snaps(r, a.every_years)
+        write_netcdf(r, os.path.join(out, "run.nc"), sel)
+        write_gpkg(r, os.path.join(out, "run.gpkg"), sel, not a.no_states)
         write_names(r, os.path.join(out, "names.csv"))
         if not a.no_check:
             check(out)

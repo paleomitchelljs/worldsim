@@ -110,7 +110,7 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | `population` | world population at each 1000 years, urban share, cities below URBAN_MIN, herding peak, minority share of heads |
 | `growth` | %/yr over each millennium |
 | `volatility` | sd of log world population around its 200-year mean after 3000; largest 100-year fall; worst 300-year fall and what cities did over it |
-| `landmass_volatility` | the first two per landmass group (`landmasses.py`), from `history.npz` (100-year snapshots, so coarser) |
+| `landmass_volatility` | the first two per landmass group (`landmasses.py`), from `history.npz` (25-year snapshots from WP3 stage A; 100-year before, so coarser) |
 | `city_hierarchy` | rank-size slope at 2000-year marks and at the end; largest city against the 10th and the world |
 | `city_lives` | cities founded, ended, abandoned; of those alive at 4000, ended within 2000 years |
 | `states` | polities; never above one city (share, median life); largest state against land and the 10th; size distribution of 3+ city states; multi-people states; vassals |

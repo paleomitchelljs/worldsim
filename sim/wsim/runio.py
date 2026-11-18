@@ -87,6 +87,10 @@ class Run:
             p = os.path.join(self.dir, "events.txt")
         if table == "timeseries_long" and not os.path.exists(p):
             p = self.path("timeseries")
+        if table == "history" and not os.path.exists(p):
+            parts = history_parts(self.dir)
+            if parts:
+                p = parts[0]
         if not os.path.exists(p):
             return "absent"
         if online_only(p):
@@ -107,6 +111,8 @@ class Run:
         p = self.path(table)
         if table == "events":
             v = read_events(self.dir)
+        elif table == "history":
+            v = load_history(self.dir)
         elif table == "timeseries_long" and not os.path.exists(p):
             # runs before WP2 stage C: melted from the wide table
             v = long_table(self.timeseries, self.keys)
@@ -188,3 +194,32 @@ def long_table(ts, keys):
     m["people"] = m["col"].map(lambda c: pv[c][0])
     m["variable"] = m["col"].map(lambda c: pv[c][1])
     return m[["year", "people", "variable", "value"]].reset_index(drop=True)
+
+
+def history_parts(run_dir):
+    """A running or killed run's snapshot files (history_parts/), in
+    order."""
+    d = os.path.join(run_dir, "history_parts")
+    if not os.path.isdir(d):
+        return []
+    return [os.path.join(d, f) for f in sorted(os.listdir(d))
+            if f.endswith(".npz")]
+
+
+def load_history(run_dir):
+    """history.npz as a dict of arrays, from the whole file or, for a run
+    that has not finished, its parts. `pop` is always there as float32
+    heads: files from WP3 stage A on store it as float16 log1p."""
+    p = os.path.join(run_dir, "history.npz")
+    files = [p] if os.path.exists(p) else history_parts(run_dir)
+    if not files:
+        raise FileNotFoundError(p)
+    zs = []
+    for f in files:
+        with np.load(f, allow_pickle=False) as z:
+            zs.append({k: z[k] for k in z.files})
+    H = zs[0] if len(zs) == 1 else {
+        k: np.concatenate([z[k] for z in zs]) for k in zs[0]}
+    if "pop" not in H:
+        H["pop"] = np.expm1(H["pop_log1p"].astype(np.float32))
+    return H

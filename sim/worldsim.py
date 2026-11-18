@@ -104,6 +104,9 @@ def make_sim(argv=None):
     ap.add_argument("--frame-every", type=int, default=None,
                     help="ticks between animation frames (default 20; with "
                     "--from-state, the state's own)")
+    ap.add_argument("--hist-every", type=int, default=None,
+                    help="ticks between history.npz snapshots (default "
+                    "HIST_EVERY = 5; with --from-state, the state's own)")
     ap.add_argument("--homelands", choices=["continents", "anywhere"],
                     default="continents",
                     help="continents: founders start on the two large "
@@ -234,6 +237,8 @@ def make_sim(argv=None):
               wander_steps=a.wander_steps, off=off,
               shuffle_sites=a.shuffle_sites, sites=a.sites)
     sim.vary = a.vary
+    if a.hist_every is not None:
+        sim.hist_every = a.hist_every
     sim.overrides = a.set
     sim.manifest = dict(
         code=code,
@@ -276,6 +281,8 @@ def branch(a, ap, off, saves, code, t0, argv):
         ap.error(f"--years: the state is already at year {year0}")
     if a.frame_every is not None:
         sim.frame_every = a.frame_every
+    if a.hist_every is not None:
+        sim.hist_every = a.hist_every
     if saves and min(saves) <= year0:
         ap.error(f"--save-state: the state is already at year {year0}")
     sim.out = out = runroot.path(a.out or f"branch{year0}")

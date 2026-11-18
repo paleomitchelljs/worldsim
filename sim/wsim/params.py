@@ -511,9 +511,11 @@ ROADT_INV, ROADT_BORROW, ROAD_Q0 = 0.001, 0.002, 0.15
 #   CITY_SPEC     RMS commons-home lineage distance that founds a lineage
 #   CITY_MOTHER_KM  a new city outside its people's state takes the
 #                 culture of the nearest city of its lineage within this
-# history.npz (figures.py war and trade maps): a map snapshot every
-# HIST_EVERY ticks (100 years), apart from the rendered frames.
-HIST_EVERY = 20
+# history.npz (the offline renderer, figures.py war and trade maps, the
+# GIS export): a map snapshot every HIST_EVERY ticks, apart from the
+# rendered frames (C, WP3 stage A: 5 ticks = 25 years; was 20 = 100
+# years). worldsim.py --hist-every overrides it.
+HIST_EVERY = 5
 # Output is written while the run goes (output.Stream): every FLUSH_EVERY
 # ticks (C: 100 ticks = 500 years) and at the end, so a killed run keeps
 # its tables up to the last flush. Records only.

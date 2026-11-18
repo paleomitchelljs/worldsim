@@ -151,9 +151,9 @@ def volatility(run):
 
 def landmass_volatility(run):
     """The same two volatility measures per landmass group (landmasses.py:
-    S, W, N, E, X), from history.npz, whose snapshots are 100 years apart:
-    the 200-year mean is over 3 snapshots and the 100-year fall is between
-    neighbouring snapshots, so these are coarser than the world figures."""
+    S, W, N, E, X), from history.npz. Its snapshots are 25 years apart
+    from WP3 stage A, 100 before; with 100, the 200-year mean is over 3
+    snapshots, so these are coarser than the world figures."""
     from .runio import SIM
     if SIM not in sys.path:
         sys.path.insert(0, SIM)

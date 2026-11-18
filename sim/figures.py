@@ -467,12 +467,14 @@ def wars_figure(R, path):
 # captured), so a clash of powers outranks an empire swallowing a city;
 # ties broken by both sides' cities.
 WAR_MAPS, TOP_FLOWS_GIF, GIF_OUTLINE, GIF_MAJOR = 24, 16, 8, 20
+GIF_STEP = 100      # years between tradewars.gif frames
 ATT, DFN = (255, 77, 77), (255, 200, 51)
 
 
 class Hist:
     def __init__(self, run):
-        H = np.load(os.path.join(run, "history.npz"))
+        from wsim.runio import load_history
+        H = load_history(run)
         self.year = H["year"]
         self.ppl, self.pop, self.pol = H["people"], H["pop"], H["polity"]
         self.st = {}
@@ -765,9 +767,13 @@ def tradewars_gif(R, H, wars):
     from matplotlib import patheffects as pe
     halo = [pe.withStroke(linewidth=4, foreground="black")]
     frames = []
-    for t in range(len(H.year)):
+    # one frame per GIF_STEP years, whatever the snapshot cadence (WP3
+    # stage A made it 25 years), and the last snapshot
+    keep = [t for t in range(len(H.year))
+            if H.year[t] % GIF_STEP == 0 or t == len(H.year) - 1]
+    for i, t in enumerate(keep):
         y = int(H.year[t])
-        y0 = int(H.year[t - 1]) if t else 0
+        y0 = int(H.year[keep[i - 1]]) if i else 0
         now = [wr for wr in wars if wr["start"] <= y and wr["end"] > y0]
         # one line per pair of states: its most important war, and a count
         grp = {}

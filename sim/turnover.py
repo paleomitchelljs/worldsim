@@ -30,7 +30,8 @@ def ruler_people(h):
 
 
 def report(run, window):
-    h = np.load(os.path.join(run, "history.npz"))
+    from wsim.runio import load_history
+    h = load_history(run)
     Y, P, pop = h["year"], h["people"].astype(int), h["pop"]
     R = ruler_people(h)
     step = max(1, int(round(window / (Y[1] - Y[0]))))
