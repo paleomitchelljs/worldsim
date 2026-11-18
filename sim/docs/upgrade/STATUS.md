@@ -1122,7 +1122,7 @@ The minority leak from stage A (open-questions).
 3. Fix the minority leak in the take, from stage A
    (open-questions.md)?
 
-### WP4 D: the three morning decisions (2026-11-18, HASH)
+### WP4 D: the three morning decisions (2026-11-18, 45cd42d)
 
 **Decisions (U, 2026-11-18):** make `trade_debit` the default; carry
 traded food port to port; fix the minority leak from stage A.
