@@ -26,7 +26,7 @@ what an entry holds.
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
-| 4 | C deaths and growth account | done | 2026-11-17 | HASHC |
+| 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | not started | | |
 | 5 | B odds-gated war | not started | | |
 | 5 | C time constants in years | not started | | |
@@ -1060,7 +1060,7 @@ noise.
 **Not done.** Making the switch the default (U). Port-to-port carriage.
 The minority leak from stage A (open-questions).
 
-### WP4 stage C: deaths and growth account (2026-11-17, HASHC)
+### WP4 stage C: deaths and growth account (2026-11-17, f777567)
 
 **Done.**
 - The dragon growth cut is moved out of `deaths.csv` into `growth.csv`
