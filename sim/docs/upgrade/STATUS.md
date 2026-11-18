@@ -28,7 +28,7 @@ what an entry holds.
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
-| 5 | B odds-gated war | done (on by default) | 2026-11-18 | HASH |
+| 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
 | 5 | C time constants in years | not started | | |
 | 5 | D yearly political step | not started | | |
 | 5 | E army stock | not started | | |
@@ -1211,7 +1211,7 @@ adjacency is in scope; drop persistent borders.
 - Neighbour counts cover only the pairs that may go to war: land
   borders, plus coastal cities within twice the sailing range.
 
-### WP5 stage B: odds-gated war (2026-11-18, HASH)
+### WP5 stage B: odds-gated war (2026-11-18, 583d7ee)
 
 **Decision (U, 2026-11-18):** proceed with B as stage A recommended (item
 3 first); stage A's choices stand.
