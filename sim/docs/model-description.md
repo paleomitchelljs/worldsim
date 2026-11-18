@@ -1406,7 +1406,7 @@ severity U(0.35, 0.7); drought factor = min(current, 1 − severity × clip(1
   `events.txt`, `chronicle.txt`, `traits.txt`, `checks.txt`
   `[diagnostics]`, `dragons.csv` `[dragons]`, `run.json`,
   `final_state.npz` (with minority people, lineage and population per
-  cell), `history.gif`, `frames/`, `final.png`, `legacy.png`,
+  cell), `history.mp4`, `frames/`, `final.png`, `legacy.png`,
   `lineages.png`, `population.png`, `violence.png`.
 - `wars.csv` (each war: dates, sides, peoples, capital landmasses,
   cities and strengths at the start, goal, goal met, how it ended,

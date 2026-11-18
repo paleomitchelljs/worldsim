@@ -97,8 +97,9 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
   setup stays as saved: the climate's series and abrupt events, sites
   and founders. A branch's local climate noise and river avulsions
   change, though, because they are drawn each tick.
-- The branch's tables hold the whole history, from year 0. Its frames and
-  `history.gif` cover only the years after the branch. `run.json` gains
+- The branch's tables hold the whole history, from year 0, and so do its
+  `history.npz` and `history.mp4`. Its `frames/` cover only the years
+  after the branch. `run.json` gains
   `branch`: the state file, the branch year, the `--set` and `--off`
   given, every constant whose value changed (old and new), the end year,
   and the run.json of the run that saved the state, as of the save.
@@ -166,14 +167,15 @@ ticks (C: 100 ticks, 500 years) and at the end, the append-only tables
 renamed into place. A killed run therefore keeps readable tables up to its
 last flush, and `run.json`'s `year_reached` says how far that was.
 `realism.py` reads such a partial run. The rest is written only when the
-run ends: `history.gif`, `final_maps.png`, the plots, `traits.txt`,
+run ends: `history.mp4`, `final_maps.png`, the plots, `traits.txt`,
 `chronicle.txt`, `checks.txt`, `final_state.npz` and `figures.py`'s
 figures.
 
 | File | What |
 |---|---|
 | `history.mp4` | the run as video (WP3 stage D, 2026-11-17): states above peoples, Mollweide, one frame per `history.npz` snapshot (25 years), 8 frames a second, with the turnover strip; drawn by `render_run.py` at the end of the run (about 10 s for 3,000 years, 30 s for 8,000). `--no-video` skips it |
-| `history.gif`, `frames/`, `final_maps.png` | animation and last frame. The top panel shows states, the bottom peoples by density (red dots: dragons). Dots are cities; ringed dots are capitals. |
+| `viewer.html` | the run in one self-contained page (WP3 stage D, U 2026-11-17; `viewer.py`, below): open it in a browser |
+| `frames/`, `final_maps.png` | the frames drawn while the run goes (every `--frame-every` ticks) and the last of them. The top panel shows states, the bottom peoples by density (red dots: dragons). Dots are cities; ringed dots are capitals. `history.gif`, made from these frames, was dropped on 2026-11-17 (U) in favour of `history.mp4` |
 | `final.png` | 2x2 summary (`figures.py`, 2026-11-01): states; peoples by density; peoples in flat colours with trading posts standing at the end (stars, in the merchants' colour) and the 12 strongest trade links between (landmass, people) groups at the last frame (width = summed trade tie; arrowhead from the merchants' home to the host where posts show a direction); major wars per 250 years by landmass group |
 | `wars.png` | major wars per 250 years on each landmass (S, W1, W2, W3-W5, N1, N2-N4, E1), one line per pair of peoples (top 4 per panel), with large states that collapsed in revolt as triangles. Major war (C): both sides held 5+ cities at the start and 2+ cities were taken, or a side holding 10+ cities fell; placed at the defender's capital. Revolt collapse (C): a state loses 5+ cities and 40%+ of its cities to revolts in one tick |
 | `trade.png` | the peoples-and-trade panel of `final.png`, full size (2026-11-04) |
@@ -246,7 +248,7 @@ already placed is left out. The live frames do the same.
 It writes `<run>/render/<layers>_<proj>[_<landmass>].<format>`. States are coloured
 by `wsim/colors.py`. Each state keeps one colour for its whole life, in
 its people's family of hues, and differs from every state it ever
-borders and from its parent. The live frames (`history.gif`,
+borders and from its parent. The live frames (`frames/`,
 `final_maps.png`) still use the colour each state drew at founding.
 What `history.npz` lacks, the offline frames lack: no dragons, no
 lineage counts or technology stages in the header, and for runs before
@@ -258,6 +260,35 @@ grid cell (closed form), so a frame is one array lookup. City dots and
 labels go through the forward projection, and borders are found on the
 projected image, so they stay one pixel wide. The map keeps the
 latitudes of the plate carrée crop.
+
+## Reading a run in the browser (`viewer.py`)
+
+`viewer.py RUN [--every-years 25]` (WP3 stage D, U 2026-11-17) writes
+`<run>/viewer.html`, one file that needs no server or network. Each run
+writes it at its end (about 2 s). For an 8,000-year run with 25-year
+snapshots it is 3.6 MB; a run with 100-year snapshots is 1.8 MB.
+
+- A time slider, play and pause (4, 8 or 16 snapshots a second), and
+  the arrow keys to step.
+- Layers: states, peoples, years since a cell last changed state, years
+  since it last changed people. Mollweide or plate carrée. The maps
+  follow the same rules and colours as `render_run.py`, with the
+  ten-largest-state labels and city dots.
+- Click a city dot for its row in `cities.csv` and the events that list
+  it. Click a state for its row in `polities.csv` (with `origin`,
+  `end_reason`) and every event that names it. Click an event's year to
+  jump there. The selected state is lightened on the map, and the
+  selected city ringed.
+- A view can be linked: `viewer.html#year=5000&layer=state_age&proj=platecarree&state=1240`
+  (or `&city=45`).
+
+The page draws the maps itself. Python embeds each snapshot's state and
+people per land cell (with a 16-level density), each stored as its
+change from the previous snapshot and gzipped (about 1.5 MB for 320
+snapshots). It also embeds the projections' pixel-to-cell tables, city
+and label positions, the colours, and the tables and events. The
+browser unpacks them with `DecompressionStream` (current Chrome,
+Firefox, Safari).
 
 ## GIS export (`export.py`)
 

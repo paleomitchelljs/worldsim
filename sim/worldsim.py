@@ -36,7 +36,7 @@ One tick is DT years. The world file is opened read-only.
 
 Run:  ~/.venvs/worldsim/bin/python worldsim.py --seed 1 --years 4000
 Out:  <runs root>/seed<N>/, or --out (runroot.py; root is $WORLDSIM_RUNS
-      or sim/runs)  (history.gif, final.png, legacy.png,
+      or sim/runs)  (history.mp4, final.png, legacy.png,
       population.png, events.txt, cities.csv, polities.csv, timeseries.csv)
 """
 import argparse

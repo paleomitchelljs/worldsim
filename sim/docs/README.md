@@ -83,6 +83,7 @@ Code (split into modules 2026-11-02; the single-file v1 is in
 | `../wsim/diagnostics.py` | records, Price decomposition |
 | `../wsim/render.py`, `../wsim/output.py` | maps, plots, output files |
 | `../wsim/maps.py`, `../wsim/colors.py` | map drawing from one snapshot, projections (plate carrée, Mollweide), state colours; shared by the live render and `render_run.py` |
+| `../viewer.py` | a run as one self-contained HTML page: time slider, layers, click a city or state for its record and events ([running.md](running.md#reading-a-run-in-the-browser-viewerpy)) |
 | `../render_run.py` | a finished run's maps from `history.npz`, as MP4, GIF or PNG frames, without rerunning ([running.md](running.md#drawing-a-finished-run-render_runpy)) |
 
 Rosters: `../peoples*.py`. `--set NAME=VALUE` overrides a numeric constant:

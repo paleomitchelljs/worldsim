@@ -23,7 +23,7 @@ what an entry holds.
 | 3 | A snapshots | done | 2026-11-17 | 5bf9a66 |
 | 3 | B renderer and projection | done | 2026-11-17 | 1149de9 |
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
-| 3 | D video and viewer | video done; viewer not asked yet | 2026-11-17 | 42d3a85 |
+| 3 | D video and viewer | done | 2026-11-17 | 42d3a85, VHASH |
 | 4 | A ledger (records only) | not started | | |
 | 4 | B debited trade | not started | | |
 | 4 | C deaths and growth account | not started | | |
@@ -908,4 +908,40 @@ U).
 
 **Not done.** The optional HTML viewer (item 3). The brief says to ask
 U first.
+
+### WP3 stage D: HTML viewer; history.gif dropped (2026-11-17, VHASH)
+
+U, 2026-11-17: yes to the viewer, and `history.gif` is not needed.
+
+**Done.**
+- `history.gif` is no longer written; `history.mp4` replaces it. The
+  in-run `frames/` stay, because `final_maps.png` is the last of them.
+  The docs and `worldsim.py`'s docstring are updated.
+- `viewer.py RUN` writes `<run>/viewer.html`, and every run now writes
+  one at its end. The page holds:
+  - a time slider with play, four layers and both projections;
+  - a click on a city or state for its CSV row and its events;
+  - event years that jump the map there;
+  - views that can be linked by URL hash.
+  The browser draws the maps from embedded per-cell data, by the same
+  rules as `maps.py`. The data is stored as gzipped changes between
+  snapshots; see running.md.
+
+**Checks.**
+- `wp3a_seed101`: 3.6 MB, built in about 2 s. `wp1f_fullclim_seed101`,
+  an older run with no city table: 1.8 MB.
+- Headless Chrome screenshots:
+  - The default view, year 8,000: the map matches `render_run.py`'s
+    frame.
+  - `#year=6000&layer=state_age&state=1240`: state P1240's row (origin
+    `revolt_secession`) and its 1,451 events.
+  - `#year=7000&layer=peoples&proj=platecarree&city=1500`: city 1500
+    ringed, with its row.
+- **Not tested:** mouse clicks, play, and the arrow keys. They were not
+  driven in a browser; only the hash path to the same `show()` and
+  highlight code was.
+
+**Choices to check (C).** Density in the peoples layer has 16 levels,
+not continuous. Events are listed newest-last, with the first 400
+shown.
 

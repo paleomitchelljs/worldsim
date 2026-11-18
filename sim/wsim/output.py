@@ -6,7 +6,6 @@ import os
 import shutil
 import time
 import numpy as np
-from PIL import Image
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -462,17 +461,7 @@ def write_outputs(sim, out):
     files = sorted(f for f in os.listdir(fdir)
                    if f.startswith("f") and f.endswith(".png"))
     if files:
-        pal = []
-        for f in files:
-            with Image.open(os.path.join(fdir, f)) as im:
-                im = im.convert("RGB")
-                small = im.resize((im.size[0] * 3 // 4, im.size[1] * 3 // 4),
-                                  Image.LANCZOS)
-                pal.append(small.quantize(colors=200,
-                                          method=Image.Quantize.MEDIANCUT))
-        pal[0].save(os.path.join(out, "history.gif"), save_all=True,
-                    append_images=pal[1:], duration=140, loop=0,
-                    optimize=False)
+        # history.gif is gone (U, 2026-11-17): history.mp4 replaces it
         shutil.copyfile(os.path.join(fdir, files[-1]),
                         os.path.join(out, "final_maps.png"))
     write_history(sim, out)
@@ -545,6 +534,14 @@ def write_outputs(sim, out):
                             verbose=False)
         except Exception as e:  # noqa: BLE001
             print(f"history.mp4 failed ({e!r})")
+    if sim.hist:
+        # viewer.html (WP3 stage D, U 2026-11-17): about 2 s
+        try:
+            import viewer
+            from .runio import Run
+            viewer.write(Run(out, W=sim.W), os.path.join(out, "viewer.html"))
+        except Exception as e:  # noqa: BLE001
+            print(f"viewer.html failed ({e!r})")
     if files:
         # 2x2 final.png and wars.png (figures.py); a failure there must
         # not lose the run's other outputs
