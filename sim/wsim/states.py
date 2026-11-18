@@ -461,11 +461,18 @@ class StatesMixin:
     def food_dist(self, P):
         """`food_flow`: food distance (cost-km) from state P's capital to
         every cell, over the food graph; inf beyond FF_LIMIT x FF_CAP_KM.
-        Cached on the capital and the graph's version."""
+        Cached on the capital and the graph's version; a graph change that
+        touches no cell within the limit leaves it as it was (as in
+        `power_dist`)."""
+        W = self.W
         c = self.fdist.get(P["id"])
-        key = (P["capital"], self.W.fver)
+        key = (P["capital"], W.fver)
+        if c is not None and c[0][0] == key[0] and c[0][1] != key[1]:
+            ch = W.changed_since(c[0][1], "f")
+            if ch is not None and np.isinf(c[1][ch]).all():
+                c = self.fdist[P["id"]] = (key, c[1])
         if c is None or c[0] != key:
-            d = dijkstra(self.W.Gf, indices=P["capital"],
+            d = dijkstra(W.Gf, indices=P["capital"],
                          limit=FF_LIMIT * FF_CAP_KM).astype(np.float32)
             c = (key, d)
             self.fdist[P["id"]] = c
@@ -966,24 +973,32 @@ class StatesMixin:
         """travel_reach: km-equivalent distance from the state's seats of
         power to every cell (see PROV_CR, SEA_F0). A function of the seats,
         the travel graph and, for coastal seats, the ruler's sailing only:
-        cached on those, so it never depends on when it was last asked."""
+        cached on those, so it never depends on when it was last asked.
+        A graph change touching no cell the search reached leaves every
+        distance as it was (a path through a changed edge would already
+        be past the limit at its first end), so the arrays are kept."""
         W = self.W
         src = self.sources(P)
         c = self.pdist.get(P["id"])
         ci = W.coast_idx
+        if c is not None and c[0] == src and c[1] != W.gver and len(c) > 7:
+            ch = W.changed_since(c[1])
+            if ch is not None and not c[7][ch].any():
+                c[1] = W.gver
         if c is None or c[0] != src or c[1] != W.gver:
             # land distances, and great-circle km to the coast from each
             # coastal seat
             D = dijkstra(W.G, indices=src, limit=PROV_CR * 5000) / PROV_CR
+            reached = np.isfinite(D).any(0)
             gco = []
             for i, s in enumerate(src):
                 g = gc_km(W.xyz, s)
                 D[i] = np.where(np.isinf(D[i]), 1.5 * g, D[i])
                 gco.append(g[ci] if W.coastal[s] else None)
             sea = any(g is not None for g in gco)
-            c = [src, W.gver, D, gco, sea, None, None]
+            c = [src, W.gver, D, gco, sea, None, None, reached]
             self.pdist[P["id"]] = c
-        _, _, D, gco, sea, f0, d = c
+        _, _, D, gco, sea, f0, d = c[:7]
         f = SEA_F0 - SEA_F1 * self.sail[P["lin"]] if sea else None
         if d is not None and f == f0:
             return d

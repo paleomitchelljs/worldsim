@@ -90,12 +90,12 @@ class WarMixin:
         kinf = np.ones(len(a))
         if kin.any():
             la, lb = self.lin[a[kin]], self.lin[b[kin]]
-            pairs, inv = np.unique(np.stack([np.minimum(la, lb),
-                                             np.maximum(la, lb)], 1),
-                                   axis=0, return_inverse=True)
-            sm = np.array([self.similarity(int(x), int(y))
-                           for x, y in pairs])
-            kinf[kin] = KIN_RAID * (0.5 + 0.5 * (1 - sm[inv.ravel()]))
+            # each unordered pair as one integer (sorts as the pairs do)
+            key, inv = np.unique(np.minimum(la, lb).astype(np.int64) * MAXL +
+                                 np.maximum(la, lb), return_inverse=True)
+            sm = np.array([self.similarity(int(x), int(y)) for x, y in
+                           zip((key // MAXL).tolist(), (key % MAXL).tolist())])
+            kinf[kin] = KIN_RAID * (0.5 + 0.5 * (1 - sm[inv]))
         xc = ca != cb
         new = xc.any() and not self.contact_seen[ca[xc], cb[xc]].all()
         for x, y in (set(zip(ca[xc].tolist(), cb[xc].tolist())) if new

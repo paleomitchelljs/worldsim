@@ -333,6 +333,7 @@ class World:
         tc = np.where(self.river, 0.7 * tc, tc)
         if road is not None:
             tc = tc * road
+        old = getattr(self, "edgecost", None)
         ec = np.zeros((N, 8))
         for k in range(8):
             j = nb[:, k]
@@ -345,9 +346,33 @@ class World:
         J = np.concatenate([self.E2, self.E1, sb, sa])
         Wt = np.concatenate([EW, EW, sw, sw])
         self.G = sparse.csr_matrix((Wt, (I, J)), shape=(N, N))
-        # so cached distances know when the graph has changed
+        # so cached distances know when the graph has changed, and where:
+        # the cells whose edge costs moved (both ends of every changed
+        # edge), kept for the last 64 versions (changed_since)
         self.gver = getattr(self, "gver", 0) + 1
+        self.note_change("g", None if old is None else
+                         np.nonzero((ec != old).any(1))[0])
         self.food_graph()
+
+    def note_change(self, g, cells):
+        """Record the cells touched by the change that made the current
+        version of graph g ("g": travel, "f": food); None if unknown.
+        Kept for the last 64 versions."""
+        v = self.gver if g == "g" else self.fver
+        log = self.__dict__.setdefault(g + "chg", {})
+        if cells is not None:
+            log[v] = cells
+        log.pop(v - 64, None)
+
+    def changed_since(self, v, g="g"):
+        """Cells whose edges changed in graph g after its version v, or
+        None if that is no longer known."""
+        log = self.__dict__.get(g + "chg", {})
+        now = self.gver if g == "g" else self.fver
+        vs = range(v + 1, now + 1)
+        if any(x not in log for x in vs):
+            return None
+        return np.concatenate([log[x] for x in vs] + [np.zeros(0, int)])
 
     def food_graph(self):
         """`food_flow`: the graph bulk food moves on. Land edges cost as
@@ -381,8 +406,16 @@ class World:
         I = np.concatenate([e1, e2, sa, sb])
         J = np.concatenate([e2, e1, sb, sa])
         Wt = np.concatenate([EW, EW, sw, sw])
+        old = getattr(self, "Gf", None)
         self.Gf = sparse.csr_matrix((Wt, (I, J)), shape=(N, N))
         self.fver = getattr(self, "fver", 0) + 1
+        ch = None
+        if old is not None:
+            # both ends of every edge whose cost moved (inf - inf is nan,
+            # which counts as moved)
+            r, c = (self.Gf - old).nonzero()
+            ch = np.unique(np.concatenate([r, c]))
+        self.note_change("f", ch)
 
     def reroute(self, i, j):
         """Cell i now drains to j (-1: straight to the sea). Discharge,

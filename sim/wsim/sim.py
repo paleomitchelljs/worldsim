@@ -152,7 +152,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.waste = np.ones(world.N)       # devastation: capacity share
         self.pdist = {}     # travel_reach: pid -> [sources, graph version,
                             # land distances, coast km, any coastal seat,
-                            # sea factor, distances]
+                            # sea factor, distances, cells reached]
         self.seats = {}     # provinces: pid -> provincial seat cells
         self.held = {}      # provinces: city -> (pid, year taken)
         self.rule_key = -np.ones(world.N, int)  # acc_cross: ruler, subject
