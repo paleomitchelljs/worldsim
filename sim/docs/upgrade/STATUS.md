@@ -27,7 +27,7 @@ what an entry holds.
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
-| 5 | A diagnosis | not started | | |
+| 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | HASH |
 | 5 | B odds-gated war | not started | | |
 | 5 | C time constants in years | not started | | |
 | 5 | D yearly political step | not started | | |
@@ -1159,3 +1159,54 @@ trading food. Say if you want the strict form.
 - Largest city 68k and 106k fe (92k and 125k with created trade food).
 
 WP4 is complete. Nothing pending for U from WP4 beyond the check above.
+
+### WP5 stage A: diagnosis (2026-11-18, HASH)
+
+**Done.**
+- Records (no effect on the run: seed 101 ends at 105.45M, as
+  `wp4d_seed101`):
+  - `sieges.csv` gains `cities_besieger`, `cities_holder`;
+  - `polities.csv` gains `nb_land_mean`, `nb_sea_mean`, `nb_max`,
+    `nb_none_years`, from `Sim.neighbour_record`, run each tick on the
+    pairs `wars_step` draws from. No `upgrade()` entry is needed; it reads
+    with defaults.
+- `war_diagnosis.py RUN ...`: the five tables of the brief, as Markdown.
+  Item 1 uses the `origin` tag from WP2 stage C.
+- Docs: run-log.md (findings), open-questions.md ("WP5 stages B-F: what
+  stage A says", needs U), diagnostics.md, running.md (columns).
+
+**Runs.** `wp5a_smoke` (branch to 5,200; deleted), `wp5a_seed101`,
+`wp5a_seed103` (8,000 years, 529 s and 710 s).
+
+**Findings** (seed 101 / 103):
+1. One-city states come mainly from cities founded outside a state. 95-97%
+   of these never gain a second city, and 70-79% end when the city is
+   abandoned, not in war. Ethnic revolts live a median of 20 years.
+2. Siege odds follow relative size. Between equal size classes the median
+   is 0.02-0.05; a 10+ city state against a 1-city state, 0.45-0.56.
+   Counter-offensives are at 0.002-0.07 everywhere.
+3. 64% / 73% of wars end inside a tick, 72-80% of them against a one-city
+   defender. They end by a fall at the first siege (20%), by cession or
+   capture with no siege (about 28%), or by submission or tribute
+   (22-23%). A finer clock would not lengthen these.
+4. Wars ended "defender fell" when the defender ceded its only city;
+   this is a recording quirk.
+5. More than half of the states that lasted over 1,000 years had 1-2
+   cities and fought about one war per thousand years. They are not
+   island states; they had no sea contacts. Long-lived 3+ city states
+   have 1-1.4 sea-only neighbours against 10-14 for shorter-lived ones,
+   with the same land neighbours. This holds within a founding cohort.
+6. From year 6,000, 86-92% of the largest states' extra land pieces are
+   within sailing range. Fragmentation is mostly sea empire.
+
+**Not done.** Stages B-F. The brief says to put the findings and a
+recommended form to the user first: open-questions.md, items 1-6. In
+short: build B with item 3 first; defer D until B is measured; deal
+with one-city founding states in F (or leave them); decide whether sea
+adjacency is in scope; drop persistent borders.
+
+**Choices to check (C).**
+- Size classes: 1, 2-4, 5-9, 10+ cities.
+- Contiguity reads the sailing range at the end of the run.
+- Neighbour counts cover only the pairs that may go to war: land
+  borders, plus coastal cities within twice the sailing range.

@@ -347,7 +347,9 @@ class StatesMixin:
         keys = np.unique(lo.astype(np.int64) * 10_000_000 + hi)
         self.adj = {(int(k // 10_000_000), int(k % 10_000_000))
                     for k in keys}
+        land_adj = set(self.adj)
         self.adj |= self.sea_adjacency()
+        self.neighbour_record(land_adj)
         self.state_room(n)
         for pid, p in self.polities.items():
             if p["ended"] is not None:
@@ -779,6 +781,26 @@ class StatesMixin:
                         out.add((min(pid, q), max(pid, q)))
         self._sea_adj = out
         return out
+
+    def neighbour_record(self, land_adj):
+        """Records only (WP5 stage A): each live state's neighbours this
+        tick, by land border and by sea only, summed over its life, with
+        its most and the years it had none (polities.csv)."""
+        nl, ns = {}, {}
+        for k in self.adj:
+            d = nl if k in land_adj else ns
+            for x in k:
+                d[x] = d.get(x, 0) + 1
+        for pid, p in self.polities.items():
+            if p["ended"] is not None:
+                continue
+            a, b = nl.get(pid, 0), ns.get(pid, 0)
+            p["nb_ticks"] = p.get("nb_ticks", 0) + 1
+            p["nb_land"] = p.get("nb_land", 0) + a
+            p["nb_sea"] = p.get("nb_sea", 0) + b
+            p["nb_max"] = max(p.get("nb_max", 0), a + b)
+            if a + b == 0:
+                p["nb_none_years"] = p.get("nb_none_years", 0) + DT
 
     def live(self, k):
         a, b = self.polities.get(k[0]), self.polities.get(k[1])

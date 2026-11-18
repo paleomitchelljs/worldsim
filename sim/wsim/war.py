@@ -436,7 +436,8 @@ class WarMixin:
                     int(cap_t), w["att"], w["dfn"], round(PA, 1),
                     round(PB, 1), round(pw, 4), int(won)))
                 terms = self.siege_terms(w, A, B, t) if won else ""
-                self.siege_log[-1] += (terms,)
+                self.siege_log[-1] += (terms, len(A["cities"]),
+                                       len(B["cities"]))
                 if terms == "tributary":
                     # the defender sues for terms and pays tribute
                     self.count("war_tributary")
@@ -568,7 +569,7 @@ class WarMixin:
                 self.year, w.get("id", -1), "dfn", int(t), round(fe),
                 int(t == A["capital"]), w["dfn"], w["att"], round(PB, 1),
                 round(PA, 1), round(pw, 4), int(won),
-                "annex" if won else ""))
+                "annex" if won else "", len(B["cities"]), len(A["cities"])))
             if won:
                 w["moved_back"] = w.get("moved_back", 0.0) + fe
                 w["recaps"] = w.get("recaps", 0) + 1

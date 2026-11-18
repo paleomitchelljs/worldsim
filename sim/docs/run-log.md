@@ -1598,3 +1598,124 @@ measure from the B table's.
   4% of the take to nowhere.
 - `wp4d_smoke` (branch from `wp1f_s101_y5000.pkl` to 5,300 with
   `--on trade_debit`): exercises the branch path; loss 22-23%.
+
+### 2026-11-18 WP5 stage A: diagnosis of states and wars (`wp5a_seed101`, `wp5a_seed103`)
+
+Standard settings, 8,000 years, `--no-video`, default switches. Records
+only: `sieges.csv` gains both sides' city counts, `polities.csv` each
+state's neighbours (`docs/diagnostics.md`, "War and state diagnosis").
+Seed 101 ends at 105.45M, as `wp4d_seed101`, so the records change
+nothing. Full tables: `war_diagnosis.py wp5a_seed101 wp5a_seed103`.
+Ranges below are seed 101 / seed 103. All readings are mine (C).
+
+**1. Where polities come from.**
+
+| origin | share of polities | median life, ended (yr) | ever 2+ cities | how they end |
+|---|---|---|---|---|
+| city founded outside a state | 0.44 / 0.15 | 100 / 100 | 0.03 / 0.05 | lost last city 0.79 / 0.70 |
+| revolt, secession | 0.20 / 0.33 | 72 / 50 | 0.50 / 0.47 | union 0.42 / 0.44 |
+| revolt, ethnic | 0.13 / 0.15 | 20 / 20 | 0.17 / 0.17 | conquered 0.41 / 0.46, ceded 0.29 / 0.28 |
+| revolt, kin | 0.11 / 0.22 | 40 / 35 | 0.38 / 0.38 | conquered, union |
+| partition | 0.04 / 0.08 | 115 / 75 | 0.65 / 0.71 | union 0.40 / 0.38 |
+| city inside a state, not joined | 0.04 / 0.04 | 50 / 45 | 0.07 / 0.07 | conquered 0.31 / 0.41 |
+| revolt, pretender | 0.03 / 0.02 | 120 / 80 | 0.40 / 0.34 | union, conquered |
+| shatter | 0.01 / 0.01 | 20 / 25 | 0.09 / 0.12 | ceded, conquered |
+| colony | 2 / 2 states | 25 / 10 | 0 | - |
+
+- The one-city states come from two sources. Cities founded outside any
+  state almost never grow (3-5% reach 2 cities). 70-79% of them end when
+  their one city is abandoned (`lost_last_city`), not in war. Ethnic
+  revolts live a median of 20 years and are retaken (conquered or
+  ceded, 0.70-0.74).
+- "Union" (the union of crowns) ends 38-44% of secession, partition and
+  pretender states.
+
+**2. Siege odds by size** (attacker's sieges; median odds at launch /
+share taken; size = cities when the siege began):
+
+| besieger \ holder | 1 | 2-4 | 5-9 | 10+ |
+|---|---|---|---|---|
+| 1 | 0.049 / 0.12; 0.027 / 0.11 | 0.013 / 0.04; 0.013 / 0.04 | 0.000 / 0.01; 0.004 / 0 | -; 0 / 0 |
+| 2-4 | 0.10 / 0.23; 0.092 / 0.20 | 0.022 / 0.11; 0.020 / 0.07 | 0.003 / 0.02; 0.005 / 0.01 | 0 / 0; 0.0005 / 0.003 |
+| 5-9 | 0.15 / 0.29; 0.15 / 0.29 | 0.078 / 0.19; 0.069 / 0.15 | 0.008 / 0.04; 0.034 / 0.06 | 0.008 / 0.02; 0.0001 / 0.02 |
+| 10+ | 0.45 / 0.49; 0.56 / 0.53 | 0.25 / 0.37; 0.32 / 0.40 | 0.083 / 0.23; 0.11 / 0.22 | 0.018 / 0.15; 0.017 / 0.08 |
+
+- Between states of equal size class the median odds are 0.02-0.05.
+  Only a 10+ city state against a 1-4 city state besieges at better
+  than 0.25. Sieges by states of 1-4 cities against 5+ city states are
+  under 0.1 in 86-100% of cases, and are 7-9% of the attacker's sieges.
+- Counter-offensives are at 0.002-0.07 in every size class; 75-100%
+  are under 0.1.
+- So the low pooled median (BASELINE, 0.07-0.12) is mostly evenly
+  matched small states besieging at long odds. At equal strength, the
+  defender's multiplier (1.4 x terrain x 1.25 at a capital x walls) and
+  the squared odds hold a siege to about 0.2-0.3. Distance decay of the
+  attacker's projection lowers it further.
+
+**3. Why wars are short.** 64% / 73% of ended wars end inside one tick.
+Of those:
+- 80% / 72% have a one-city defender;
+- 1,370 / 3,424 end "defender fell". 20% / 20% of one-tick wars are a
+  one-city defender falling at the first siege, at median odds of 0.80
+  / 0.86. In those, the attacker had 10+ cities in 43% / 63%. The first
+  siege of wars that last past a tick is at 0.10 / 0.11;
+- 43% / 45% have no siege. Of these 0-siege wars, 69% / 62% end
+  "defender fell": the defender ceded its only city (72-75%) or lost it
+  to a capture (24-26%) in the same tick. Only 52-56% of those were
+  ended by this war's attacker; the rest fell to a concurrent war by
+  another state. A one-city defender's own cession is recorded as
+  "defender fell", not "ceded", because `kill_polity` closes the war
+  first;
+- submission (before a siege) and tribute (after the first won siege)
+  are 22-23%.
+
+So most one-tick wars are a large state taking a one-city state, by
+siege at good odds or by cession. A finer clock (stage D) would not
+lengthen these wars. The ending rule (`WAR_END0 + 0.03 x ticks`)
+matters only for the wars that survive the first tick.
+
+**4. Long-lived states** (over 1,000 years; 107 / 77 states, 2.9% /
+1.2% of polities). Medians:
+
+| group | n | peak cities | wars / century | revolts / century | land neighbours | sea-only neighbours | share of life with no neighbour |
+|---|---|---|---|---|---|---|---|
+| > 1,000 yr, peak 1-2 cities | 63 / 36 | 1 / 2 | 0.07 / 0.10 | 0 | 1.0 / 1.2 | 0 / 0 | 0.09 / 0.24 |
+| > 1,000 yr, peak 3+ cities | 44 / 41 | 5 / 7 | 0.39 / 0.55 | 0.27 / 0.24 | 2.4 / 4.6 | 1.0 / 1.4 | 0 |
+| 100-1,000 yr, peak 3+ cities | 277 / 642 | 4 / 5 | 1.4 / 1.4 | 0.35 / 0.36 | 3.5 / 5.1 | 10 / 14 | 0 |
+
+- More than half the long-lived states are one or two cities that fought
+  about one war per thousand years. They had about one land neighbour
+  and no sea contacts, and spent 9-24% of their lives with no neighbour
+  at all.
+- They are not island states as such. Their capitals are spread over
+  the large landmasses (W1, N1, S, E1). What they share is having no
+  coastal rival within sailing range.
+- The long-lived 3+ city states differ from shorter-lived ones of the
+  same size mainly in sea contacts (1-1.4 against 10-14), not land
+  neighbours. That holds within a founding cohort: founded 3,500-6,000,
+  sea neighbours 2.0 / 1.5 against 9.7 / 14.3, land 2.9 / 5.2 against
+  2.7 / 4.4. So it is not just that they lived in an emptier era.
+- Sea adjacency (`sea_adjacency`: any two coastal cities within twice
+  the sailor's range) gives a coastal state 10-40 possible enemies. It
+  looks like the main source of war exposure.
+- Dynasties are not compared: succession runs only in states of 3+
+  cities, so the 1-2 city states have none by construction.
+
+**5. Contiguity of the 20 largest states** (10+ cells, from
+`history.npz`):
+
+| year | median cells | median land pieces | in one land piece | in one sea group | extra pieces joined by sea |
+|---|---|---|---|---|---|
+| 4,000 | 32 / 74 | 1 / 1 | 1.00 / 0.70 | 1.00 / 0.90 | - / 0.88 |
+| 5,000 | 72 / 188 | 1 / 2.5 | 0.75 / 0.45 | 0.85 / 0.65 | 0.57 / 0.57 |
+| 6,000 | 96 / 264 | 1 / 2.5 | 0.55 / 0.35 | 0.90 / 0.70 | 0.91 / 0.86 |
+| 7,000 | 138 / 262 | 1.5 / 4 | 0.50 / 0.40 | 0.85 / 0.65 | 0.92 / 0.87 |
+| 8,000 | 330 / 538 | 2 / 4.5 | 0.25 / 0.15 | 0.85 / 0.55 | 0.92 / 0.92 |
+
+- Before year 4,000 the large states are each one piece. From 6,000,
+  86-92% of the extra land pieces lie within the ruler's sailing range
+  of the rest. Most of the fragmentation is sea empire.
+- 15-45% of the top 20 states still have more than one group after the
+  sea joins. Those are exclaves no ship would link.
+- Sailing range is the lineage's value at the end of the run, so early
+  millennia may be joined too generously.

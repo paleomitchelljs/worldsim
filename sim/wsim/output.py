@@ -113,7 +113,8 @@ APPEND = [
       "polity", "minority", "minority_share", "size_old"]),
     ("siege_log", "sieges.csv",
      ["year", "war", "side", "city", "city_fe", "capital", "besieger",
-      "holder", "P_besieger", "P_holder", "odds", "taken", "terms"]),
+      "holder", "P_besieger", "P_holder", "odds", "taken", "terms",
+      "cities_besieger", "cities_holder"]),
     ("revolt_log", "revolts.csv",
      ["year", "state", "new_state", "people_ruler", "people_rebels", "kind",
       "cities_taken", "cities_left", "landmass", "lon", "lat"]),
@@ -365,8 +366,10 @@ def write_polities(sim, out):
                     "ended", "years", "parent", "peak_cells", "peak_km2",
                     "peak_year", "peak_cities", "peak_pop", "capital_lon",
                     "capital_lat", "peak_foreign_share", "capital_cell",
-                    "origin", "end_reason", "ended_by"])
+                    "origin", "end_reason", "ended_by", "nb_land_mean",
+                    "nb_sea_mean", "nb_max", "nb_none_years"])
         for p in sim.polities.values():
+            nt = p.get("nb_ticks", 0)
             end = p["ended"] if p["ended"] is not None else sim.year
             cap = p["capital"]
             km2 = p.get("peak_km2", "")
@@ -379,7 +382,11 @@ def write_polities(sim, out):
                         f"{sim.W.lon[cap]:.2f}", f"{sim.W.lat[cap]:.2f}",
                         round(p.get("peak_foreign", 0.0), 3), cap,
                         p.get("origin", ""), p.get("end_reason", ""),
-                        "" if p.get("ended_by") is None else p["ended_by"]])
+                        "" if p.get("ended_by") is None else p["ended_by"],
+                        round(p.get("nb_land", 0) / nt, 2) if nt else "",
+                        round(p.get("nb_sea", 0) / nt, 2) if nt else "",
+                        p.get("nb_max", "") if nt else "",
+                        p.get("nb_none_years", 0) if nt else ""])
 
 
 def write_dragons(sim, out):

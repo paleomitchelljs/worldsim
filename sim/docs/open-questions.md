@@ -558,3 +558,46 @@ Trade then feeds 3-4% of city food, against about 40%.
 
 Both are older rules (C) that the new account makes visible. Neither
 was changed. Worth a look when WP5 or WP6 touches violence and dragons.
+
+## WP5 stages B-F: what stage A says (2026-11-18; needs U)
+
+Findings in `run-log.md`, "2026-11-18 WP5 stage A". Recommendations are
+mine (C).
+
+1. **Stage B (odds-gated war): build it, item 3 first.** Equal-sized
+   states besiege at median odds of 0.02-0.05. 7-9% of the attacker's
+   sieges are 1-4 city states against 5+ city states, under 0.1 in
+   86-100% of cases. A gate on declaring and on besieging targets
+   exactly these. Most one-tick wars, though, are a large state taking a
+   one-city state at good odds (0.80-0.86) or by cession, and a gate
+   will not stop those. Item 3 (a hopeless defender submits or pays
+   tribute before a siege) is the part that would keep one-city states
+   alive, as tributaries.
+2. **Stage D (yearly step): defer until B is measured.** The clock does
+   not cause most short wars (above). Expect D to change only the 27-36%
+   of wars that survive their first tick.
+3. **Throwaway states are mostly not a war problem.** Cities founded
+   outside a state are 15-44% of polities. 95-97% never gain a second
+   city, and 70-79% end when their city is abandoned. Ethnic revolts
+   live a median of 20 years. Neither WP5 B nor D touches them. Options:
+   (a) leave them, since they are one-city states with records;
+   (b) a city outside any state founds a polity only above a size or
+   cohesion threshold, and is otherwise stateless (this fits stage F's
+   camps);
+   (c) report them separately in the metrics.
+   I recommend (c) now and (b) inside stage F.
+4. **Sea adjacency drives war exposure.** It gives a coastal state 10-14
+   possible enemies (median) against 1-2 for states that lasted
+   millennia, at the same land-neighbour count. Any two coastal cities
+   within twice the sailing range count. A narrower rule (once the
+   range, or ports only) would change who fights whom a lot. That is
+   outside WP5 as written ("Not in this package": what motivates war is
+   out, but this is who can reach whom). Decide whether to add it to
+   stage B.
+5. **Persistent borders: not needed for fragmentation.** 86-92% of the
+   largest states' extra land pieces are within sailing range of the
+   rest (years 6,000-8,000). Drop the idea unless the 15-45% of states
+   with true exclaves matter for the books.
+6. **Recording quirk, fix in B:** a one-city defender that cedes its only
+   city is recorded as "defender fell" (because `kill_polity` closes the
+   war before `cede` does), not "ceded".

@@ -238,3 +238,33 @@ What the ledger shows (`wp4a_seed101`, 8,000 years):
   - `received_smoothed` (what capacity reads) lags the flows because of
     FISC_EMA. It also holds trade food, so compare it with
     `received + created_trade`.
+
+## War and state diagnosis (`war_diagnosis.py`, WP5 stage A)
+
+2026-11-18; records and analysis only (C). Two new records:
+`sieges.csv` gains `cities_besieger` and `cities_holder` (cities each
+side held when the siege began), and `polities.csv` gains each state's
+neighbours over its life (`nb_land_mean`, `nb_sea_mean`, `nb_max`,
+`nb_none_years`), counted each tick from the pairs `wars_step` draws on
+(land borders, then coastal cities within twice the sailing range).
+
+`war_diagnosis.py RUN [RUN ...] [--only 1,2,...]` prints five Markdown
+tables from a finished run:
+1. polities by `origin`: count, median life of those ended, share alive,
+   share ever 2+ / 3+ cities, and how they ended (`end_reason`);
+2. sieges by side and by the size class (1, 2-4, 5-9, 10+ cities) of
+   besieger and holder: count, median odds at launch, share under 0.1,
+   share taken (needs the new columns);
+3. wars ending inside one tick: how they ended by the defender's size and
+   by sieges fought; how many are a one-city defender falling at its
+   first siege, and the odds of that siege;
+4. states that lasted over 1,000 years, split at a peak of 3 cities,
+   against 3+ city states of 100-1,000 years: peak size, wars, revolts
+   and dynasties per century, neighbours; their capital landmasses; the
+   25 longest. Dynasties exist only in states of 3+ cities, since
+   succession runs only there;
+5. the 20 largest states (10+ cells) at each millennium, from
+   `history.npz`: land pieces (8-connected), groups once pieces within
+   the ruling lineage's sailing range (`SAIL_D0 + SAIL_D1 x sail^1.5`,
+   sail at the end of the run) are joined, and the share of the extra
+   pieces that sea joins account for.
