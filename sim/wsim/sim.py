@@ -421,7 +421,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                   if self.year - y <= SHOCK_WINDOW]
         if recent:
             order = ["clearance", "sack", "raid takeover", "river lost",
-                     "plague", "drought", "dragon", "raid", "siege"]
+                     "plague", "drought", "dragon", "raid", "ravage",
+                     "siege"]
             return min(recent, key=lambda k: order.index(k)
                        if k in order else 99)
         c = rec["cell"]

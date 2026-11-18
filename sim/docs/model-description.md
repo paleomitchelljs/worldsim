@@ -895,7 +895,17 @@ the first side at random:
 - `[war_v2]` replaces everything below in this section:
   - chance = DT × 0.12 × S × (0.5 + violence) × (1 − tie) × deterrence ×
     c(0.004 + Σ motives), with c(x) = x / (1 + x / 2).
-  - Deterrence = min(1, 2 R² / (1 + R²)), R = the attacker's strength
+  - `[war_odds]` deterrence = f + (1 − f) / (1 + exp(−(ln R − ln 0.7) /
+    0.35)), f = 0.05 × min(1, R / 0.7) × min(1, (1 − fed) + enmity + faith motives). A
+    siege is laid only at win probability ≥ 0.15; below it the attacker
+    ravages the hinterland (chance = violence; 0.1 × violence of its
+    people die, improvements × (1 − 0.3 × that)) or sits. No siege for
+    15 years ends the war ("abandoned"). Before a siege a defender
+    facing odds p ≥ 0.6 submits with chance clip((p − 0.6) / 0.4) ×
+    (1.2 − cohesion) × (0.5 + attacker's dominance) (otherwise: only
+    at a 3:1 projected edge, at half that chance), and it never cedes
+    its last city.
+  - `[not war_odds]` deterrence = min(1, 2 R² / (1 + R²)), R = the attacker's strength
     projected to the target's city nearest the attacker's capital, over
     the target's there (with its allies at 0.35, × 1.4 × terrain defence
     × 1.25 at a capital × (1 + 0.5 × development) `[development]`), as in

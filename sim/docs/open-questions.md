@@ -559,7 +559,13 @@ Trade then feeds 3-4% of city food, against about 40%.
 Both are older rules (C) that the new account makes visible. Neither
 was changed. Worth a look when WP5 or WP6 touches violence and dragons.
 
-## WP5 stages B-F: what stage A says (2026-11-18; needs U)
+## WP5 stages B-F: what stage A says (2026-11-18; B decided)
+
+**Decided (U, 2026-11-18):** build B as recommended, item 3 first; the
+size classes and other stage A choices stand. Built in WP5 B (`war_odds`,
+on by default); results in run-log.md, "2026-11-18 WP5 stage B". The
+recording quirk (item 6) is fixed. Items 2-5 stay open: D waits on B's
+results; sea adjacency was not put in scope, so it is not changed.
 
 Findings in `run-log.md`, "2026-11-18 WP5 stage A". Recommendations are
 mine (C).
@@ -601,3 +607,14 @@ mine (C).
 6. **Recording quirk, fix in B:** a one-city defender that cedes its only
    city is recorded as "defender fell" (because `kill_polity` closes the
    war before `cede` does), not "ceded".
+
+## Odds-gated war makes peer wars rarer (2026-11-18, WP5 stage B)
+
+Under `war_odds` peer wars (both sides 5+ cities) are 1.2-1.6% of wars,
+against 2.1-2.7%. Wars still end inside one tick 59-63% of the time. Of
+those, about a quarter are a one-city defender falling at the first
+siege at odds of 0.74-0.85. Seed 103's population is 18% lower and the
+cause is unknown (run-log). Worth a look before stage D: whether the
+gate centre (ODDS_MID 0.7, C) is too high for peers, and whether a
+5-seed batch confirms the population effect. Do not tune ODDS_MID to
+restore the peer-war share; decide on the mechanism.

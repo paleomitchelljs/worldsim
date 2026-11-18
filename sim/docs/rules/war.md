@@ -37,6 +37,40 @@ There is no war between allies or during a truce (30 years after a war).
 7. **End:** the war ends each tick with probability 0.12 + 0.03 x ticks
    elapsed.
 
+## Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18)
+
+U: build it (2026-11-18); forms from the upgrade review; numbers C. On
+by default. See [structural.md](../structural.md), "2026-11-18".
+
+- **Declaring.** In `war_chance`, the deterrence factor min(1, 2R²/(1 +
+  R²)) becomes a steeper gate: floor + (1 − floor) x logistic((ln R − ln
+  0.7) / 0.35). Without the floor it is 0.05 at R = 0.25, 0.28 at
+  R = 0.5 and 0.74 at R = 1. The floor is 0.05 x min(1, R / 0.7) x
+  min(1, (1 − fed) + the enmity motive + the faith motive): hunger,
+  hatred and faith still drive wars at long odds, less the longer they
+  are. With the floor at its full value the gate stays below the old
+  rule at every R (0.011 against 0.020 at R = 0.1, 0.30 against 0.40
+  at R = 0.5).
+- **Besieging.** A side lays a siege only when its win probability is at
+  least 0.15 (SIEGE_MIN). Below that the attacker ravages the target
+  city's hinterland with chance = its violence: RAVAGE_K (0.1) x
+  violence of the people there die (cause "ravage"), and improvements
+  fall by 0.3 x that share, as in a raid. Otherwise it sits. A
+  counter-offensive below the threshold is not laid.
+- **Stall.** A war with no siege by either side for 15 years
+  (WAR_STALL) ends "abandoned".
+- **Submission before a hopeless defence.** Before each siege, a
+  defender facing odds p >= 0.6 (SUBMIT_ODDS) submits as a tributary
+  with chance clip((p − 0.6) / 0.4, 0, 1) x (1.2 − cohesion) x (0.5 +
+  the attacker's dominance). Without the switch it submits only when
+  the attacker's projected strength is over 3x its own (odds 0.9), at
+  half that chance. A defender never cedes its last city; it fights or
+  submits.
+- **Record fix (both settings).** A war that ends by cession is closed
+  "ceded" before the city changes hands. Before, a one-city defender's
+  cession ended the state first and the war was recorded as "defender
+  fell".
+
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 
 The winner chooses (U: built now; form and numbers C; structural.md,

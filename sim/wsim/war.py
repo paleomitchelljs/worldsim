@@ -277,9 +277,19 @@ class WarMixin:
         m = sum(g.values())
         x = WAR_EPS + m
         opp = 1 + OPP_K * d if B.get("acc_until", -1) > self.year else 1.0
+        if "war_odds" in self.on:
+            # a steep gate on the odds; desperation, hatred and faith keep
+            # a floor under it that falls with the odds, so it never opens
+            # wars the old rule would not (at most 1: war_bound holds)
+            fl = ODDS_FLOOR * min(1.0, R / ODDS_MID) * min(
+                1.0, max(0.0, 1 - A["fed"]) + g["enmity"] +
+                g.get("faith", 0.0))
+            z = (math.log(max(R, 1e-12)) - math.log(ODDS_MID)) / ODDS_W
+            det = fl + (1 - fl) / (1 + math.exp(-max(-50.0, min(50.0, z))))
+        else:
+            det = min(1.0, 2 * R * R / (1 + R * R)) ** DET_K
         p = DT * WAR_BASE * A["cohesion"] * (0.5 + self.eff(A, "viol")) * \
-            (1 - self.ties.get(k, 0.0)) * \
-            min(1.0, 2 * R * R / (1 + R * R)) ** DET_K * \
+            (1 - self.ties.get(k, 0.0)) * det * \
             x / (1 + x / WAR_GAIN_CAP) * opp
         return p, (g, m / x)
 
@@ -290,6 +300,7 @@ class WarMixin:
         for x, y in self.allies:
             allies.setdefault(x, []).append(y)
             allies.setdefault(y, []).append(x)
+        odds = "war_odds" in self.on
         # war is costly: levies, lost harvests
         at = {x for kk in self.wars for x in kk}
         at |= {q for w in self.wars.values()
@@ -363,19 +374,24 @@ class WarMixin:
             if w["goal"] is not None and \
                     not w["done"] and w["kind"] in (
                         "land", "prey", "resource", "irredentism") and \
-                    w["goal"] in B["cities"]:
+                    w["goal"] in B["cities"] and not (
+                        odds and len(B["cities"]) == 1):
                 # a weaker defender may cede the goal rather than fight
+                # (`war_odds`: but not its last city, which would end it)
                 g = w["goal"]
                 ra = self.projected(A, g) / max(1.4 * self.W.defence[g] *
                                                self.projected(B, g), 1e-9)
                 if rng.random() < WAR_CEDE * min(1.0, max(0.0, ra - 1)):
                     w["moved"] = w.get("moved", 0.0) + self.city_fe(g)
-                    self.cede(w["att"], w["dfn"], g)
+                    # closed first: ceding a last city ends the defender,
+                    # and its end would close the war as "defender fell"
                     self.war_close(self.wars.pop(k, None), "ceded")
+                    self.cede(w["att"], w["dfn"], g)
                     self.truce[k] = self.tick + 6
                     continue
             # logistics: a well-run state keeps more sieges going at once
             ns = 1 + int(LOG_SIEGE * self.logi(A))
+            w.setdefault("last_siege", w["start"])
             for _ in range(ns):
                 if not B["cities"] or B["ended"] is not None or \
                         k not in self.wars:
@@ -410,9 +426,16 @@ class WarMixin:
                     (1.25 if t == B["capital"] else 1)
                 # walls and works
                 PB *= 1 + DEV_WALL * self.dev(B["lin"])
-                if w["dfn"] not in self.vassal and \
-                        PA > VASSAL_RATIO * PB and \
-                        rng.random() < 0.5 * (1.2 - B["cohesion"]) * \
+                pw = PA ** 2 / (PA ** 2 + PB ** 2 + 1e-9)
+                if odds:
+                    # `war_odds`: a defender that would likely lose sues
+                    # for terms before the siege
+                    sub = SUBMIT_K * min(1.0, max(0.0, (pw - SUBMIT_ODDS) /
+                                                  (1 - SUBMIT_ODDS)))
+                else:
+                    sub = 0.5 if PA > VASSAL_RATIO * PB else 0.0
+                if w["dfn"] not in self.vassal and sub > 0 and \
+                        rng.random() < sub * (1.2 - B["cohesion"]) * \
                         (0.5 + self.eff(A, "dom")):
                     # the weaker side submits rather than be besieged
                     self.submit(w["dfn"], w["att"])
@@ -420,7 +443,12 @@ class WarMixin:
                     self.truce[k] = self.tick + 6
                     w["submitted"] = True
                     break
-                pw = PA ** 2 / (PA ** 2 + PB ** 2 + 1e-9)
+                if odds and pw < SIEGE_MIN:
+                    # too long odds to besiege: ravage the land or sit
+                    if rng.random() < self.eff(A, "viol"):
+                        self.ravage(w, A, B, t)
+                    break
+                w["last_siege"] = self.tick
                 b_pop = self.pop[t]
                 self.pop[t] *= 1 - 0.03 * self.hardy(t)
                 self.dead("siege", t, b_pop - self.pop[t])
@@ -468,6 +496,11 @@ class WarMixin:
                 self.counteroffensive(k, w, A, B)
                 if k not in self.wars:
                     continue
+            if odds and (self.tick - w["last_siege"]) * DT >= WAR_STALL:
+                # no siege for years: the war peters out
+                self.war_close(self.wars.pop(k, None), "abandoned")
+                self.truce[k] = self.tick + 6
+                continue
             dur = self.tick - w["start"]
             pend = WAR_END0 + 0.03 * dur
             # supply lines let a campaign go on
@@ -556,6 +589,10 @@ class WarMixin:
             PB = self.projected(B, t)
             PA = self.defence_at(A, B, t)
             pw = PB ** 2 / (PB ** 2 + PA ** 2 + 1e-9)
+            if "war_odds" in self.on:
+                if pw < SIEGE_MIN:
+                    break               # too long odds: no siege
+                w["last_siege"] = self.tick
             b_pop = self.pop[t]
             self.pop[t] *= 1 - 0.03 * self.hardy(t)
             self.dead("siege", t, b_pop - self.pop[t])
@@ -580,6 +617,27 @@ class WarMixin:
             else:
                 B["cohesion"] *= 1 - 0.02 * (
                     1.5 - self.logi(B) / 1.5)
+
+    def ravage(self, w, A, B, t):
+        """`war_odds`: A, too weak to besiege city t, lays waste B's land
+        around it, as a raid does: RAVAGE_K x A's violence of the people
+        there die (less for hardy peoples), and as many improvements fall
+        as in a raid."""
+        h = np.nonzero((self.cell_city == t) & (self.cell_pol == B["id"]) &
+                       (self.cul >= 0))[0]
+        if not len(h):
+            return
+        dmg = min(0.6, RAVAGE_K * self.eff(A, "viol"))
+        b_pop, b_mpop = self.pop[h], self.mpop[h]
+        self.pop[h] *= 1 - dmg * self.hardy(h)
+        self.mpop[h] *= 1 - dmg
+        self.dead("ravage", h, b_pop - self.pop[h])
+        self.dead("ravage", h, b_mpop - self.mpop[h], minority=True)
+        self.imp[h] *= 1 - 0.3 * dmg
+        self.raided[h] = 1
+        self.shock(t, "ravage")
+        w["ravages"] = w.get("ravages", 0) + 1
+        self.count("war_ravage")
 
     def city_fe(self, c):
         """Food-equivalents in a city cell (records)."""
@@ -613,7 +671,7 @@ class WarMixin:
                  moved_back=round(w.get("moved_back", 0.0)),
                  helpers=" ".join(str(x) for x in
                                   sorted(w.get("helpers", ()))),
-                 sacks=w.get("sacks", 0))
+                 sacks=w.get("sacks", 0), ravages=w.get("ravages", 0))
 
     def set_goal(self, w, A, B, gains):
         """The goal of a motivated war: its largest motive."""

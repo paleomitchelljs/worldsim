@@ -78,7 +78,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "revolt_viol", "fortress", "diagnostics", "city_culture",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
-            "food_flow", "war_terms", "urban_city", "trade_debit"]
+            "food_flow", "war_terms", "urban_city", "trade_debit",
+            "war_odds"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -873,6 +874,25 @@ PREY_K, PREY_R = 1.5, 3.0
 # the others trade.
 WAR_BASE, WAR_EPS, DET_K = 0.12, 0.004, 1.0
 ENM_K, IRR_K, WAR_COST = 1.5, 1.5, 0.005
+# Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18; U: build it; forms
+# from the review, numbers C). Declaring: the deterrence factor becomes
+# floor + (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W), with
+# floor = ODDS_FLOOR x min(1, R / ODDS_MID) x min(1, (1 - fed) + enmity +
+# faith motives): the hungry, the hating and the zealous still attack at
+# long odds, less the longer they are. (A flat floor, first tried, was
+# looser than the old 2R^2 / (1 + R^2) below R = 0.16: 13-14% of wars were
+# declared at a whole-state strength ratio under 0.5, against 1%.)
+# Besieging: a side lays a siege only at win probability >= SIEGE_MIN;
+# below it the attacker ravages the target city's hinterland with chance
+# = its violence (RAVAGE_K x violence of the people there die, and as
+# many improvements fall as in a raid), else it sits. A war with no siege
+# for WAR_STALL years ends "abandoned". A defender facing odds >=
+# SUBMIT_ODDS sues for terms before the siege with chance SUBMIT_K x
+# clip((p - SUBMIT_ODDS) / (1 - SUBMIT_ODDS), 0, 1) x (1.2 - cohesion) x
+# (0.5 + the attacker's dominance), and never cedes its last city.
+ODDS_MID, ODDS_W, ODDS_FLOOR = 0.7, 0.35, 0.05
+SIEGE_MIN, RAVAGE_K, WAR_STALL = 0.15, 0.1, 15.0
+SUBMIT_ODDS, SUBMIT_K = 0.6, 1.0
 # Dragon hosts (`dragon_hosts`, U 2026-10-30): peoples flagged
 # dragon_host in the roster never ward off a dragon: their cells are never
 # warded (no confrontation), are always hunted (g(n) = n / (n + n0)), and

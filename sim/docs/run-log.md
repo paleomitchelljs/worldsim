@@ -1719,3 +1719,69 @@ matters only for the wars that survive the first tick.
   sea joins. Those are exclaves no ship would link.
 - Sailing range is the lineage's value at the end of the run, so early
   millennia may be joined too generously.
+
+### 2026-11-18 WP5 stage B: odds-gated war (`wp5b_seed*`, `wp5b2_seed*`)
+
+Standard settings, 8,000 years, `--no-video`. "Off" is `wp5a_seed*`
+(stage A: same code without `war_odds`). `wp5b_` is the first form,
+with a flat floor on the declaring gate. `wp5b2_` is the adopted form,
+with the floor scaled by min(1, R / 0.7). Seed 101 / seed 103.
+
+| Measure | off | flat floor | adopted |
+|---|---|---|---|
+| population at 8,000 (M) | 105.5 / 165.7 | 85.5 / 140.6 | 104.9 / 135.2 |
+| wars | 3,707 / 7,772 | 2,047 / 8,665 | 2,487 / 7,074 |
+| wars declared at whole-state strength ratio < 0.5 | 0.01 / 0.01 | 0.13 / 0.14 | 0.00 / 0.00 |
+| wars ending inside one tick | 0.63 / 0.73 | 0.50 / 0.54 | 0.59 / 0.63 |
+| wars ending within 5 yr | 0.79 / 0.86 | 0.67 / 0.69 | 0.74 / 0.77 |
+| sieges | 9,610 / 18,531 | 2,272 / 7,409 | 2,715 / 7,150 |
+| sieges taken | 0.22 / 0.24 | 0.43 / 0.51 | 0.46 / 0.51 |
+| attacker's siege odds, median | 0.068 / 0.090 | 0.39 / 0.45 | 0.40 / 0.48 |
+| ends: defender fell | 0.52 / 0.57 | 0.31 / 0.30 | 0.37 / 0.36 |
+| ends: submitted + tributary | 0.20 / 0.20 | 0.23 / 0.23 | 0.29 / 0.30 |
+| ends: abandoned | - | 0.18 / 0.20 | 0.14 / 0.13 |
+| defender fell, one-city defender | 0.62 / 0.71 | 0.40 / 0.40 | 0.42 / 0.43 |
+| peer wars, share | 0.021 / 0.027 | 0.006 / 0.016 | 0.012 / 0.016 |
+| states at war, mean | 0.053 / 0.063 | 0.032 / 0.081 | 0.029 / 0.053 |
+| polities | 3,736 / 6,385 | 2,741 / 5,280 | 3,135 / 5,267 |
+| never above one city, median life (yr) | 100 / 35 | 100 / 60 | 100 / 70 |
+| ... excluding city-outside foundings | - | 65 / 35 | 50 / 40 |
+| vassals standing, mean 4,000+ | 11 / 22 | 7 / 33 | 11 / 38 |
+| ended 3+ city states, median life (yr) | 245 / 155 | 345 / 185 | 300 / 190 |
+| ... over 1,000 yr | 35 / 31 | 44 / 37 | 36 / 50 |
+| largest state (M km2) | 5.0 / 6.9 | 3.4 / 7.3 | 4.2 / 7.0 |
+| largest city (k fe) | 68 / 106 | 99 / 109 | 114 / 126 |
+| rank-size slope, end | -0.44 / -0.39 | -0.48 / -0.41 | -0.43 / -0.41 |
+
+- **The brief's expectations, adopted form.**
+  - Fewer wars: -33% / -9%.
+  - A higher share of sieges won: 0.46-0.51, against 0.22-0.24.
+  - More submission: 0.29-0.30 of wars end in submission or tribute,
+    against 0.20. In one-tick wars with no siege, submission is now
+    57-62% of endings (stage A: 0%), where the defender fell 62-69%
+    before.
+  - One-city states living longer: in seed 103, 35 -> 70 yr; seed 101
+    is unchanged at 100. Most one-city states are city-outside
+    foundings ended by abandonment, which this stage does not touch
+    (83% / 71% `lost_last_city`).
+  - Largest states: -16% / +1%.
+- **Wars are still mostly short.** One-tick wars are down only to
+  0.59-0.63. Of those, 23-25% are a one-city defender falling at the
+  first siege, at median odds of 0.74-0.85. The rest of the drop is
+  sieges no longer laid.
+- **Peer wars are rarer** (share 0.012-0.016 from 0.021-0.027). The gate
+  stops equal states fighting more than it stops lopsided wars, as a
+  steep gate centred at R = 0.7 must. Watch this: it moves away from an
+  interstate system of peers.
+- **Ravaging** kills 4.3M / 14.1M over the run, about 0.5-1% of deaths.
+- **Population.** Seed 101 is unchanged (104.9M against 105.5M). Seed
+  103 is 18% lower (135M against 166M). In both seeds war deaths fell
+  (sieges, levies, sacks). Seed 103's gap is in natural increase
+  (1,360M against 1,522M over the run), and plague deaths alone differ
+  by 137M between the two runs of that seed. One seed cannot separate
+  this from the about 20% run-to-run noise seen in WP4. Not
+  investigated further.
+- **The flat floor was wrong.** Below R = 0.16 it was looser than the
+  old rule, so long-odds wars rose from 1% to 13-14%. Half of all wars
+  then had no siege, and population ended 15-19% lower in both seeds.
+  Scaling the floor by R removed all three effects.

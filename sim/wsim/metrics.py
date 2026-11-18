@@ -236,6 +236,15 @@ def states(run):
     life1 = pol.loc[one & pol.ended.notna(), "years"]
     m["never above one city, median life (yr)"] = float(life1.median()) \
         if len(life1) else np.nan
+    if "origin" in pol:
+        # founded by a city outside any state: mostly one city whose
+        # abandonment ends it (WP5 stage A); reported apart (U, 2026-11-18)
+        out = pol.origin.fillna("") == "city_outside"
+        m["founded by a city outside a state, share"] = share(out)
+        m["never above one city, others, share"] = share(one[~out])
+        life2 = pol.loc[one & ~out & pol.ended.notna(), "years"]
+        m["never above one city, others, median life (yr)"] = float(
+            life2.median()) if len(life2) else np.nan
     km = np.sort(pd.to_numeric(pol["peak_km2"], errors="coerce")
                  .dropna().to_numpy())[::-1]
     if len(km) >= 10:

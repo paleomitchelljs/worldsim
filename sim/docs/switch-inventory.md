@@ -106,4 +106,5 @@ before that switch became a default can turn it on.
 
 | Switch | Since | What it does |
 |---|---|---|
+| `war_odds` | 2026-11-18 (WP5 B, U: build) | Steeper odds gate on declaring war (with a floor for the hungry, the hating, the zealous); sieges only at win probability >= 0.15, else ravage or sit; wars with no siege for 15 years end "abandoned"; a defender facing odds >= 0.6 may submit before the siege and never cedes its last city ([structural.md](structural.md)). A state saved before WP5 B keeps it off unless the branch names `--on war_odds` |
 | `trade_debit` | 2026-11-17 (WP4 B); default since 2026-11-18 (WP4 D, U) | Trade food is sold from the exporter's surplus cells (TRADE_SURPLUS, C: 0.5) and arrives less carriage between the two states' nearest cities, instead of being created ([structural.md](structural.md)). Needs `food_flow`. Now in `FEATURES`, so `--off trade_debit` turns it off. A state saved before WP4 D keeps it off unless the branch names `--on trade_debit` |

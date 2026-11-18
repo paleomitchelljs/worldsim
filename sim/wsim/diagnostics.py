@@ -379,7 +379,7 @@ class DiagnosticsMixin:
             r.update(nets)
             for c in ("hunger", "feud", "raid", "war levies", "siege",
                       "sack", "clearance", "plague", "dragon attack",
-                      "displaced", "expelled", "dwindled"):
+                      "displaced", "expelled", "dwindled", "ravage"):
                 r[f"dead_{c.replace(' ', '_')}"] = dd.get(c, 0.0)
             if i is not None and r["pop_start"] <= 0 and r["pop_end"] <= 0:
                 continue

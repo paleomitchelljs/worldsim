@@ -1476,3 +1476,44 @@ minority leak. Forms C.
 - Population at 8,000 against stage C with trade food created: -3% and
   +3%, inside seed noise. B's -11% did not recur; the runs do not
   separate the three changes.
+
+## 2026-11-18: odds-gated war (`war_odds`, WP5 stage B)
+
+U (2026-11-18): build stage B as stage A recommended, item 3 first.
+Forms are from the upgrade review; every number is C. Stage A
+(run-log.md, "2026-11-18 WP5 stage A") found:
+- equal-sized states besieging at median odds of 0.02-0.05;
+- a submission rule that fired only at a 3:1 edge (odds 0.9), while
+  one-city defenders fell at odds of 0.80-0.86;
+- one-city defenders ceding their only city.
+
+- **Gate on declaring.** In `war_chance`, deterrence becomes floor +
+  (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W). ODDS_MID is
+  0.7 and ODDS_W 0.35. The floor is ODDS_FLOOR (0.05) x min(1, R /
+  ODDS_MID) x min(1, desperation + enmity + faith). The gate is at most
+  1, so `war_bound` is still an upper bound.
+  - A flat floor, without the R factor, was tried first
+    (`wp5b_seed101`, `103`). Below R = 0.16 it was looser than the old
+    rule. 13-14% of wars were declared at a whole-state strength ratio
+    under 0.5, against 1%. Half of all wars had no siege, and
+    population ended 15-19% lower.
+- **Gate on besieging.** In `wars_step` and `counteroffensive`, a siege
+  needs odds >= SIEGE_MIN (0.15).
+  - Below it the attacker `ravage`s (chance = violence) or sits.
+    Ravaging kills RAVAGE_K x violence of the target city's hinterland
+    in the defender's territory (less for hardy peoples) and cuts
+    improvements by 0.3 x that share. This is the raid rule's damage
+    form, at the city's land rather than at a border.
+  - `WAR_STALL` (15 years) without a siege by either side ends the war
+    "abandoned".
+- **Submitting first.** The pre-siege submission now reads the odds:
+  SUBMIT_K x clip((p - SUBMIT_ODDS) / (1 - SUBMIT_ODDS)) x (1.2 -
+  cohesion) x (0.5 + dominance), with SUBMIT_ODDS 0.6 and SUBMIT_K 1.
+  The old form was 0.5 x the same last two factors, only past a 3:1
+  edge.
+- **No ceding a last city.** A defender may not cede the goal when it is
+  its only city: ceding would end the state, where submitting keeps it.
+- **Record fix.** The cession branch closes the war before `cede`, so a
+  last-city cession reads "ceded".
+- New: `wars.csv` `ravages`; the death cause and city shock "ravage";
+  the counter `war_ravage`; `growth.csv` `dead_ravage`.

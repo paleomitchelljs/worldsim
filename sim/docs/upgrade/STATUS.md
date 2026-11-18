@@ -28,7 +28,7 @@ what an entry holds.
 | 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
-| 5 | B odds-gated war | not started | | |
+| 5 | B odds-gated war | done (on by default) | 2026-11-18 | HASH |
 | 5 | C time constants in years | not started | | |
 | 5 | D yearly political step | not started | | |
 | 5 | E army stock | not started | | |
@@ -1210,3 +1210,71 @@ adjacency is in scope; drop persistent borders.
 - Contiguity reads the sailing range at the end of the run.
 - Neighbour counts cover only the pairs that may go to war: land
   borders, plus coastal cities within twice the sailing range.
+
+### WP5 stage B: odds-gated war (2026-11-18, HASH)
+
+**Decision (U, 2026-11-18):** proceed with B as stage A recommended (item
+3 first); stage A's choices stand.
+
+**Done** (switch `war_odds`, in `FEATURES`, so on by default):
+- **Declaring.** Deterrence is a logistic in log R (ODDS_MID 0.7,
+  ODDS_W 0.35). Its floor is ODDS_FLOOR (0.05) x min(1, R / 0.7) x
+  min(1, desperation + enmity + faith). `war_bound` still bounds it.
+- **Besieging.** Sieges, and counter-offensives, are laid only at
+  odds >= SIEGE_MIN (0.15). Below that the attacker ravages the target
+  city's hinterland (chance = its violence; RAVAGE_K 0.1 x violence
+  die; improvements fall as in a raid) or sits. A war with no siege for
+  WAR_STALL (15 yr) ends "abandoned".
+- **Item 3.** Before each siege, a defender facing odds >= SUBMIT_ODDS
+  (0.6) submits with chance SUBMIT_K x the scaled excess x (1.2 -
+  cohesion) x (0.5 + dominance). The old rule fired only at odds of
+  about 0.9. A defender never cedes its last city.
+- **Record fix (all settings).** A cession closes the war as "ceded"
+  before the city moves.
+- Also: `wars.csv` `ravages`; death cause and city shock "ravage";
+  `growth.csv` `dead_ravage`. Metrics report city-outside foundings
+  apart (`founded by a city outside a state, share`, and the one-city
+  measures without them), as recommended in stage A.
+- Docs: rules/war.md, model-description.md, structural.md,
+  switch-inventory.md, running.md, run-log.md, open-questions.md.
+
+**Runs.**
+- `wp5b_smoke`: branch, 300 years; deleted.
+- `wp5b_seed101`, `103`: first form, with a flat floor.
+- `wp5b2_seed101`, `103`: the adopted form.
+- Table in run-log.md.
+
+**Results, adopted form against stage A** (seed 101 / 103):
+- wars -33% / -9%;
+- sieges taken 0.46 / 0.51, from 0.22 / 0.24;
+- submission or tribute ends 0.29-0.30 of wars, from 0.20;
+- wars ending inside a tick 0.59 / 0.63, from 0.63 / 0.73;
+- one-city states: median life 100 / 70 yr, from 100 / 35;
+- largest state 4.2 / 7.0 M km2, from 5.0 / 6.9;
+- population 104.9M / 135.2M, from 105.5M / 165.7M.
+
+**Surprises.**
+- **The flat floor was looser than the old rule** at long odds. Wars at
+  a strength ratio under 0.5 rose from 1% to 13-14%, and population
+  fell 15-19% in both seeds. I replaced it with the R-scaled floor; the
+  numbers and the reason are in params.py.
+- **Peer wars fell** (share 0.012-0.016, from 0.021-0.027).
+- **Seed 103's population is 18% lower**, through natural increase, not
+  war deaths, which fell. I could not tell this apart from seed noise
+  with one seed. Logged in open-questions.md.
+
+**Not done.**
+- Sea adjacency: not in scope; left unchanged.
+- No 5-seed batch. Suggested before stage D, for the population and
+  peer-war questions.
+
+**Choices to check (C).**
+- Every number above.
+- `war_odds` is on by default, as switches are (`--off war_odds`
+  restores the old rules except the record fix).
+- Counter-offensives get the same siege threshold.
+- Ravaging uses the attacker's violence as both its chance and its
+  scale.
+
+**Next.** Stage C (time constants in years) needs no decision. Stage D
+waits on the batch, per open-questions.md.
