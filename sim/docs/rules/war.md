@@ -15,7 +15,7 @@ checked each tick. The chance the first declares on the second is:
 
 There is no war between allies or during a truce (30 years after a war).
 
-## Sieges (one per war per tick)
+## Sieges (one per war per tick; see `pol_step` below for sieges with a length)
 
 1. **Target:** the enemy city nearest the attacker's capital.
 2. **Projected strength:** strength x exp(−distance / (1.5 x reach)).
@@ -104,6 +104,31 @@ the edge fades over later reigns. Numbers C.
   only at 3+ cities, so a smaller state kept its founder's g until it
   grew). A small state can draw a talented ruler and, in that reign,
   take its neighbours faster.
+
+## Yearly political step (`pol_step`, WP5 stage D, 2026-11-18)
+
+U: build it, with sieges that take time. Numbers C.
+- Inside each 5-year tick, diplomacy, war and rebellion run five times,
+  one year each (DT_POL 1). Polity statistics (strength, fed share,
+  cohesion, neighbours) are computed once per tick. After a year in
+  which a city changed hands, territory is redrawn and each state's
+  strength is scaled by the change in its weighted people.
+- A siege takes L = ceil(exponential(SIEGE_YEARS x D)) years, 1 to 8,
+  with D = 1.4 x terrain x site x walls x 1.25 at a capital, the same
+  defence the odds use. With SIEGE_YEARS 1 most sieges take 2-4 years.
+- The besieged city loses 3% of its people (SIEGE_TOLL) over the whole
+  siege, a share each year. The siege is decided at its end, on the
+  odds then (allies, lord and vassals as they stand).
+- Each side runs as many sieges at once as its logistics allow (1 +
+  floor(2 G)), at distinct cities. A slot falls free when its siege is
+  decided or its city changes hands.
+- Chances per 5 years (war ending, cession, counter-offensive,
+  ravaging) are applied each year as 1 - (1 - p)^(1/5). Rates per year
+  (declaring, alliances, revolts, vassal defection) are applied per
+  year. A war with a siege under way is not "abandoned".
+- Submission is drawn when a siege would be laid, as before. Because a
+  slot now falls free every 2-4 years, not every 5, a war has more such
+  draws and more sieges in the same time.
 
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 

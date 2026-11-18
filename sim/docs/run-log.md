@@ -1883,3 +1883,39 @@ change from the rest. Standard settings, 8,000 years. Seed 101 / 103;
 - **Late growth fell in both seeds** (0.009%/yr in 7000-8000, against
   0.014-0.035). Seed 101 with the old succession rule does not show it.
   Not traced: one seed each. Logged in open-questions.md.
+
+### 2026-11-18 WP5 stage D: yearly political step (`wp5d_seed101`, `wp5d_seed103`)
+
+`pol_step` on (with every other default switch); standard settings,
+8,000 years. Against `wp5c_*` (stage C). Seed 101 / 103.
+
+| Measure | wp5c | wp5d |
+|---|---|---|
+| population at 8,000 (M) | 81.4 / 142 | 64.1 / 125 |
+| wars | 2,907 / 7,364 | 1,939 / 7,147 |
+| median war length (yr) | 0 / 0 | 5 / 4 |
+| wars ending within 5 years | 0.73 / 0.79 | 0.50 / 0.60 |
+| wars ending inside one tick (now inside one sub-step) | 0.58 / 0.66 | 0.15 / 0.23 |
+| sieges per war | 1.02 / 0.97 | 1.01 / 0.86 |
+| siege length, mean (yr; median) | - | 3.3 (3) / 3.2 (2) |
+| sieges taken | 0.48 / 0.57 | 0.44 / 0.57 |
+| peer wars, share | 0.009 / 0.019 | 0.003 / 0.019 |
+| states at war, mean | 0.039 / 0.068 | 0.044 / 0.078 |
+| war ends: peace | 0.13 / 0.07 | 0.22 / 0.12 |
+| war ends: ceded | 0.026 / 0.071 | 0.006 / 0.030 |
+| largest state (M km2) | 2.6 / 9.2 | 2.1 / 8.5 |
+| run time (s) | 612 / 763 | 563 / 883 |
+
+- **Wars now last years.** The median war went from 0 to 4-5 years.
+  The 90th percentile stays at 15 years (WAR_STALL and the ending rule).
+- **No more sieges per war.** It is still about one. A siege now holds
+  its slot for 2-4 years, and the ending rule (unchanged per 5 years)
+  closes most wars within that time. So the brief's "campaigns of
+  several sieges" did not appear. More wars end in plain peace, fewer by
+  cession or with the goal met.
+- **Population fell 21% / 12%, not through war.** Siege, sack, ravage
+  and levy deaths together fell in seed 101 (30.6M to 14.8M) and were
+  about the same in 103. The large differences are in plague (101: 61.6
+  to 16.0M; 103: 248.8 to 326.1M), which follows the run's path. One
+  seed each, so I cannot say whether this is the change or the path.
+- Cost: -8% / +16% run time.

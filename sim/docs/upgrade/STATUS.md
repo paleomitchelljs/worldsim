@@ -30,7 +30,7 @@ what an entry holds.
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
 | 5 | C time constants in years | done (+ U: site spread, small-state succession) | 2026-11-18 | c04c487 |
-| 5 | D yearly political step | not started | | |
+| 5 | D yearly political step | done (on by default) | 2026-11-18 | DCOMMIT |
 | 5 | E army stock | not started | | |
 | 5 | F cityless polities | not started | | |
 | 6 | A experiment batch | not started | | |
@@ -1403,3 +1403,46 @@ run-log.md.
 **Next.** Stage D (yearly political step) needs a decision on sieges per
 year (open-questions.md). The 5-seed batch suggested after stage B is
 still not done.
+
+### WP5 stage D: yearly political step (2026-11-18, DCOMMIT)
+
+**Decision (U, 2026-11-18):** do D, E and F in order; sieges get a
+length; D8 yes (camps).
+
+**Done** (switch `pol_step`, on by default; numbers C):
+- `Sim.politics` runs diplomacy, war and rebellion DT / DT_POL (5)
+  times a tick, with `self.year` at each sub-year and `self.dtp` the
+  sub-step's length. Every rate inside reads `self.dtp`; chances per 5
+  years go through `over(p, self.dtp)`.
+- After a sub-step in which a city changed hands, `pol_refresh` redraws
+  territory and scales strength by the change in weighted people. A
+  state founded in the tick takes its parent's strength per head.
+- Sieges have a length: ceil(exponential(SIEGE_YEARS 1.0 x defence))
+  years, 1 to SIEGE_MAX 8. The defence is 1.4 x terrain x site x walls,
+  x 1.25 at a capital. The toll is spread over the siege and the siege
+  is decided at its end on the odds then. Logistics slots run at
+  distinct cities. Code: `siege_odds`, `sieges_open`, `siege_start`,
+  `sieges_run`, `siege_end`.
+- Off: one step per tick, sieges decided when laid (the old path).
+- `sieges.csv` gains `siege_years`. Docs: rules/war.md,
+  model-description.md, structural.md, switch-inventory.md, running.md,
+  run-log.md.
+
+**Runs.** `wp5d_seed101` (also saved its state at year 5,000 in the
+scratchpad, for branch tests), `wp5d_seed103`. Table in run-log.md.
+
+**Results.**
+- Median war 4-5 years, from 0. Wars ending within 5 years: 0.50 / 0.60,
+  from 0.73 / 0.79.
+- Still about one siege per war. The ending rule closes most wars before
+  a second siege. "Peace" endings rose and cessions fell.
+- Population 64.1M / 125M, from 81.4M / 142M. Not through war deaths,
+  which fell or held. Plague differs most, and it follows the run's
+  path. Unresolved with one seed each.
+- Run time -8% / +16%.
+
+**Not done.** "Once per tick" caps (one cultural spike per state, the
+`revolted` / `sup_*` accumulators) left as they are.
+
+**Next.** Stage E. It replaces the age term of the ending rule with
+exhaustion, which may let campaigns run to several sieges.

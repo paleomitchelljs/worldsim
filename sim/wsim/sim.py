@@ -237,6 +237,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.wars = {}              # (lo, hi) -> record
         self.truce = {}             # (lo, hi) -> year until
         self.clock_years = True     # truces, wars, plague gap in years
+        self.dtp = DT               # years in the political (sub-)step
         self.ties = {}              # (lo, hi) -> trade strength 0..1
         self.allies = {}            # (lo, hi) -> year formed
         self.ally_kind = {}         # (lo, hi) -> "affinity" | "balance"
@@ -398,6 +399,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):
             self.W.food_graph()
+        if not hasattr(self, "dtp"):
+            self.dtp = DT
         if not hasattr(self, "clock_years"):
             # before WP5 stage C: truces, war starts and last sieges, and
             # the plague gap were held in ticks
@@ -473,6 +476,30 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.firsts.add(key)
             self.log(kind, text, **data)
 
+    def politics(self):
+        """Diplomacy, war and rebellion. Under `pol_step` they run DT /
+        DT_POL times a tick, each over self.dtp years, on the polity
+        statistics of the tick; after a sub-step in which a city changed
+        hands, territory and strength are refreshed (pol_refresh)."""
+        n = max(1, round(DT / DT_POL)) if "pol_step" in self.on else 1
+        self.dtp = DT / n
+        y0 = self.year
+        for i in range(n):
+            y = y0 + i * self.dtp
+            self.year = int(y) if float(y).is_integer() else y
+            held = [c["polity"] for c in self.cities.values()]
+            self.diplomacy()
+            self.acct_mark("diplomacy")
+            self.wars_step()
+            self.acct_mark("wars")
+            self.rebellions()
+            self.acct_mark("rebellions")
+            if i < n - 1 and held != [c["polity"]
+                                      for c in self.cities.values()]:
+                self.pol_refresh()
+        self.year = y0
+        self.dtp = DT
+
     def step(self):
         self._sim = {}
         self._pt = {}
@@ -507,12 +534,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.acct_mark("states")
         self.minorities()
         self.acct_mark("minorities")
-        self.diplomacy()
-        self.acct_mark("diplomacy")
-        self.wars_step()
-        self.acct_mark("wars")
-        self.rebellions()
-        self.acct_mark("rebellions")
+        self.politics()
         if self.rt:
             self.ruler_pull()
         if self.cc_on:

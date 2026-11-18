@@ -250,12 +250,13 @@ class WarMixin:
             return math.inf
         d = self.eff(A, "dom")
         opp = 1 + OPP_K * d if B.get("acc_until", -1) > self.year else 1.0
-        return DT * WAR_BASE * A["cohesion"] * (0.5 + self.eff(A, "viol")) * \
+        return self.dtp * WAR_BASE * A["cohesion"] * \
+            (0.5 + self.eff(A, "viol")) * \
             (1 - self.ties.get(k, 0.0)) * WAR_GAIN_CAP * opp * (1 + 1e-9)
 
     def war_chance(self, A, B, k, allies):
-        """Chance per tick that A declares war on B (`war_v2`), and its
-        motives with the motivated share."""
+        """Chance per political step that A declares war on B (`war_v2`),
+        and its motives with the motivated share."""
         La, Lb = A["lin"], B["lin"]
         if not A["cities"] or not B["cities"]:
             return 0.0, None
@@ -301,7 +302,8 @@ class WarMixin:
             det = fl + (1 - fl) / (1 + math.exp(-max(-50.0, min(50.0, z))))
         else:
             det = min(1.0, 2 * R * R / (1 + R * R)) ** DET_K
-        p = DT * WAR_BASE * A["cohesion"] * (0.5 + self.eff(A, "viol")) * \
+        p = self.dtp * WAR_BASE * A["cohesion"] * \
+            (0.5 + self.eff(A, "viol")) * \
             (1 - self.ties.get(k, 0.0)) * det * \
             x / (1 + x / WAR_GAIN_CAP) * opp
         return p, (g, m / x)
@@ -321,7 +323,7 @@ class WarMixin:
         if at:
             wc = np.nonzero(np.isin(self.cell_pol, list(at)))[0]
             b_pop = self.pop[wc]
-            self.pop[wc] *= 1 - DT * WAR_COST * self.hardy(wc)
+            self.pop[wc] *= 1 - self.dtp * WAR_COST * self.hardy(wc)
             self.dead("war levies", wc, b_pop - self.pop[wc])
         pairs = sorted(pairs)
         pairs = [pairs[i] for i in rng.permutation(len(pairs))]
@@ -343,11 +345,12 @@ class WarMixin:
                 # the draw; most pairs are ruled out on the bound alone
                 u = rng.random()
                 bf = BETRAY_K if k in self.allies else 1.0
-                if u >= min(bf * self.war_bound(A, B, k), DT * WAR_P_CAP):
+                if u >= min(bf * self.war_bound(A, B, k),
+                            self.dtp * WAR_P_CAP):
                     continue
                 p, motive = self.war_chance(A, B, k, allies)
                 p *= bf
-                if u < min(p, DT * WAR_P_CAP):
+                if u < min(p, self.dtp * WAR_P_CAP):
                     if k in self.allies:
                         self.allies.pop(k, None)
                         self.ally_kind.pop(k, None)
@@ -394,7 +397,8 @@ class WarMixin:
                 g = w["goal"]
                 ra = self.projected(A, g) * self.offense(A) / max(
                     1.4 * self.city_def(g) * self.projected(B, g), 1e-9)
-                if rng.random() < over(WAR_CEDE * min(1.0, max(0.0, ra - 1))):
+                if rng.random() < over(WAR_CEDE * min(
+                        1.0, max(0.0, ra - 1)), self.dtp):
                     w["moved"] = w.get("moved", 0.0) + self.city_fe(g)
                     # closed first: ceding a last city ends the defender,
                     # and its end would close the war as "defender fell"
@@ -402,114 +406,21 @@ class WarMixin:
                     self.cede(w["att"], w["dfn"], g)
                     self.truce[k] = self.year + TRUCE_WAR
                     continue
-            # logistics: a well-run state keeps more sieges going at once
-            ns = 1 + int(LOG_SIEGE * self.logi(A))
             w.setdefault("last_siege", w["start"])
-            for _ in range(ns):
-                if not B["cities"] or B["ended"] is not None or \
-                        k not in self.wars:
-                    break
-                targets = list(B["cities"])
-                dists = gc_km(self.W.xyz, A["capital"], np.array(targets))
-                t = targets[int(np.argmin(dists))]
-                if w.get("goal") in B["cities"] and not w.get("done"):
-                    t = w["goal"]
-                # a gifted commander makes the attack count for more
-                PA = self.projected(A, t) * self.offense(A)
-                PB = self.projected(B, t)
-                # defensive allies send help (not against their own allies)
-                for kk in self.allies:
-                    if w["dfn"] in kk:
-                        q = kk[1] if kk[0] == w["dfn"] else kk[0]
-                        Q = self.polities.get(q)
-                        if q != w["att"] and Q and Q["ended"] is None and \
-                                (min(q, w["att"]), max(q, w["att"])) \
-                                not in self.allies and \
-                                (q in w.get("joined", ())):
-                            PB += 0.35 * self.projected(Q, t)
-                            w.setdefault("helpers", set()).add(q)
-                # a lord defends its vassals; vassals send levies to a lord
-                o = self.vassal.get(w["dfn"])
-                if o is not None and o != w["att"] and o in self.polities:
-                    PB += 0.5 * self.projected(self.polities[o], t)
-                for v, lord in self.vassal.items():
-                    if lord == w["dfn"] and v != w["att"] and \
-                            v in self.polities:
-                        PB += 0.35 * self.projected(self.polities[v], t)
-                PB *= 1.4 * self.city_def(t) * \
-                    (1.25 if t == B["capital"] else 1)
-                # walls and works
-                PB *= 1 + DEV_WALL * self.dev(B["lin"])
-                pw = PA ** 2 / (PA ** 2 + PB ** 2 + 1e-9)
-                if odds:
-                    # `war_odds`: a defender that would likely lose sues
-                    # for terms before the siege
-                    sub = SUBMIT_K * min(1.0, max(0.0, (pw - SUBMIT_ODDS) /
-                                                  (1 - SUBMIT_ODDS)))
-                else:
-                    sub = 0.5 if PA > VASSAL_RATIO * PB else 0.0
-                if w["dfn"] not in self.vassal and sub > 0 and \
-                        rng.random() < sub * (1.2 - B["cohesion"]) * \
-                        (0.5 + self.eff(A, "dom")):
-                    # the weaker side submits rather than be besieged
-                    self.submit(w["dfn"], w["att"])
-                    self.war_close(self.wars.pop(k, None), "submitted")
-                    self.truce[k] = self.year + TRUCE_WAR
-                    w["submitted"] = True
-                    break
-                if odds and pw < SIEGE_MIN:
-                    # too long odds to besiege: ravage the land or sit
-                    if rng.random() < self.eff(A, "viol"):
-                        self.ravage(w, A, B, t)
-                    break
-                w["last_siege"] = self.year
-                b_pop = self.pop[t]
-                self.pop[t] *= 1 - SIEGE_TOLL * self.hardy(t)
-                self.dead("siege", t, b_pop - self.pop[t])
-                self.fort_toll(A, t)
-                self.shock(t, "siege")
-                self.devastate(t, w["dfn"])
-                fe = self.city_fe(t)
-                cap_t = t == B["capital"]
-                won = rng.random() < pw
-                w["sieges"] = w.get("sieges", 0) + 1
-                self.siege_log.append((
-                    self.year, w.get("id", -1), "att", int(t), round(fe),
-                    int(cap_t), w["att"], w["dfn"], round(PA, 1),
-                    round(PB, 1), round(pw, 4), int(won)))
-                terms = self.siege_terms(w, A, B, t) if won else ""
-                self.siege_log[-1] += (terms, len(A["cities"]),
-                                       len(B["cities"]))
-                if terms == "tributary":
-                    # the defender sues for terms and pays tribute
-                    self.count("war_tributary")
-                    self.submit(w["dfn"], w["att"])
-                    self.war_close(self.wars.pop(k, None), "tributary")
-                    self.truce[k] = self.year + TRUCE_WAR
-                    w["submitted"] = True
-                    break
-                if terms == "sack":
-                    # one sack a tick: the army goes home with the loot
-                    self.sack(w, A, B, t)
-                    break
-                if won:
-                    w["moved"] = w.get("moved", 0.0) + fe
-                    w["caps"] += 1
-                    if t == w.get("goal"):
-                        w["done"] = True
-                        self.count("war_goal_met")
-                    self.capture(w["att"], w["dfn"], t)
-                else:
-                    A["cohesion"] *= 1 - SIEGE_COH * (
-                        1.5 - self.logi(A) / 1.5)
-            if w.get("submitted"):
+            w.setdefault("on", [])
+            # sieges under way (`pol_step`) go on or are decided
+            self.sieges_run(k, w, A, B)
+            if k in self.wars and not w.get("submitted"):
+                self.sieges_open(k, w, A, B)
+            if w.get("submitted") or k not in self.wars:
                 continue
-            if k in self.wars and \
-                    A["ended"] is None and B["ended"] is None and \
+            if A["ended"] is None and B["ended"] is None and \
                     A["cities"] and B["cities"]:
                 self.counteroffensive(k, w, A, B)
                 if k not in self.wars:
                     continue
+            if w["on"]:
+                w["last_siege"] = self.year
             if odds and self.year - w["last_siege"] >= WAR_STALL:
                 # no siege for years: the war peters out
                 self.war_close(self.wars.pop(k, None), "abandoned")
@@ -524,7 +435,7 @@ class WarMixin:
             rep = w.get("recaps", 0) > w["caps"]
             if rep:
                 pend = max(pend, WAR_DONE)
-            if rng.random() < over(pend) or \
+            if rng.random() < over(pend, self.dtp) or \
                     self.polities[w["dfn"]]["ended"] is not None:
                 self.war_close(self.wars.pop(k, None),
                                "defender fell" if self.polities[w["dfn"]][
@@ -532,6 +443,192 @@ class WarMixin:
                                "goal met" if w.get("done") else
                                "repulsed" if rep else "peace")
                 self.truce[k] = self.year + TRUCE_WAR
+
+    def siege_odds(self, w, A, B, t):
+        """Attacker A's projected strength at B's city t (with its
+        ruler's offense), B's defence there (allies who joined, lord,
+        vassals, terrain, capital, walls), and A's chance of taking it."""
+        PA = self.projected(A, t) * self.offense(A)
+        PB = self.projected(B, t)
+        # defensive allies send help (not against their own allies)
+        for kk in self.allies:
+            if w["dfn"] in kk:
+                q = kk[1] if kk[0] == w["dfn"] else kk[0]
+                Q = self.polities.get(q)
+                if q != w["att"] and Q and Q["ended"] is None and \
+                        (min(q, w["att"]), max(q, w["att"])) \
+                        not in self.allies and \
+                        (q in w.get("joined", ())):
+                    PB += 0.35 * self.projected(Q, t)
+                    w.setdefault("helpers", set()).add(q)
+        # a lord defends its vassals; vassals send levies to a lord
+        o = self.vassal.get(w["dfn"])
+        if o is not None and o != w["att"] and o in self.polities:
+            PB += 0.5 * self.projected(self.polities[o], t)
+        for v, lord in self.vassal.items():
+            if lord == w["dfn"] and v != w["att"] and \
+                    v in self.polities:
+                PB += 0.35 * self.projected(self.polities[v], t)
+        PB *= 1.4 * self.city_def(t) * \
+            (1.25 if t == B["capital"] else 1)
+        # walls and works
+        PB *= 1 + DEV_WALL * self.dev(B["lin"])
+        return PA, PB, PA ** 2 / (PA ** 2 + PB ** 2 + 1e-9)
+
+    def sieges_open(self, k, w, A, B):
+        """The attacker lays sieges in the slots its logistics allow and
+        no siege fills: at the goal city, else the defender's city nearest
+        its capital. A defender that would likely lose may submit first;
+        at too long odds the attacker ravages or sits."""
+        rng = self.R("war")
+        odds = "war_odds" in self.on
+        # logistics: a well-run state keeps more sieges going at once
+        ns = 1 + int(LOG_SIEGE * self.logi(A))
+        free = ns - sum(1 for s in w["on"] if s["side"] == "att")
+        for _ in range(free):
+            if not B["cities"] or B["ended"] is not None or \
+                    k not in self.wars:
+                break
+            busy = {s["t"] for s in w["on"]}
+            targets = [c for c in B["cities"] if c not in busy]
+            if not targets:
+                break
+            dists = gc_km(self.W.xyz, A["capital"], np.array(targets))
+            t = targets[int(np.argmin(dists))]
+            if w.get("goal") in targets and not w.get("done"):
+                t = w["goal"]
+            PA, PB, pw = self.siege_odds(w, A, B, t)
+            if odds:
+                # `war_odds`: a defender that would likely lose sues
+                # for terms before the siege
+                sub = SUBMIT_K * min(1.0, max(0.0, (pw - SUBMIT_ODDS) /
+                                              (1 - SUBMIT_ODDS)))
+            else:
+                sub = 0.5 if PA > VASSAL_RATIO * PB else 0.0
+            if w["dfn"] not in self.vassal and sub > 0 and \
+                    rng.random() < sub * (1.2 - B["cohesion"]) * \
+                    (0.5 + self.eff(A, "dom")):
+                # the weaker side submits rather than be besieged
+                self.submit(w["dfn"], w["att"])
+                self.war_close(self.wars.pop(k, None), "submitted")
+                self.truce[k] = self.year + TRUCE_WAR
+                w["submitted"] = True
+                return
+            if odds and pw < SIEGE_MIN:
+                # too long odds to besiege: ravage the land or sit
+                if rng.random() < over(self.eff(A, "viol"), self.dtp):
+                    self.ravage(w, A, B, t)
+                return
+            if self.siege_start(k, w, "att", t, A, B) == "stop":
+                return
+
+    def siege_start(self, k, w, side, t, X, Y):
+        """X lays siege to Y's city t. Under `pol_step` the siege lasts
+        L years (SIEGE_YEARS x the city's defence, exponential, 1 to
+        SIEGE_MAX) and is decided at its end; otherwise at once."""
+        w["last_siege"] = self.year
+        s = dict(side=side, t=int(t), start=self.year, end=self.year)
+        if "pol_step" not in self.on:
+            return self.siege_end(k, w, s, X, Y, toll=True)
+        deff = 1.4 * self.city_def(t) * (1.25 if t == Y["capital"] else 1) \
+            * (1 + DEV_WALL * self.dev(Y["lin"]))
+        L = math.ceil(self.R("war").exponential(SIEGE_YEARS * deff))
+        s["end"] = self.year + int(min(SIEGE_MAX, max(1, L)))
+        w["on"].append(s)
+        return None
+
+    def sieges_run(self, k, w, A, B):
+        """Sieges under way: a city that changed hands is no longer
+        besieged; the rest lose their share of SIEGE_TOLL for this step,
+        and those whose time is up are decided."""
+        for s in list(w["on"]):
+            if k not in self.wars:
+                return
+            X, Y = (A, B) if s["side"] == "att" else (B, A)
+            t = s["t"]
+            if t not in Y["cities"] or X["ended"] is not None:
+                w["on"].remove(s)
+                continue
+            b_pop = self.pop[t]
+            self.pop[t] *= 1 - over(SIEGE_TOLL, self.dtp,
+                                    s["end"] - s["start"]) * self.hardy(t)
+            self.dead("siege", t, b_pop - self.pop[t])
+            if self.year >= s["end"]:
+                w["on"].remove(s)
+                if self.siege_end(k, w, s, X, Y) == "stop":
+                    return
+
+    def siege_end(self, k, w, s, X, Y, toll=False):
+        """A siege is decided on the odds now: the attacker's sieges
+        (terms, sack, capture, or a failure), or the defender's
+        counter-offensive (recapture or failure). Returns "stop" when
+        the war ended or the army went home with loot."""
+        rng = self.R("war")
+        t = s["t"]
+        att = s["side"] == "att"
+        if att:
+            A, B = X, Y
+            PX, PY, pw = self.siege_odds(w, A, B, t)
+        else:
+            PX = self.projected(X, t) * self.offense(X)
+            PY = self.defence_at(Y, X, t)
+            pw = PX ** 2 / (PX ** 2 + PY ** 2 + 1e-9)
+        if toll:
+            b_pop = self.pop[t]
+            self.pop[t] *= 1 - SIEGE_TOLL * self.hardy(t)
+            self.dead("siege", t, b_pop - self.pop[t])
+        self.fort_toll(X, t)
+        self.shock(t, "siege")
+        self.devastate(t, Y["id"])
+        fe = self.city_fe(t)
+        won = rng.random() < pw
+        w["sieges"] = w.get("sieges", 0) + 1
+        cap_t = int(t == Y["capital"])
+        rec = (self.year, w.get("id", -1), s["side"], int(t), round(fe),
+               cap_t, X["id"], Y["id"], round(PX, 1), round(PY, 1),
+               round(pw, 4), int(won))
+        if not att:
+            self.siege_log.append(rec + (
+                "annex" if won else "", len(X["cities"]), len(Y["cities"]),
+                s["end"] - s["start"]))
+            if won:
+                w["moved_back"] = w.get("moved_back", 0.0) + fe
+                w["recaps"] = w.get("recaps", 0) + 1
+                self.count("war_counter_capture")
+                self.capture(w["dfn"], w["att"], t)
+                if k not in self.wars:
+                    return "stop"
+            else:
+                X["cohesion"] *= 1 - SIEGE_COH * (1.5 - self.logi(X) / 1.5)
+            return None
+        terms = self.siege_terms(w, A, B, t) if won else ""
+        self.siege_log.append(rec + (terms, len(A["cities"]),
+                                     len(B["cities"]),
+                                     s["end"] - s["start"]))
+        if terms == "tributary":
+            # the defender sues for terms and pays tribute
+            self.count("war_tributary")
+            self.submit(w["dfn"], w["att"])
+            self.war_close(self.wars.pop(k, None), "tributary")
+            self.truce[k] = self.year + TRUCE_WAR
+            w["submitted"] = True
+            return "stop"
+        if terms == "sack":
+            # one sack a step: the army goes home with the loot
+            self.sack(w, A, B, t)
+            return "stop"
+        if won:
+            w["moved"] = w.get("moved", 0.0) + fe
+            w["caps"] += 1
+            if t == w.get("goal"):
+                w["done"] = True
+                self.count("war_goal_met")
+            self.capture(w["att"], w["dfn"], t)
+            if k not in self.wars:
+                return "stop"
+        else:
+            A["cohesion"] *= 1 - SIEGE_COH * (1.5 - self.logi(A) / 1.5)
+        return None
 
     def call_allies(self, w, A, B):
         """Defender B's allies are called against attacker A: each joins
@@ -585,52 +682,36 @@ class WarMixin:
         return PD
 
     def counteroffensive(self, k, w, A, B):
-        """The defender B strikes back at the attacker A (two_sided)."""
+        """The defender B strikes back at the attacker A (two_sided):
+        sieges in the slots its logistics allow, at A's cities it lost in
+        this war first, nearest its capital first."""
         rng = self.R("war")
         R = B.get("strength", 0.0) / max(A.get("strength", 0.0), 1e-9)
-        if rng.random() >= over(COUNTER_K * R * R / (1 + R * R)):
+        if rng.random() >= over(COUNTER_K * R * R / (1 + R * R),
+                                self.dtp):
             return
         ns = 1 + int(LOG_SIEGE * self.logi(B))
-        for _ in range(ns):
+        free = ns - sum(1 for s in w["on"] if s["side"] == "dfn")
+        for _ in range(free):
             if not A["cities"] or A["ended"] is not None or \
                     k not in self.wars:
                 break
-            lost = [c for c in A["cities"]
+            busy = {s["t"] for s in w["on"]}
+            pool = [c for c in A["cities"] if c not in busy]
+            if not pool:
+                break
+            lost = [c for c in pool
                     if w["dfn"] in self.cities[c]["owners"][:-1]]
-            pool = lost or list(A["cities"])
+            pool = lost or pool
             t = pool[int(np.argmin(gc_km(self.W.xyz, B["capital"],
                                          np.array(pool))))]
             PB = self.projected(B, t) * self.offense(B)
             PA = self.defence_at(A, B, t)
             pw = PB ** 2 / (PB ** 2 + PA ** 2 + 1e-9)
-            if "war_odds" in self.on:
-                if pw < SIEGE_MIN:
-                    break               # too long odds: no siege
-                w["last_siege"] = self.year
-            b_pop = self.pop[t]
-            self.pop[t] *= 1 - SIEGE_TOLL * self.hardy(t)
-            self.dead("siege", t, b_pop - self.pop[t])
-            self.fort_toll(B, t)
-            self.shock(t, "siege")
-            self.devastate(t, w["att"])
-            fe = self.city_fe(t)
-            won = rng.random() < pw
-            w["sieges"] = w.get("sieges", 0) + 1
-            self.siege_log.append((
-                self.year, w.get("id", -1), "dfn", int(t), round(fe),
-                int(t == A["capital"]), w["dfn"], w["att"], round(PB, 1),
-                round(PA, 1), round(pw, 4), int(won),
-                "annex" if won else "", len(B["cities"]), len(A["cities"])))
-            if won:
-                w["moved_back"] = w.get("moved_back", 0.0) + fe
-                w["recaps"] = w.get("recaps", 0) + 1
-                self.count("war_counter_capture")
-                self.capture(w["dfn"], w["att"], t)
-                if k not in self.wars:
-                    break
-            else:
-                B["cohesion"] *= 1 - SIEGE_COH * (
-                    1.5 - self.logi(B) / 1.5)
+            if "war_odds" in self.on and pw < SIEGE_MIN:
+                break               # too long odds: no siege
+            if self.siege_start(k, w, "dfn", t, B, A) == "stop":
+                break
 
     def ravage(self, w, A, B, t):
         """`war_odds`: A, too weak to besiege city t, lays waste B's land

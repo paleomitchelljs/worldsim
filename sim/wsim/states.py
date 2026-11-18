@@ -305,6 +305,7 @@ class StatesMixin:
             np.where(mown, 1, 0.4 + 0.5 * tolp)
         pop_by = np.bincount(pol[m], weights=self.pop[m], minlength=n)
         str_by = np.bincount(pol[m], weights=popw[m], minlength=n)
+        self._popw = popw               # for pol_refresh
         # fed share and crowding of each state's people, and its
         # herding share
         mo = np.nonzero(m & (self.lin >= 0))[0]
@@ -364,6 +365,7 @@ class StatesMixin:
             p["n_cells"] = int(cells_by[pid])
             p["km2"] = float(area_by[pid])
             p["strength"] = str_by[pid] * mil * (0.3 + 0.7 * p["cohesion"])
+            p["str_raw"] = float(str_by[pid])
             if pid in self.p_output:
                 # gold and silver pay soldiers
                 p["strength"] *= 1 + PREC_STR * min(
@@ -428,6 +430,40 @@ class StatesMixin:
             V["strength"] -= t
             O["strength"] += t
             V["vassal_years"] += DT
+
+    def pol_refresh(self):
+        """`pol_step`: after a political sub-step in which cities changed
+        hands, redraw territory and scale each state's strength by the
+        change in its weighted people (the tick's per-cell weights).
+        A state founded in the tick takes its parent's strength per
+        weighted head (else the median's). Smoothed values, cohesion and
+        adjacency wait for the next tick."""
+        self.territory()
+        self._pt = {}
+        popw = getattr(self, "_popw", None)
+        if popw is None or len(popw) != self.W.N:
+            return
+        pol, n = self.cell_pol, self.next_pid
+        m = pol >= 0
+        str_by = np.bincount(pol[m], weights=popw[m], minlength=n)
+        pop_by = np.bincount(pol[m], weights=self.pop[m], minlength=n)
+        cells_by = np.bincount(pol[m], minlength=n)
+        live = [p for p in self.polities.values() if p["ended"] is None]
+        ratio = [p["strength"] / p["str_raw"] for p in live
+                 if p.get("str_raw", 0) > 0]
+        med = float(np.median(ratio)) if ratio else 1.0
+        for p in live:
+            r, new = p.get("str_raw", 0.0), float(str_by[p["id"]])
+            if r > 0:
+                p["strength"] *= new / r
+            elif new > 0:
+                q = self.polities.get(p.get("parent"))
+                f = q["strength"] / q["str_raw"] if q and \
+                    q.get("str_raw", 0) > 0 else med
+                p["strength"] = new * f
+            p["str_raw"] = new
+            p["pop"] = float(pop_by[p["id"]])
+            p["n_cells"] = int(cells_by[p["id"]])
 
     def extraction(self):
         """`dominion`: each state takes part of its subjects' harvest
@@ -823,14 +859,14 @@ class StatesMixin:
             if not ab or k in self.wars:
                 self.allies.pop(k, None)
                 continue
-            if rng.random() < DT * 0.004 * (1 - self.saccept(ab[0], ab[1],
-                                                               TOL_ALLY)) * \
+            if rng.random() < self.dtp * 0.004 * (
+                    1 - self.saccept(ab[0], ab[1], TOL_ALLY)) * \
                     (1 - threat.get(k, 0.0)):
                 self.allies.pop(k, None)
                 self.ally_kind.pop(k, None)
                 self.count("ally_break")
                 continue
-            if rng.random() < DT * ALLY_LAPSE:
+            if rng.random() < self.dtp * ALLY_LAPSE:
                 self.allies.pop(k, None)
                 self.ally_kind.pop(k, None)
                 self.count("ally_lapse")
@@ -841,7 +877,7 @@ class StatesMixin:
             if self.ally_kind.get(k) == "balance" and \
                     threat.get(k, 0.0) <= 0:
                 pb += ALLY_GONE
-            if pb > 0 and rng.random() < DT * pb:
+            if pb > 0 and rng.random() < self.dtp * pb:
                 self.allies.pop(k, None)
                 self.ally_kind.pop(k, None)
                 self.count("ally_outgrown")
@@ -852,13 +888,13 @@ class StatesMixin:
             if not ab:
                 continue
             a, b = ab
-            p = DT * 0.005 * self.saccept(a, b, TOL_ALLY) * \
+            p = self.dtp * 0.005 * self.saccept(a, b, TOL_ALLY) * \
                 (0.3 + self.ties.get(k, 0.0))
             p_aff = p
             th = threat.get(k, 0.0)
             if th > 0:
                 # a common strong neighbour makes allies of the unlike
-                p += DT * 0.005 * BALANCE * th * \
+                p += self.dtp * 0.005 * BALANCE * th * \
                     self.saccept(a, b, TOL_TRADE)
             r = rng.random()
             if r < p:
@@ -877,7 +913,7 @@ class StatesMixin:
             if not ab or self.ties.get(k, 0) < 0.3:
                 continue
             a, b = ab
-            p = DT * 0.0025 * self.saccept(a, b, TOL_FUSE) * \
+            p = self.dtp * 0.0025 * self.saccept(a, b, TOL_FUSE) * \
                 0.5 * (self.eff(a, "state") + self.eff(b, "state"))
             if rng.random() < p:
                 self.count("fusion" if a["culture"] != b["culture"]
@@ -922,7 +958,7 @@ class StatesMixin:
                 continue
             rel = min(2.0, 2 * V["strength"] / max(O["strength"], 1))
             alien = 1.5 if V["culture"] != O["culture"] else 1.0
-            if rng.random() < DT * VASSAL_DEFECT * rel * \
+            if rng.random() < self.dtp * VASSAL_DEFECT * rel * \
                     (1.5 - O["cohesion"]) * alien:
                 del self.vassal[v]
                 self.count("vassal_defect")
@@ -934,7 +970,7 @@ class StatesMixin:
                              polities=[v, o])
             elif V["culture"] == O["culture"] and len(V["cities"]) <= 3 \
                     and V["vassal_years"] >= 50 and rng.random() < \
-                    DT * 0.004 * (0.5 + self.eff(O, "state")):
+                    self.dtp * 0.004 * (0.5 + self.eff(O, "state")):
                 for c in list(V["cities"]):
                     self.cities[c]["polity"] = o
                     self.cities[c]["owners"].append(o)
@@ -1236,7 +1272,7 @@ class StatesMixin:
                 Lx = int(self.lin[x])
                 alien = 1 + 3 * (1 - self.similarity(L, Lx)) * \
                     (1 - 0.6 * self.tol[L])
-                pr = DT * REVOLT_BASE * (dx / reach) ** 2 * \
+                pr = self.dtp * REVOLT_BASE * (dx / reach) ** 2 * \
                     (1.5 - p["cohesion"]) * alien * (1 + 0.2 * math.log(nc))
                 pr *= 1 + UNREST * p["stress"]
                 if p.get("acc_until", -1) > self.year:
@@ -1430,7 +1466,8 @@ class StatesMixin:
         if "rulers" in self.on:
             return self.reign_end(pid, p)
         rng = self.R("succession")
-        p["next_succ"] = self.year + max(DT, rng.exponential(SUCC_GEN))
+        p["next_succ"] = self.year + max(
+            self.dtp, rng.exponential(SUCC_GEN))
         L = p["lin"]
         q = SUCC_P * (1.3 - 0.6 * self.eff(p, "state"))
         q *= 0.5 + self.eff(p, "viol")
@@ -1446,7 +1483,8 @@ class StatesMixin:
         exp_reign = SUCC_GEN * self.plife[self.Lpeople[L]]
         r = p.get("ruler") or dict(id=-1, start=p["founded"])
         reign = self.year - r["start"]
-        p["next_succ"] = self.year + max(DT, rng.exponential(exp_reign))
+        p["next_succ"] = self.year + max(
+            self.dtp, rng.exponential(exp_reign))
         nc = len(p["cities"])
         outcome = "peaceful"
         if nc >= 4 and rng.random() < self.Lpart[L] * min(1.0, nc / PART_N):

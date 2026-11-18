@@ -95,7 +95,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "city_admin", "city_history", "rule_weak", "city_trade",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
-            "war_odds", "site_defence", "ruler_mil"]
+            "war_odds", "site_defence", "ruler_mil", "pol_step"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -910,6 +910,17 @@ WAR_P_CAP = 0.1
 TRUCE_WAR, TRUCE_VASSAL, TRUCE_HEIRS = 30, 10, 20
 TIE_DECAY, SEA_ADJ_EVERY = 0.1, 20
 SIEGE_TOLL, SIEGE_COH = 0.03, 0.02
+# Yearly political step (`pol_step`, WP5 stage D, 2026-11-18; U: build it,
+# sieges with a length; numbers C). Diplomacy, war and rebellion run every
+# DT_POL years inside the tick. A siege lasts L = ceil(exponential(
+# SIEGE_YEARS x the city's defence)) years, 1 to SIEGE_MAX, the defence
+# being terrain x site x walls x 1.25 at a capital (1.4-3 at most
+# cities, so a mean of about 2-4 years). The city loses SIEGE_TOLL over
+# the whole siege, spread over its years; the siege is decided at its end
+# on the odds then. Logistics sets how many sieges a side runs at once
+# (1 + floor(LOG_SIEGE x G), as before). Without the switch a siege is
+# decided when it is laid, as before.
+DT_POL, SIEGE_YEARS, SIEGE_MAX = 1.0, 1.0, 8
 # Odds-gated war (`war_odds`, WP5 stage B, 2026-11-18; U: build it; forms
 # from the review, numbers C). Declaring: the deterrence factor becomes
 # floor + (1 - floor) x logistic((ln R - ln ODDS_MID) / ODDS_W), with

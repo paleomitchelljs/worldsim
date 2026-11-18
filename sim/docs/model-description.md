@@ -992,6 +992,15 @@ the first side at random:
   × (1 − 0.6 × G / 1.5 `[logistics]`), at least 0.8 once the goal city
   is taken `[war_goals]`, or when the defender falls; truce 30 years.
 
+- `[pol_step]` (WP5 D, 2026-11-18, C) the war step runs every year
+  inside the tick, with the chances above per 5 years applied as 1 − (1
+  − p)^(1/5) and per-year rates × 1. A siege lasts ceil(Exp(1.0 × D))
+  years, 1-8, D = 1.4 × terrain × site × walls × 1.25 at a capital; the
+  city loses 3% over the siege; it is decided at its end on the odds
+  then. Each side runs 1 + floor(2 × G) sieges at once at distinct
+  cities. After a year in which a city changed hands territory is
+  redrawn and strength scaled by the change in weighted population.
+
 ### 13.2a Counteroffensives `[two_sided]`
 
 - In each 5 years of a war the defender strikes back with chance 0.5 ×

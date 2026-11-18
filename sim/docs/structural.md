@@ -1531,3 +1531,27 @@ rules/war.md.
   the besieger's projected strength in `wars_step` (and in the cession
   test) and in `counteroffensive`. `deter` does not read it, so
   `war_chance` is unchanged. rulers.csv `offense` is each reign's g.
+
+## 2026-11-18: clocks in years and a yearly political step (WP5 C, D; `pol_step`)
+
+U (2026-11-18): build stage D, with sieges that have a length. Numbers C.
+- **Stage C.** Truces, war ages, last sieges and the plague gap are held
+  in years; rates once written per tick are quoted per 5 years (SPAN)
+  and applied with `params.over(p, years)`. `upgrade()` converts old
+  saved states (flag `clock_years`).
+- **`Sim.politics`.** Runs `diplomacy`, `wars_step` and `rebellions`
+  DT / DT_POL times a tick, setting `self.year` to each sub-year and
+  `self.dtp` to the sub-step's length. Every rate in those three (and in
+  `war_chance`, `war_bound`, `vassal_politics`, `succession`) reads
+  `self.dtp`. If a city's polity changed in a sub-step (not the last),
+  `pol_refresh` redraws territory and scales strength by the change in
+  weighted people (`_popw`, cached by `polity_stats`); a state founded
+  that tick takes its parent's strength per weighted head.
+- **Sieges.** `wars_step` keeps a list `w["on"]` of sieges under way:
+  side, city, start and end year. `sieges_run` charges each its share of
+  SIEGE_TOLL and decides those whose time is up (`siege_end`, on the
+  odds then); `sieges_open` and `counteroffensive` fill free slots
+  (`siege_start`). Without `pol_step` a siege is decided when laid, as
+  before.
+- **Not converted.** One sack per war per step; the cultural spike, the
+  `revolted` and `sup_*` accumulators, per tick.
