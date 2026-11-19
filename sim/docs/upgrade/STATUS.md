@@ -34,7 +34,7 @@ what an entry holds.
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
-| 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | HASH |
+| 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
 | 7 | C competition and settlement | not started | | |
@@ -1597,7 +1597,7 @@ decades), or plague that is not tied to city size. Either needs U.
 (first city, war counts) shift by more than the seed spread, so any
 later baseline must be rerun after B.
 
-### WP6 stage B: adopt (2026-11-18, HASH)
+### WP6 stage B: adopt (2026-11-18, b1913d7)
 
 **Decision (U, 2026-11-18, D7):** R_SCALE 0.5 and R_MAX 0.03 as the
 defaults; runs stay 8,000 years.
