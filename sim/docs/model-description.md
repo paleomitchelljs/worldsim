@@ -477,8 +477,9 @@ K. Growth, migration pressure and room use K × pref.
 - r_eff = r' × (0.6 + 0.4 × farming) × frontier, with r' = R_SCALE × r
   and frontier = 1 + FRONT_K × clip(1 − pop / (FRONT_END × K), 0, 1);
   FRONT_K 1.5, FRONT_END 0.5. r_eff is capped at R_MAX where R_MAX > 0
-  (declines are not capped). R_SCALE 1.0, R_MAX 0 (no cap) by default
-  (WP6 stage A, 2026-11-18, **C**).
+  (declines are not capped). R_SCALE 0.5, R_MAX 0.03 by default
+  (**U->C**: adopted 2026-11-18, decision D7, from the WP6 stage A
+  experiment; until then 1.0 and no cap). FRONT_K and FRONT_END are **C**.
 - `[dragons]` r_b = r' − dragon cut (section 8); r_eff = r_b × (0.6 + 0.4
   farming) × (frontier if r_b > 0, else 1), capped at R_MAX.
 - pop ← K × pop / (pop + (K − pop) × e^(−r_eff × DT)) where r_eff ≥ 0;

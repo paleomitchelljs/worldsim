@@ -34,7 +34,7 @@ what an entry holds.
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
-| 6 | B adopt | not started | | |
+| 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | HASH |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
 | 7 | C competition and settlement | not started | | |
@@ -1596,3 +1596,45 @@ decades), or plague that is not tied to city size. Either needs U.
 **Next stage needs to know.** Under R_SCALE, early-history measures
 (first city, war counts) shift by more than the seed spread, so any
 later baseline must be rerun after B.
+
+### WP6 stage B: adopt (2026-11-18, HASH)
+
+**Decision (U, 2026-11-18, D7):** R_SCALE 0.5 and R_MAX 0.03 as the
+defaults; runs stay 8,000 years.
+
+**Done.**
+- `params.py`: R_SCALE 0.5, R_MAX 0.03 (U->C). FRONT_K and FRONT_END
+  unchanged (C).
+- Docs: rules/population.md (what the setting costs in timeline),
+  model-description.md section 7, startup.md (the head start is worth
+  less now; values left as they are), README.md decision register (D7),
+  BASELINE.md (new baseline table), run-log.md, open-questions.md.
+- `--years` stays 8,000 (U). `running.md` needed no change: it holds no
+  growth numbers, and the head-start note went into startup.md, where
+  the head starts are described.
+
+**Runs.** `wp6b_seed101`-`104`, `106`, 8,000 years, standard settings.
+Seed 101 reproduces `wp6a_s05` exactly. Five seeds rather than "a run or
+two" because the baseline table it replaces is a five-seed range.
+
+**Results** (ranges over five seeds; run-log.md and BASELINE.md):
+- First city 565-1,120; 10M people 2,260-2,795; steel 4,995-7,345 (all
+  seeds reach it; two within about 850 years of the end).
+- Population at 8,000 56-97M (108-178M in `wp1f_fullclim_`).
+- Plague recovery to 90%: median 65-90 years.
+- Fewer states reach three cities (129-416, from 334-914 in `wp1f`),
+  but they live longer (median 204-474 years). Part of this is WP5.
+- Elves are the largest people in four of five seeds (29-56%); they were
+  already 20-69% in `wp1f`.
+
+**Not done.**
+- Contingency (`realism.py --cross`) not remeasured.
+- Saved states for branching not remade (open-questions.md).
+- Head-start values not changed: with slower growth the early peoples
+  hold about a third as much land when the latecomers arrive (1.1-1.4%
+  against 3.7-3.9%). Whether to lengthen the head starts is for U.
+
+**Next stage needs to know.** Compare against `wp6b_` from now on, not
+`wp1f_fullclim_`. Population still sits near capacity once land fills;
+if crises are to last, the next step is lagged capacity or plague not
+tied to city size (stage A entry), both needing U.

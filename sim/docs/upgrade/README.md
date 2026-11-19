@@ -78,7 +78,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D4 | New Python packages in `~/.venvs/worldsim` (xarray + netCDF4, geopandas, SALib) | yes; pin in a `requirements.txt` | 2026-11-17 (U): yes to xarray + netCDF4 and geopandas (+ shapely, pyogrio); installed and pinned in `sim/requirements.txt`. SALib not yet asked for (WP9) |
 | D5 | Trade food must come from somewhere, and world population will fall when it does | accept the fall; do not retune to restore city sizes | 2026-11-17 (U): accept the fall |
 | D6 | Keep the base city-cell boost (1.5 x development), which also adds capacity from nothing | keep, but show it as its own ledger line | 2026-11-17 (U): keep, as recommended (shown as `produced_boost` in `food.csv`) |
-| D7 | Lower growth rates, which stretches the early timeline (first cities arrive later) | try a few settings first; decide on the results | |
+| D7 | Lower growth rates, which stretches the early timeline (first cities arrive later) | try a few settings first; decide on the results | 2026-11-18 (U): R_SCALE 0.5, R_MAX 0.03; keep 8,000-year runs |
 | D8 | Cityless polities (tribes, confederations, herder states) | build, as "camp" seats | |
 | D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | |
 | D10 | When derived climate disagrees with the hand-drawn biome map | the drawn map wins; climate fields vary conditions within a biome | |

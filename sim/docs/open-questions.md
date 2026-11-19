@@ -672,3 +672,16 @@ would tell whether this is real before anything is built on it.
   a given fall takes longer. A test of recovery alone would need the
   same shocks in each setting, for example branches from one saved state
   with plague forced at one year.
+
+## Small metric problems found at WP6 B (2026-11-18)
+
+- **`created / city food` blows up before cities exist.** In the
+  `wp6b_` batch the 1000-2000 value reaches 2.6e13 in one seed: the
+  base city boost is divided by city food that is near zero when the
+  first city has only just been founded. The measure should be blank
+  when city food is below some floor. Analysis only; the sim is not
+  affected.
+- **The saved states are stale.** `runs/wp1f_s10{1,3}_y{3000,5000}.pkl`
+  were made before WP4-WP6. Branch tests from them run the new code on
+  an old world (twice the population, more cities). Remake them from
+  `wp6b_` settings when a branch test is next needed.

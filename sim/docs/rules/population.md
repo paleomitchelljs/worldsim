@@ -60,9 +60,17 @@ The last term is frontier fecundity: thinly settled land grows up to
 1 + FRONT_K (2.5x) faster, falling to 1x at FRONT_END (0.5) of K.
 
 WP6 stage A (2026-11-18, **C**) made the two numbers constants and added
-R_SCALE (1.0, a multiplier on every lineage's r) and R_MAX (0 = no cap,
-a ceiling on the effective yearly rate). The defaults leave growth as it
-was. R_SCALE does not scale the dragon cut, so a lower R_SCALE puts more
+R_SCALE (a multiplier on every lineage's r) and R_MAX (a ceiling on the
+effective yearly rate; 0 = no cap). Stage B adopted R_SCALE 0.5 and
+R_MAX 0.03 (**U->C**, 2026-11-18, decision D7; before then 1.0 and no
+cap). Every lineage grows at half its roster rate, so the ratios between
+peoples are unchanged, and no cell grows faster than 3% a year. The cost
+is time: the first city comes about 500-750 years later (about year
+900-1,100 against 360), 10M people about 1,400-2,000 years later, and the
+metals up to about 1,000 years later; steel still arrives before year
+8,000 (5,400-6,000 in the stage A runs). Recovery after a plague is about
+20-40% slower (median 75-85 years back to 90%). Population still sits
+near capacity once land fills. R_SCALE does not scale the dragon cut, so a lower R_SCALE puts more
 peoples below zero under dragons. The minority's rate takes R_SCALE and
 R_MAX too (it has no frontier term).
 

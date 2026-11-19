@@ -59,6 +59,12 @@ Code: `Sim.start_sites`, `wander_setup`, `wander`, `place_arrivals`,
   1500-year head start let Snake folk and Elves fill the habitable world
   before anyone else arrived. The latecomers landed on polar tundra and
   never recovered (runs `size_seed51`–`54`).
+- **Under the slower growth of WP6 B (R_SCALE 0.5, R_MAX 0.03,
+  2026-11-18).** The head start is worth less. At year 400, when the
+  latecomers arrive, the early peoples hold 1.1–1.4% of land, against
+  3.7–3.9% before (`wp6a_s05`, `wp6a_base`; seeds 101 and 103). The values
+  are left as they are (they are the user's). A larger head start would
+  restore the old advantage, but that is for the user to decide.
 
 ## Placement: score (legacy, `--start-mode score`)
 

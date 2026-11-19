@@ -198,8 +198,10 @@ DECAY_ADMIN, DECAY_METAL = 0.002, 0.0004   # per year, scaled by city loss
 # 1 + FRONT_K where a cell is empty, falling to 1 at FRONT_END x K.
 # R_SCALE multiplies every lineage's growth rate; R_MAX caps the
 # effective yearly rate (after farming and frontier; 0 = no cap).
+# Adopted 2026-11-18 (U->C, D7): R_SCALE 0.5, R_MAX 0.03; before WP6 B
+# they were 1.0 and 0 (no cap).
 FRONT_K, FRONT_END = 1.5, 0.5
-R_SCALE, R_MAX = 1.0, 0.0
+R_SCALE, R_MAX = 0.5, 0.03
 # Minorities: one secondary people per cell, up to MIN_CAP of the cell's K.
 MIN_CAP = 0.2
 MIN_GARRISON = 0.04         # of the city, settled by a conqueror

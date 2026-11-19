@@ -20,6 +20,10 @@ in `docs/run-log.md`, "2026-11-17 WP1 stage F". Median end population is
 3,000 and 5,000 of seeds 101 and 103 (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`)
 are from the same settings (runs `wp1g_states_seed101`, `103`).
 
+**Update, 2026-11-18 (WP6 stage B).** The baseline is now
+`wp6b_seed101`-`104` and `106` (last section), after WP4, WP5 and the
+adopted growth settings.
+
 **Update, 2026-11-17 (WP2 stage B).** Every measure below is now a
 function in `wsim/metrics.py`; each run writes them to `metrics.json`,
 and `realism.py` prints them (`--group`, `--cross`). Run on `al_seed103`,
@@ -141,45 +145,51 @@ Reproduce:
 400 constants in `wsim/params.py` (362 numeric scalars), 27 switches in
 `FEATURES`.
 
-## The new baseline batch (`wp1f_fullclim_seed101`-`104`, `106`)
+## The current baseline batch (`wp6b_seed101`-`104`, `106`)
 
-Ranges across the five seeds, from their `metrics.json`
-(`realism.py --group 'wp1f_fullclim_seed10?'`). Contingency is over the
-ten pairs (`realism.py --cross`).
+**Replaced 2026-11-18 (WP6 stage B).** The table below was the
+`wp1f_fullclim_` batch until WP6 B; that table is in git history
+(before this commit) and in `docs/run-log.md`, "2026-11-17 WP1 stage F".
+The new batch is the code after WP4 (food ledger, debited trade), WP5
+(odds-gated war, yearly politics, army stock, camps) and WP6 B
+(R_SCALE 0.5, R_MAX 0.03). Ranges across the five seeds, from their
+`metrics.json` (`realism.py --group 'runs/wp6b_seed10?'`); timeline rows
+from `docs/upgrade/tools/wp6_growth.py`. The `wp1f` column is given for
+scale only: it differs from `wp6b` by three packages, not by growth alone.
 
-| Measure | Range |
-|---|---|
-| World population at 8000 | 108-178M |
-| Growth by millennium, 2000-8000 (%/yr) | -0.005 to 0.064; each millennium spans 0.02-0.05 across seeds |
-| Log population, sd around 200-yr mean after 3000 | 0.014-0.040 |
-| Largest 100-yr fall after 3000 (log) | -0.32 to -0.07 |
-| Herding share, peak | 0.31-0.37, at years 1970-2310 |
-| Urban share at the end | 0.077-0.103 |
-| Rank-size slope at the end | -0.38 to -0.36 |
-| Largest city, share of world | 0.07-0.09% |
-| Minority share of heads, end | 0.8-1.5% |
-| Polities | 2,550-5,834 |
-| Never above one city | 67-76%; median life 35-100 yr |
-| Ended 3+ city states, lifespan | median 150-310 yr; mean 275-490; CV 1.1-1.5; over 1,000 yr 5-12%; longest 2,960-4,245 |
-| Largest state | 3.5-7.9M km² (2.9-6.5% of land) |
-| Top-10 states, median land pieces / groups joined by sea | 5.5-9.5 / 1-2 |
-| Wars | 1,760-7,383 |
-| Wars ending inside one tick / within 5 yr | 65-71% / 81-85% |
-| Wars with 0-1 sieges | 54-60% |
-| Peer wars | 1.5-2.4% |
-| Sieges taken | 23-24% |
-| Siege odds at launch, median: attacker / counter-offensive | 0.068-0.122 / 0.006-0.022 |
-| ... share under 0.1: attacker / counter-offensive | 46-55% / 82-90% |
-| States at war, by millennium after 3000 | 0.03-0.11 |
-| City food: trade / rent / provincial / capital | 0.35-0.44 / 0.30-0.34 / 0.12-0.16 / 0.13-0.15 |
-| Deaths: dragon / feud / raid / hunger / plague | 0.56-0.64 / 0.17-0.22 / 0.07-0.10 / 0.02-0.06 / 0.02-0.11 |
-| Pop share coast or river (land 0.18) | 0.62-0.65 |
-| Pop share alluvial fill (land 0.099) | 0.082-0.097 |
-| Population in a state / land area / land cells | 0.81-0.91 / 0.35-0.52 / 0.22-0.35 |
-| Same people, cell by cell (chance) | 0.57-0.73 (0.21-0.27) |
-| City sites within one cell (chance) | 0.45-0.76 (0.08-0.12) |
-| Correlation of log(1 + cell population) | 0.91-0.94 |
+| Measure | wp6b (current) | wp1f_fullclim (old) |
+|---|---|---|
+| First city (year) | 565-1,120 | 350-465 |
+| 10M people (year) | 2,260-2,795 | 785-900 |
+| First steel (year) | 4,995-7,345 | 3,995-7,130 |
+| World population at 8000 | 56-97M | 108-178M |
+| Growth by millennium, 2000-8000 (%/yr) | 0.010 to 0.065 | -0.005 to 0.064 |
+| Log population, sd around 200-yr mean after 3000 | 0.010-0.024 | 0.014-0.040 |
+| Largest 100-yr fall after 3000 (log) | -0.20 to -0.11 | -0.32 to -0.07 |
+| Plague recovery, years back to 90%, median | 65-90 | (not measured) |
+| Herding share, peak | 0.21-0.34, at years 2550-3665 | 0.31-0.37, at 1970-2310 |
+| Urban share at the end | 0.046-0.063 | 0.077-0.103 |
+| Rank-size slope at the end | -0.56 to -0.46 | -0.38 to -0.36 |
+| Largest city, share of world | 0.06-0.13% | 0.07-0.09% |
+| Minority share of heads, end | 1.6-2.2% | 0.8-1.5% |
+| Polities | 2,329-4,286 | 2,550-5,834 |
+| Never above one city | 78-90%; median life 100 yr | 67-76%; 35-100 yr |
+| Ended 3+ city states, lifespan | median 204-474 yr; mean 389-767; CV 1.07-1.32; over 1,000 yr 9-23% | median 150-310; mean 275-490; CV 1.1-1.5; 5-12% |
+| Largest state | 2.6-5.0M km² (2.1-4.1% of land) | 3.5-7.9M km² (2.9-6.5%) |
+| Top-10 states, median land pieces | 2.5-5.5 | 5.5-9.5 |
+| Wars | 1,264-6,006 | 1,760-7,383 |
+| Wars ending inside one tick / within 5 yr | 7-14% / 51-57% | 65-71% / 81-85% |
+| Peer wars | 0.2-0.9% | 1.5-2.4% |
+| Sieges taken | 50-53% | 23-24% |
+| Siege odds at launch, median (attacker) | 0.40-0.48 | 0.068-0.122 |
+| City food: trade / rent / provincial / capital | 0.08-0.11 / 0.44-0.46 / 0.15-0.19 / 0.27-0.33 | 0.35-0.44 / 0.30-0.34 / 0.12-0.16 / 0.13-0.15 |
+| Deaths: feud / raid / plague / hunger | 0.46-0.63 / 0.21-0.28 / 0.04-0.20 / 0.02-0.05 | (dragon in the table then; not comparable since WP4 C) |
+| Pop share coast or river (land 0.18) | 0.63-0.67 | 0.62-0.65 |
+| Pop share alluvial fill (land 0.099) | 0.089-0.116 | 0.082-0.097 |
+| Population in a state / land area / land cells | 0.65-0.82 / 0.19-0.33 / 0.12-0.20 | 0.81-0.91 / 0.35-0.52 / 0.22-0.35 |
+| Occupied land cells, end | 0.69-0.74 | 0.76-0.81 |
+| Elves' share of people, end | 29-56% | 20-69% |
 
-Against `al_seed103`, which ran with different levers: city food leans
-more on trade and rent and less on the capital's take, and the defender
-falls far less often when it holds 5+ cities (0.01-0.08 against 0.11).
+Not remeasured: contingency across seeds (`--cross`). The saved states
+for branching (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`) are from the old
+code and should not be used as a baseline any more.

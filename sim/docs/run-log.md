@@ -2068,3 +2068,43 @@ new constants at their defaults change nothing. Measures from
   empty land in every setting.
 - **States and wars** fall steeply with slower growth: wars -70 to -90%
   at R_SCALE 0.5-0.33, through fewer and later cities.
+
+### 2026-11-18 WP6 stage B: new baseline at R_SCALE 0.5, R_MAX 0.03 (`wp6b_seed101`-`104`, `106`)
+
+What it tested: the model with the growth settings adopted under D7 (U,
+2026-11-18: R_SCALE 0.5, R_MAX 0.03, runs stay 8,000 years). Standard
+settings, every default switch, seeds 101-104 and 106, 8,000 years,
+about 12-14 minutes each with five running at once. `wp6b_seed101`
+reproduces `wp6a_s05` exactly (same `events.txt`), so the defaults are
+the stage A setting. The full table, with the old `wp1f_fullclim_`
+batch beside it for scale, is in `docs/upgrade/BASELINE.md`, "The current
+baseline batch".
+
+| Seed | first city | 10M people | bronze | iron | steel | pop 8000 (M) | plague recovery, median yr |
+|---|---|---|---|---|---|---|---|
+| 101 | 1,120 | 2,260 | 4,220 | 4,940 | 5,425 | 62 | 85 |
+| 102 | 605 | 2,555 | 5,770 | 6,600 | 7,150 | 80 | 90 |
+| 103 | 865 | 2,795 | 4,650 | 5,330 | 5,955 | 79 | 75 |
+| 104 | 565 | 2,335 | 3,825 | 4,565 | 4,995 | 97 | 65 |
+| 106 | 605 | 2,295 | 5,600 | 6,665 | 7,345 | 56 | 70 |
+
+- **Steel arrives in every seed**, at 4,995-7,345. Seeds 102 and 106 are
+  within about 850 years of the end, so a slow seed could miss it; that
+  was true before as well (`wp1f_fullclim_seed106`: 7,130).
+- **The first city comes at 565-1,120** (350-465 in `wp1f`), and
+  10M people at 2,260-2,795 (785-900). Population at 8,000 is 56-97M,
+  against 108-178M in `wp1f` and 83 / 136M in `wp5f_seed101` / `103`.
+- **Recovery from plague** takes a median 65-90 years to get back to
+  90%, against 60 / 65 in `wp5f`. Volatility around the 200-year mean is
+  lower (0.010-0.024 against 0.014-0.040), for the reason in
+  open-questions.md (plague follows urban population).
+- **States are smaller and fewer reach three cities** (129-416 against
+  334-914), but those that do live longer (median 204-474 years against
+  150-310). Land in a state at the end is 19-33% of land area against
+  35-52%. How much of this is WP5 and how much WP6 cannot be separated
+  from this batch; `wp5f` exists only for seeds 101 and 103.
+- **Peoples.** Elves are the largest people in four of five seeds
+  (29-56% at year 8,000; 20-69% in `wp1f`). Trolls, Ogres and Giants stay
+  under 0.3% as before.
+- Every check in `checks.txt` passed; `final_maps.png` of seed 102 shows
+  people across the habitable land, 191 states and the usual cities.
