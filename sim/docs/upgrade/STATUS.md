@@ -37,7 +37,7 @@ what an entry holds.
 | 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
 | 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
 | 7 | A design note | confirmed (U, D9: presence table, niche overlap, inner raids, flight = 1 − violence) | 2026-11-18 | 5138b4c |
-| 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | HASH |
+| 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | 1a17b6e |
 | 7 | C competition and settlement | not started | | |
 | 7 | D displacement | not started | | |
 | 8 | A climate fields | not started | | |
@@ -1697,7 +1697,7 @@ a presence table, so stage B changes storage only and can be checked by
 an exact rerun. Coexistence by niche overlap (herding vs farming, biome
 fit) rather than a floor. Four questions for U at its end. Nothing built.
 
-### WP7 stage B: presence table (2026-11-18, HASH)
+### WP7 stage B: presence table (2026-11-18, 1a17b6e)
 
 **Decisions (U, 2026-11-18, D9):** presence table rather than slots; niche
 overlap for coexistence; raids between peoples in one cell; the share
