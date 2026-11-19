@@ -38,8 +38,8 @@ what an entry holds.
 | 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
 | 7 | A design note | confirmed (U, D9: presence table, niche overlap, inner raids, flight = 1 − violence) | 2026-11-18 | 5138b4c |
 | 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | 1a17b6e |
-| 7 | C competition and settlement | done (`shared_cells` on by default) | 2026-11-18 | HASH |
-| 7 | D displacement | done (`displacement` on by default; cascades not measured) | 2026-11-18 | HASH |
+| 7 | C competition and settlement | done (`shared_cells` on by default) | 2026-11-18 | a7dc06b |
+| 7 | D displacement | done (`displacement` on by default; cascades not measured) | 2026-11-18 | a7dc06b |
 | 8 | A climate fields | not started | | |
 | 8 | B yields and runoff | not started | | |
 | 8 | C floodplain area | not started | | |
@@ -1728,7 +1728,7 @@ deleted).
 - Price (`diagnostics.price`) still counts main rows only (design note
   section 7).
 
-### WP7 stages C and D: shared cells and flight (2026-11-18, HASH)
+### WP7 stages C and D: shared cells and flight (2026-11-18, a7dc06b)
 
 U asked for the rest of WP7 in one session, results to review next
 morning. Both switches on by default; numbers C.
