@@ -302,9 +302,18 @@ class StatesMixin:
         mfe = self.mpop * self.peat[np.maximum(self.mcul, 0)] * \
             (self.mlin >= 0)
         pcm = pc[np.maximum(pol, 0)]
-        tot_fe = np.bincount(pol[m], weights=(fe + mfe)[m], minlength=n)
+        # further peoples in a cell (WP7 C) count as minorities do
+        x = self.xrows()
+        xc, xp = self.rc[x], self.rp[x]
+        xfe = self.rh[x] * self.peat[xp]
+        xall = np.bincount(xc, weights=xfe, minlength=len(pol))
+        xfor = np.bincount(xc, weights=xfe * (xp != pcm[xc]),
+                           minlength=len(pol))
+        tot_fe = np.bincount(pol[m], weights=(fe + mfe + xall)[m],
+                             minlength=n)
         for_fe = np.bincount(pol[m], weights=(fe * (self.cul != pcm) +
-                                              mfe * (self.mcul != pcm))[m],
+                                              mfe * (self.mcul != pcm) +
+                                              xfor)[m],
                              minlength=n)
         foreign = for_fe / np.maximum(tot_fe, 1e-9)
         tolp = self.tol[pl[np.maximum(pol, 0)]]
@@ -315,6 +324,9 @@ class StatesMixin:
         popw = popw + (self.mlin >= 0) * self.mpop * \
             self.psize[np.maximum(self.mcul, 0)] * \
             np.where(mown, 1, 0.4 + 0.5 * tolp)
+        popw = popw + np.bincount(
+            xc, minlength=len(pol), weights=self.rh[x] * self.psize[xp] *
+            np.where(xp == pcm[xc], 1, 0.4 + 0.5 * tolp[xc]))
         pop_by = np.bincount(pol[m], weights=self.pop[m], minlength=n)
         str_by = np.bincount(pol[m], weights=popw[m], minlength=n)
         self._popw = popw               # for pol_refresh
@@ -602,6 +614,16 @@ class StatesMixin:
             (self.mlin >= 0)
         subj = fe * (self.cul != self.rul_c) + mfe * (self.mcul != self.rul_c)
         own = fe * (self.cul == self.rul_c) + mfe * (self.mcul == self.rul_c)
+        x = self.xrows()
+        if len(x):
+            # further peoples in a cell (WP7 C)
+            xc, xp = self.rc[x], self.rp[x]
+            xfe = self.rh[x] * self.peat[xp]
+            xo = xp == self.rul_c[xc]
+            subj = subj + np.bincount(xc, weights=xfe * ~xo,
+                                      minlength=len(subj))
+            own = own + np.bincount(xc, weights=xfe * xo,
+                                    minlength=len(own))
         take = np.bincount(pol[m], weights=(self.ext_x * subj)[m],
                            minlength=n) * EXT_EFF
         cc = np.fromiter(self.cities.keys(), int) if self.cities else \
@@ -710,11 +732,23 @@ class StatesMixin:
         own_b = self.mcul == self.rul_c
         own_fe = fe * own_a + mfe * own_b
         need = fe + mfe
-        sub_fe = need - own_fe
         # each lineage pays its own people's rate on its own capacity
         # (WP4 D: before, one blended rate on the main lineage's capacity
         # alone, and a minority's payment was lost)
         Qo = Qa * own_a + Qb * own_b
+        x = self.xrows()
+        x = x[m[self.rc[x]]]
+        if len(x):
+            # further peoples in a cell (WP7 C), as the minority
+            xc, xp = self.rc[x], self.rp[x]
+            xo = xp == self.rul_c[xc]
+            Qx = self.Kf(self.rl[x], xc, raw=True) * eat[xp]
+            xfe = self.rh[x] * eat[xp]
+            Q = Q + np.bincount(xc, weights=Qx, minlength=N)
+            Qo = Qo + np.bincount(xc, weights=Qx * xo, minlength=N)
+            need = need + np.bincount(xc, weights=xfe, minlength=N)
+            own_fe = own_fe + np.bincount(xc, weights=xfe * xo, minlength=N)
+        sub_fe = need - own_fe
         Qs = Q - Qo
         # peasants eat first: FF_FORCE of the nominal take comes whatever
         # the harvest, the rest only from what is left after they eat

@@ -128,7 +128,8 @@ class DiagnosticsMixin:
                                != self.polities[y]["culture"])))
         st.update(self.dragon_record())
         self.n_revolts = 0
-        CNT = ["city_revolt", "city_revolt_capital", "city_revolt_secede",
+        CNT = ["infiltrate_heads", "refugees", "raid_inner",
+               "city_revolt", "city_revolt_capital", "city_revolt_secede",
                "city_speciation", "lineage_absorb", "lineage_absorb_whole", "lineage_fuse",
                "lineage_fuse_whole", "city_new_elite",
                "fortress_toll", "fortress_heads",
@@ -288,10 +289,11 @@ class DiagnosticsMixin:
                         deaths=round(float(v[i]))))
             self.deaths = {}
 
-    def dead(self, cause, cells, lost, minority=False):
+    def dead(self, cause, cells, lost, minority=False, rows=False):
         """Records: deaths by cause and people, summed per century into
-        deaths.csv. cells None: lost is a whole-grid array."""
-        cul = self.mcul if minority else self.cul
+        deaths.csv. cells None: lost is a whole-grid array. rows: `cells`
+        are rows of the presence table (WP7)."""
+        cul = self.rp if rows else self.mcul if minority else self.cul
         c = np.atleast_1d(cul if cells is None else cul[cells])
         lost = np.atleast_1d(lost)
         ok = (c >= 0) & (lost > 0)
@@ -304,11 +306,11 @@ class DiagnosticsMixin:
         acc += v
         self.ac_dead += v
 
-    def forgone(self, cells, lost, minority=False):
+    def forgone(self, cells, lost, minority=False, rows=False):
         """Records (WP4 stage C): growth that dragons' cut in the growth
         rate prevented, per people, summed per century into growth.csv.
-        Not deaths: nobody was removed."""
-        c = (self.mcul if minority else self.cul)[cells]
+        Not deaths: nobody was removed. rows: `cells` are table rows."""
+        c = (self.rp if rows else self.mcul if minority else self.cul)[cells]
         ok = (c >= 0) & (lost > 0)
         self.ac["forgone_dragon"] += np.bincount(
             c[ok], weights=lost[ok], minlength=self.nP)
@@ -325,6 +327,8 @@ class DiagnosticsMixin:
         b = self.mlin >= 0
         h = np.bincount(self.cul[a], weights=self.pop[a], minlength=n) + \
             np.bincount(self.mcul[b], weights=self.mpop[b], minlength=n)
+        x = self.xrows()
+        h += np.bincount(self.rp[x], weights=self.rh[x], minlength=n)
         for P in self.polities.values():
             # soldiers under arms (`army`) are out of their cells
             if P.get("army", 0.0) > 0:
@@ -339,7 +343,9 @@ class DiagnosticsMixin:
         (conversion, assimilation) or, if it does not net to zero for the
         world, heads made or lost without a record. Heads added from no
         cell (`made`: merchant quarters, posts, garrisons) are taken out
-        of the phase's net and shown on their own. Reads state only."""
+        of the phase's net and shown on their own. Writes rows queued in
+        the phase to the presence table first (WP7)."""
+        self.rows_flush()
         h = self.heads()
         if self.ac_last is not None:
             dm = self.ac_made - self.ac_mlast
@@ -437,13 +443,17 @@ class DiagnosticsMixin:
         fe = self.pop * eat[np.maximum(self.cul, 0)] * occ
         mok = self.mlin >= 0
         mfe = self.mpop * eat[np.maximum(self.mcul, 0)] * mok
+        x = self.xrows()
+        # further peoples in a cell (WP7 C) eat as minorities do
+        xfe = self.rh[x] * eat[self.rp[x]]
+        xcell = np.bincount(self.rc[x], weights=xfe, minlength=N)
         T = f["rent"] + f["tax"] + f["trib"]
         cc = f["cc"]
         city = np.zeros(N, bool)
         city[cc] = True
         recv = f["loc"] + f["cap"]
         made = 0 * Q if self.td_on else f["trade"]
-        cols = [Q, Q - boost, boost, fe + mfe, f["rent"], f["tax"],
+        cols = [Q, Q - boost, boost, fe + mfe + xcell, f["rent"], f["tax"],
                 f["trib"], (1 - EXT_EFF) * T, f["loc"], f["cap"],
                 made, (Q + recv + f["trade"]) * city,
                 f["cap"] * (self.cul != self.rul_c),
@@ -479,7 +489,8 @@ class DiagnosticsMixin:
                         for v in C])
         i = self.FL_CELL.index("eaten")
         Pp[i] = np.bincount(c, weights=fe, minlength=nP) + \
-            np.bincount(np.maximum(self.mcul, 0), weights=mfe, minlength=nP)
+            np.bincount(np.maximum(self.mcul, 0), weights=mfe, minlength=nP) + \
+            np.bincount(self.rp[x], weights=xfe, minlength=nP)
         i = self.FL_CELL.index("received_smoothed")
         Pp[i] = np.bincount(c, weights=C[i] * occ, minlength=nP)
         Sp = np.vstack([np.bincount(pc[:n], weights=v, minlength=nP)
@@ -596,9 +607,10 @@ class DiagnosticsMixin:
             wbar dzbar = Cov(w, z) + E(w dz)     (weights: ancestor pop)
         selection = Cov/wbar, transmission = E(w dz)/wbar."""
         nL = self.nL
-        occ = self.lin >= 0
-        wts = self.pop[occ] * self.peat[self.cul[occ]]
-        Lpop = np.bincount(self.lin[occ], weights=wts, minlength=nL)
+        # every row of the presence table (WP7 C; main rows only before)
+        occ = self.rl >= 0
+        wts = self.rh[occ] * self.peat[self.rp[occ]]
+        Lpop = np.bincount(self.rl[occ], weights=wts, minlength=nL)
         alive = np.nonzero(Lpop > 0)[0]
         snap = self.price_snap
         ZT = np.hstack([self.LT, self.LX])

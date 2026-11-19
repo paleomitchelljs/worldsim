@@ -1631,3 +1631,28 @@ and the layout with fixed first two rows; `docs/upgrade/WP7-design.md`).
 - Check: `wp7b_seed101` reproduces `wp6c_seed101` exactly (`events.txt`
   and `timeseries.csv` byte-identical), and a state saved at year 3,000
   and continued to 3,500 ends as the run that saved it.
+
+## 2026-11-18: shared cells and flight (`shared_cells`, `displacement`, WP7 C and D)
+
+Design and decisions in `docs/upgrade/WP7-design.md`; numbers C.
+- `wsim/shared.py` (`SharedMixin`). Rows past 2N ("extra rows") hold
+  third and further peoples. `rows_put` adds heads to a people's row in a
+  cell, or the free main or minority row, or queues an extra row;
+  `rows_flush` (from `acct_mark` and `tidy`) writes the queue, so the
+  table is reallocated only between phases; `rows_compact` drops empty
+  extra rows. `rows_find` looks a (cell, people) up.
+- `grow_shared` (from `grow`) replaces the minority block: niche-overlap
+  competition among all rows of a cell (`overlap`, `rows_pairs`).
+- `infiltrate` (after `migrate`), `inner_raids` (after `raids`),
+  `rows_sort` (in `tidy`, replacing `tidy_minorities`' swap).
+- `flee` and `lost_rows` (`displacement`): called at raid takeovers,
+  sacks (capture and `sack`), clearances and expulsions; `rows_scale`
+  gives extra rows the minority's share of raid, ravage and sack damage.
+- Extra rows are also read by: `heads` (growth account), `dead`/`forgone`
+  (`rows=True`), plague (`plague_kill`), `polity_stats`, `extraction`,
+  `food_flows`, the food ledger, dragons' head counts, `add_minority`
+  (garrisons and merchants may take an extra row), `minorities`
+  (expulsion) and `price` (now all rows, the minority included).
+- Not read by: technology contact, city composition (`city_culture`),
+  famine, clearance targeting (main rows of the city's people only), the
+  history snapshots (plurality and minority only).

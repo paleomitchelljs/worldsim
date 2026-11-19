@@ -520,6 +520,8 @@ def write_outputs(sim, out):
                         road=sim.road, improvements=sim.imp, land=sim.land,
                         minority_people=sim.mcul, minority_lineage=sim.mlin,
                         minority_pop=sim.mpop, waste=sim.waste,
+                        rows_cell=sim.rc, rows_people=sim.rp,
+                        rows_lineage=sim.rl, rows_heads=sim.rh,
                         salt=sim.salt,
                         river=sim.W.river, flow_to=sim.W.flow,
                         **((dict(

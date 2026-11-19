@@ -101,6 +101,28 @@ tax take part of it), so it was replaced the same day.
 - **New land.** Empty land is taken by colonization, not by this flow
   ([colonization.md](colonization.md)).
 
+## Several peoples in a cell (WP7 C and D, 2026-11-18)
+
+U (2026-11-18) confirmed `docs/upgrade/WP7-design.md`: a presence table,
+niche overlap, raids inside a cell, flight depending on violence. Numbers
+**C**.
+
+- **Shared cells** (`shared_cells`). A cell may hold any number of
+  peoples, one row each. Peoples compete for the cell's food in
+  proportion to how alike they live: overlap is lower between herders and
+  farmers, and between peoples suited to different biomes, so those can
+  share land; two farming peoples of the same land compete fully. A
+  stronger people (technology; a state's ruling people) weighs more.
+- Crowded people move into a neighbouring cell another people holds if
+  there is room for them there; intolerant and stronger holders resist.
+  Peoples sharing a cell raid each other.
+- The plurality people of a cell is whoever has most food-equivalents;
+  cities follow their plurality.
+- **Flight** (`displacement`). Of those removed by a raid takeover, a
+  sack, a clearance or an expulsion, a share 1 − the attacker's violence
+  flees up to 3 cells, to its own people's cells or empty land with room.
+  Refugees are moves, not deaths, in the growth account.
+
 ## Accounting for people (WP4 stage C, 2026-11-17)
 
 Records, except two fixes marked below. `growth.csv` closes a

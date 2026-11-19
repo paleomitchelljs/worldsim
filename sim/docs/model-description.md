@@ -796,6 +796,38 @@ population, strength.
   food-equivalents becomes the majority (a city carries on under it).
 - At most one minority people per cell. Contact weight for borrowing and
   acculturation 2.0.
+- `[shared_cells]` (WP7 C, 2026-11-18; U: presence table, niche overlap,
+  raids inside a cell; numbers **C**) replaces the last two points: any
+  number of peoples per cell, one row each (one lineage per people per
+  cell). Each tick the rows of a cell are ordered by food-equivalents
+  (plurality first; a city follows its plurality); rows of one people
+  merge; rows under 5 heads (20 in a cell with no main people) vanish.
+  - Growth: a non-main row grows (no frontier term) toward K_i − Σ_j
+    α_ij (w_j / w_i) f_j / e_i, α_ij = 0.9 × overlap_ij, w from the
+    dominion weights, f food-equivalents, e food per head; the main row's
+    K loses the same sum. A merchant quarter keeps its cap (0.2 K).
+    overlap = 1 − 0.5 |herds_i − herds_j| − 0.5 × TV(biome affinities),
+    TV half the summed absolute difference of the normalised vectors.
+  - Movement: a row above its migration threshold (0.9 − 0.6 expansion,
+    crowding against K × fill preference) sends 0.1 × expansion × the
+    excess of its heads per tick (at most half the room) to the
+    neighbouring cell held by another people with the largest room ×
+    √K / edge cost × (1 − 0.9 (1 − holders' tolerance) min(1, w_holder /
+    w_mover)); room = K − 0.9 × overlap with the holders × (Σ w f of the
+    others) / w / e − heads already there. Settlers of the ruling people
+    inside their own state meet no resistance.
+  - Raids inside a cell between rows of different peoples: chance DT ×
+    0.02 × violence × (0.5 + crowding) × (1 + hostility), × 0.2 inside a
+    state; damage 0.12 × violence × √(size ratio) / defence × hardiness,
+    at most 0.6; raiders lose 1% × hardiness.
+  - Further rows take the minority's share of raid, ravage, sack and
+    plague losses, and count as minorities in state strength, extraction,
+    the food flows, dragons' head counts and Price.
+- `[displacement]` (WP7 D; U: share fleeing = 1 − violence): of those
+  removed by a raid takeover, a sack, a clearance or an expulsion, a share
+  1 − the attacker's (or ruler's) violence flees; each band goes to the
+  cell with most room among 16 drawn within 3 cells on its landmass where
+  its people already live or the land is empty. Those with no room die.
 
 ### 12.5 Diplomacy
 

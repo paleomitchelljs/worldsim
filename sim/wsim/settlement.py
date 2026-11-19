@@ -589,7 +589,12 @@ class SettlementMixin:
                 Lt, self.Lpeople[Lt], mv
 
     def tidy(self):
-        self.tidy_minorities()
+        if self.sh_on:
+            self.rows_flush()
+            self.rows_sort()
+            self.rows_compact()
+        else:
+            self.tidy_minorities()
         dead = (self.pop < 5) & (self.lin >= 0)
         self.dead("dwindled", None, self.pop * dead)
         self.pop[dead] = 0
@@ -644,6 +649,15 @@ class SettlementMixin:
         garrisons), recorded as such in growth.csv. Returns which cells
         took them."""
         cells = np.asarray(cells, int)
+        if self.sh_on:
+            # `shared_cells`: a further people takes a row of its own; a
+            # merchant quarter keeps its cap (WP7 C)
+            amount = np.broadcast_to(amount, cells.shape)
+            left = self.rows_put(cells, c, L, amount, capped=capped)
+            ok = left == 0
+            if made and ok.any():
+                self.ac_made[c] += float(amount[ok].sum())
+            return ok
         ok = (self.cul[cells] != c) & ((self.mcul[cells] < 0) |
                                        (self.mcul[cells] == c))
         cells, amount = cells[ok], np.broadcast_to(amount, ok.shape)[ok]
@@ -681,6 +695,24 @@ class SettlementMixin:
         L = pl[self.cell_pol[m]]
         foreign = (L >= 0) & (self.mcul[m] != pc[self.cell_pol[m]])
         pr = DT * MIN_EXPEL * self.hostile(L) * self.tolf(L, 1.0)
-        out = m[foreign & (rng.random(len(m)) < pr)]
-        self.dead("expelled", out, self.mpop[out], minority=True)
-        self.mcul[out], self.mlin[out], self.mpop[out] = -1, -1, 0
+        sel = foreign & (rng.random(len(m)) < pr)
+        out = m[sel]
+        h = self.mpop[out].copy()
+        self.mpop[out] = 0
+        # under `displacement` part of them flee (the ruler's violence)
+        self.lost_rows(self.W.N + out, h, self.viol[L[sel]], "expelled")
+        self.mcul[out], self.mlin[out] = -1, -1
+        if self.sh_on:
+            # further peoples in a state's cells may be expelled too
+            x = self.xrows()
+            x = x[self.cell_pol[self.rc[x]] >= 0]
+            Lx = pl[self.cell_pol[self.rc[x]]]
+            fx = (Lx >= 0) & (self.rp[x] != pc[self.cell_pol[self.rc[x]]])
+            x, Lx = x[fx], Lx[fx]
+            pr = DT * MIN_EXPEL * self.hostile(Lx) * self.tolf(Lx, 1.0)
+            sel = rng.random(len(x)) < pr
+            x, Lx = x[sel], Lx[sel]
+            h = self.rh[x].copy()
+            self.rh[x] = 0
+            self.lost_rows(x, h, self.viol[Lx], "expelled")
+            self.rp[x], self.rl[x] = -1, -1

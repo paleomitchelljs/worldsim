@@ -98,7 +98,7 @@ class DragonsMixin:
         k = haz > 0
         if k.any():
             jj = j[k]
-            n = self.pop[jj] + self.mpop[jj]
+            n = self.pop[jj] + self.mpop[jj] + self.xsum(None)[0][jj]
             wd = self.ward(jj) * self.dsmean[jj]
             find = DRAGON_FIND
             find = DRAGON_FIND / self.peat[np.maximum(self.cul[jj], 0)]
@@ -172,7 +172,7 @@ class DragonsMixin:
         self.dhaz, self.dsmean = haz, smean
         occ = np.nonzero(self.lin >= 0)[0]
         wd = self.ward(occ) * smean[occ]
-        n = self.pop[occ] + self.mpop[occ]
+        n = self.pop[occ] + self.mpop[occ] + self.xsum(None)[0][occ]
         warded = np.zeros(N, bool)
         warded[occ] = n >= wd
         self.d_warded = warded

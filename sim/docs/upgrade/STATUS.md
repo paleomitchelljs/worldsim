@@ -38,8 +38,8 @@ what an entry holds.
 | 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
 | 7 | A design note | confirmed (U, D9: presence table, niche overlap, inner raids, flight = 1 − violence) | 2026-11-18 | 5138b4c |
 | 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | 1a17b6e |
-| 7 | C competition and settlement | not started | | |
-| 7 | D displacement | not started | | |
+| 7 | C competition and settlement | done (`shared_cells` on by default) | 2026-11-18 | HASH |
+| 7 | D displacement | done (`displacement` on by default; cascades not measured) | 2026-11-18 | HASH |
 | 8 | A climate fields | not started | | |
 | 8 | B yields and runoff | not started | | |
 | 8 | C floodplain area | not started | | |
@@ -1727,3 +1727,51 @@ deleted).
   instead. The design note's per-routine table is the checklist.
 - Price (`diagnostics.price`) still counts main rows only (design note
   section 7).
+
+### WP7 stages C and D: shared cells and flight (2026-11-18, HASH)
+
+U asked for the rest of WP7 in one session, results to review next
+morning. Both switches on by default; numbers C.
+
+**Done.** `wsim/shared.py`: extra rows in the presence table (queued
+writes, flush at phase boundaries, compaction), niche-overlap competition
+(`grow_shared`), movement into held cells (`infiltrate`), raids inside a
+cell (`inner_raids`), ordering rows by food-equivalents (`rows_sort`,
+replacing the swap), flight (`flee`, `lost_rows`; share 1 − attacker
+violence, U). Hooks in growth, raids, war, plague, states, food ledger,
+dragons, minorities, Price, records. Counters `n_infiltrate_heads`,
+`n_refugees`, `n_raid_inner`; `final_state.npz` holds the table. Tool
+`docs/upgrade/tools/wp7_mixing.py`. Docs: model-description 12.4,
+rules/population.md, switch-inventory, structural, running, run-log,
+open-questions.
+
+**Faults found and fixed during the stage:** the row sort keyed minority
+places by the wrong cell (minority rows were never filled); a per-cell
+violence array passed to rows unmapped (crash); merchant quarters lost
+their cap; `infiltrate` read crowding against raw K rather than K x fill
+preference. The first pair of 8,000-year runs had the last two faults
+and was discarded.
+
+**Runs.** `wp7c_seed101`, `103` (8,000 years), against `wp7b_seed101` and
+`wp6c_seed103` (switches off).
+
+**Results** (run-log.md):
+- Mixing rose only a little: heads outside their cell's plurality 2.6% /
+  2.0% (2.2% / 2.2% off); ~140 cells per run now hold 3+ peoples over
+  10%; plurality turnover slightly up.
+- Movement into held cells is small (at most 0.2-0.6M heads per
+  millennium); entry room is what limits it.
+- No people floods the map (largest 26% / 48%); spread between peoples
+  unchanged.
+- Refugees up to 0.2M / 1.0M per millennium late.
+- Population, states and wars move by about the seed difference, in
+  opposite directions between seeds. Runs about 25% slower.
+
+**For U.**
+- Shared cells work, but on their own they do not make peoples move much.
+  The open-questions entry names the causes that would (conquest that
+  settles land, deportation, ruler weight against resistance); each needs
+  U.
+- Cascades (stage D's measure) are not measured: refugees are not
+  recorded by destination.
+- Some routines still ignore third and further peoples (structural.md).

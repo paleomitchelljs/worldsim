@@ -96,7 +96,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
-            "army", "camps", "epidemic", "upkeep"]
+            "army", "camps", "epidemic", "upkeep", "shared_cells",
+            "displacement"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -228,6 +229,14 @@ SH_TECH, SH_STATE = 1.0, 3.0
 # capacity send SET_FRAC of their people per tick (at most half the room)
 # into the best neighbouring cell of the same state held by another people.
 SET_PRESS, SET_FRAC = 0.7, 0.02
+# Shared cells (`shared_cells`, WP7 C, C): a row crowded past its
+# migration threshold sends INF_FRAC x expansion x the excess of its people
+# per tick into the neighbouring cell held by another people with most
+# room, at most half that room; resistance INF_RES x (1 - holders'
+# tolerance) x min(1, holders' weight / movers' weight).
+INF_FRAC, INF_RES = 0.1, 0.9
+# Flight (`displacement`, WP7 D): refugees go up to FLEE_RINGS cells (C).
+FLEE_RINGS = 3
 # Food flows (`food_flow`, 2026-11-09; U: rent from a state's own people,
 # the state's take to its capital first, water carriage, trade as a
 # per-city volume; numbers C). Needs `dominion`. Every rural cell under a

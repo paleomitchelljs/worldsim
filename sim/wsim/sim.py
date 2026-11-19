@@ -16,10 +16,11 @@ from .war import WarMixin
 from .technology import TechnologyMixin
 from .diagnostics import DiagnosticsMixin
 from .cities import CitiesMixin
+from .shared import SharedMixin
 from .render import *  # noqa: F401,F403
 
 
-class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, CultureMixin, StatesMixin, WarMixin, TechnologyMixin, DiagnosticsMixin):
+class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, CultureMixin, StatesMixin, WarMixin, TechnologyMixin, DiagnosticsMixin, SharedMixin):
     def __init__(self, world, seed=1, years=6000, frame_every=10, out=None,
                  homelands="continents", peoples=None, start_pool=0.0,
                  starts=3, start_vary=0.05, drift=0.06, cluster_km=0.0,
@@ -160,6 +161,9 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.Kcap = np.full(N, np.inf)    # city size caps (food-equivalent)
         self.blk = (W.row // BLOCK) * (NX // BLOCK + 1) + W.col // BLOCK
         self.rows_new(N)                  # the presence table (WP7 B)
+        self.rows_pending = []            # rows queued for it (WP7 C)
+        self.sh_on = "shared_cells" in self.on
+        self.dp_on = "displacement" in self.on
         self.drought = np.ones(N)
         self.Kcell = np.ones(N)
         # structural state
@@ -446,6 +450,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.rows_new(self.W.N)
             for k, v in zip(self.ROW_VIEWS, old):
                 getattr(self, k)[:] = v
+        if not hasattr(self, "rows_pending"):
+            self.rows_pending = []
+            self.sh_on = "shared_cells" in self.on
+            self.dp_on = "displacement" in self.on
         if not hasattr(self, "epi"):
             self.epi = []
         if not hasattr(self, "pmem"):
@@ -574,8 +582,12 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.grow()
         self.acct_mark("grow")
         self.migrate()
+        if self.sh_on:
+            self.infiltrate()
         self.acct_mark("migrate")
         self.raids()
+        if self.sh_on:
+            self.inner_raids()
         self.acct_mark("raids")
         self.tidy()
         self.update_cities()

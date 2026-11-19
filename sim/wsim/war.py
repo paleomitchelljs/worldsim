@@ -165,6 +165,7 @@ class WarMixin:
             b_pop = self.mpop[dh]
             self.mpop[dfn[hit]] *= loss
             self.dead("raid", dh, b_pop - self.mpop[dh], minority=True)
+            self.rows_scale(dfn[hit], loss, "raid")
             self.raided[dfn[hit]] = 1
             self.raided[att[hit]] = 1
             ah = np.unique(att[hit])
@@ -191,9 +192,11 @@ class WarMixin:
             np.subtract.at(self.pop, si, mv)
             # the old people stays on as an underclass; the other half
             # and any old minority are lost (records)
-            self.dead("raid", ti, 0.5 * self.pop[ti])
-            self.dead("raid", ti, np.where(self.mlin[ti] >= 0,
-                                           self.mpop[ti], 0), minority=True)
+            vt = self.viol[self.lin[si]]
+            self.lost_rows(ti, 0.5 * self.pop[ti], vt, "raid")
+            self.lost_rows(W.N + ti, np.where(self.mlin[ti] >= 0,
+                                              self.mpop[ti], 0), vt, "raid")
+            self.rows_scale(ti, 0.0, "raid", vt)
             self.mcul[ti], self.mlin[ti] = self.cul[ti], self.lin[ti]
             self.mpop[ti] = 0.5 * self.pop[ti]
             self.mcap[ti] = False
@@ -869,6 +872,7 @@ class WarMixin:
         self.mpop[h] *= 1 - dmg
         self.dead("ravage", h, b_pop - self.pop[h])
         self.dead("ravage", h, b_mpop - self.mpop[h], minority=True)
+        self.rows_scale(h, 1 - dmg, "ravage")
         self.imp[h] *= 1 - 0.3 * dmg
         self.raided[h] = 1
         self.shock(t, "ravage")
@@ -993,8 +997,10 @@ class WarMixin:
         self.pop[t] *= 1 - (0.1 + 0.4 * self.eff(A, "viol")) * spare * \
             self.hardy(t)
         self.mpop[t] *= 1 - (0.1 + 0.4 * self.eff(A, "viol")) * spare
-        self.dead("sack", t, b_pop - self.pop[t])
-        self.dead("sack", t, b_mpop - self.mpop[t], minority=True)
+        v = self.eff(A, "viol")
+        self.lost_rows(t, b_pop - self.pop[t], v, "sack")
+        self.lost_rows(self.W.N + t, b_mpop - self.mpop[t], v, "sack")
+        self.rows_scale(t, 1 - (0.1 + 0.4 * v) * spare, "sack", v)
         A["cohesion"] = min(1, A["cohesion"] + 0.03)
         if rec["culture"] != ca and self.R("war").random() < \
                 (1 - self.eff(A, "tol")) * self.eff(A, "viol") * \
@@ -1003,10 +1009,11 @@ class WarMixin:
             hc = np.nonzero(hint)[0]
             b_pop = self.pop[hc]
             self.pop[hint] *= 1 - 0.85 * self.hardy(np.nonzero(hint)[0])
-            self.dead("clearance", hc, b_pop - self.pop[hc])
+            v = self.eff(A, "viol")
+            self.lost_rows(hc, b_pop - self.pop[hc], v, "clearance")
             b_pop = self.pop[t]
             self.pop[t] *= 1 - 0.7 * self.hardy(t)
-            self.dead("clearance", t, b_pop - self.pop[t])
+            self.lost_rows(t, b_pop - self.pop[t], v, "clearance")
             self.shock(t, "clearance")
             self.imp[hint] *= 0.5
             if len(A["cities"]) + len(B["cities"]) >= 5:
@@ -1104,8 +1111,10 @@ class WarMixin:
         self.pop[t] *= 1 - (0.1 + 0.4 * self.eff(A, "viol")) * spare * \
             self.hardy(t)
         self.mpop[t] *= 1 - (0.1 + 0.4 * self.eff(A, "viol")) * spare
-        self.dead("sack", t, b_pop - self.pop[t])
-        self.dead("sack", t, b_mpop - self.mpop[t], minority=True)
+        v = self.eff(A, "viol")
+        self.lost_rows(t, b_pop - self.pop[t], v, "sack")
+        self.lost_rows(self.W.N + t, b_mpop - self.mpop[t], v, "sack")
+        self.rows_scale(t, 1 - (0.1 + 0.4 * v) * spare, "sack", v)
         A["cohesion"] = min(1, A["cohesion"] + 0.03)
         if was_cap:
             B["cohesion"] *= 0.8

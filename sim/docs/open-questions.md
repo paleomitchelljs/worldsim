@@ -703,3 +703,23 @@ would tell whether this is real before anything is built on it.
 - **Plague recovery measure.** `wp6_growth.py` measures each state's
   fall from the epidemic's start year, up to 50 years on. A wave that
   reaches a state decades after it started is measured late or missed.
+
+## Shared cells (WP7 C and D, 2026-11-18)
+
+- **Mixing stays low.** With shared cells on, heads outside their cell's
+  plurality people are 2.0-2.6% (2.2% off). Entry into held cells is the
+  limit: room is K − 0.9 x overlap x the holders' food, and overlaps run
+  about 0.8-0.95, so a full cell has little room. If U wants more mixing,
+  the causes to look at (not numbers to tune) are: conquest that settles
+  the conqueror's people in captured land (only a 4% garrison now);
+  deportation by states (left out of the design); and whether the ruling
+  people's state weight (SH_STATE 3) should also cut the subjects'
+  resistance to settlers outside the ruler's own state.
+- **Routines that still ignore third and further peoples:** technology
+  contact, city composition, famine, clearance targeting, history
+  snapshots (structural.md). Small now (about 140 cells per run).
+- **Cascades not measured:** refugees are not recorded by destination,
+  so the brief's stage D measure (displacement followed within 50 years
+  by raids or more displacement where refugees arrive) needs a record.
+- **No 5-seed batch** for WP6 C or WP7. The current defaults (all on)
+  have two seeds behind them (`wp7c_seed101`, `103`).

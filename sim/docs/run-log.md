@@ -2156,3 +2156,53 @@ against farming K and halved improvements throughout (0.25-0.28 against
   both contribute; these runs cannot separate them (`--off epidemic` or
   `--off upkeep` would).
 - Not measured: how much plague now reaches people outside states.
+
+### 2026-11-18 WP7 stages C and D: shared cells and flight (`wp7c_seed101`, `103`)
+
+What it tested: `shared_cells` and `displacement` together (U asked for
+the whole package in one go), against the same seeds with both off
+(`wp7b_seed101`, identical to `wp6c_seed101`; `wp6c_seed103`). Standard
+settings, 8,000 years. A first pair of runs (deleted) had two faults:
+merchant quarters lost their cap under competition (mixed city cells fell
+to 1-4), and movement into held cells read crowding against raw K instead
+of K x fill preference, as `migrate` does, so few rows ever counted as
+crowded. Both were fixed; the table is the second pair. Measures from
+`docs/upgrade/tools/wp7_mixing.py`, `realism.py`, `wp6_growth.py`. Each
+cell is off → on.
+
+| Measure | seed 101 | seed 103 |
+|---|---|---|
+| heads not in their cell's plurality people, end | 2.2% → 2.6% | 2.2% → 2.0% |
+| cells with 2+ peoples over 10% / 3+ | 1,340 / 0 → 1,700 / 139 | 1,361 / 0 → 1,293 / 147 |
+| city cells with 2+ peoples over 10% | 12 of 236 → 9 of 209 | 28 of 302 → 31 of 392 |
+| cells whose plurality changed, 4000-4500 / 7500-8000 | 1.0 / 1.9% → 1.5 / 1.9% | 1.4 / 2.2% → 1.7 / 2.6% |
+| heads moved into held cells, per millennium (1st → 8th) | - | 0.0003M → 0.2M (101), 0.0008M → 0.56M (103) |
+| refugees per millennium (1st → 8th) | - | 0.002M → 0.19M (101), 0.004M → 1.0M (103) |
+| raids inside a cell per millennium, 8th | - | 114k (101), 83k (103) |
+| population at 8,000 (M) | 51.7 → 44.7 | 59.0 → 70.4 |
+| states with 3+ cities | 85 → 72 | 171 → 275 |
+| wars | 800 → 582 | 1,861 → 1,748 |
+| largest people's share, end | Elves 31% → 26% | Elves 44% → 48% |
+| log sd of people shares, end | 2.86 → 2.83 | 2.65 → 2.83 |
+| run time (two at once) | 432 → 560 s | 515 → 656 s |
+
+- **Mixing rose only a little.** Several peoples per cell now happen
+  (about 140 cells hold three or more over 10% each), but the share of
+  heads living outside their cell's plurality people moved by less than
+  half a percentage point either way. Turnover of a cell's people rose
+  slightly in most windows.
+- **Entry is what limits it.** Movement into held cells reaches at most
+  0.2-0.6M heads per millennium, under 1% of the world's people. A
+  newcomer's room is its K less 0.9 x overlap x the holders' food; with
+  overlaps of about 0.8-0.95 between most peoples, a full cell leaves
+  little room, and only crowded rows move.
+- **No people floods the map.** The largest share stays under half; the
+  spread between peoples is unchanged. The brief's stop rule did not
+  trigger.
+- **Population, states and wars move by about the seed difference** and
+  in opposite directions between the seeds.
+- **Flight is real but small**: up to 1M refugees per millennium late
+  in seed 103, about 1.4% of its people.
+- Not measured: cascades (displacement followed by raids or further
+  displacement in the receiving cells); refugees are not tracked by
+  destination.

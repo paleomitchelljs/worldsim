@@ -398,8 +398,11 @@ class LandMixin:
         L = self.lin[occ]
         K, Kc, Kh = self.Kf(L, occ, parts=True)
         k = np.maximum(K, 1e-3)
-        # a minority eats from the same land
-        mo = occ[self.mlin[occ] >= 0]
+        # a minority eats from the same land; under `shared_cells` every
+        # other row does, by niche overlap (WP7 C)
+        mo = occ[self.mlin[occ] >= 0] if not self.sh_on else occ[:0]
+        if self.sh_on:
+            k = self.grow_shared(occ, k)
         if len(mo):
             Lm = self.mlin[mo]
             Km = self.Kf(Lm, mo)
@@ -759,6 +762,18 @@ class LandMixin:
         self.mpop[c] -= mlost
         self.dead("plague", c, lost)
         self.dead("plague", c, mlost, minority=True)
+        x = self.xrows()
+        x = x[np.isin(self.rc[x], c)]
+        if len(x):
+            # further peoples in the cell (WP7 C), as the minority
+            pos = np.full(self.W.N, -1)
+            pos[c] = np.arange(len(c))
+            fx = base[pos[self.rc[x]]] * np.where(self.rp[x] == host, 1,
+                                                  PLAGUE_CROSS)
+            xl = self.rh[x] * fx
+            self.rh[x] -= xl
+            self.dead("plague", x, xl, rows=True)
+            mlost = np.append(mlost, xl)
         self.hard[c] = 1
         self.imm[c] = np.maximum(self.imm[c], IMM_HIT)
         pols = set(np.unique(self.cell_pol[c]).tolist()) - {-1} - e["pols"]
