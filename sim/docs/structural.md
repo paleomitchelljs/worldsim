@@ -393,6 +393,10 @@ cells in 29 basins on this map).
   cells.
 - **Decay:** 1/400 x (1 − use) x stock per year, so works fall in when
   unused.
+  `[upkeep]` (WP6 C, 2026-11-18, **C**): plus 0.1 x shortfall x stock,
+  shortfall = (0.7 x pmem − pop) / (0.7 x pmem) clipped to 0–1 (0 on
+  herding cells), pmem the cell's people averaged over about 50 years
+  (`Sim.pmem`): works are sized to the hands that kept them.
 - **Effects:**
   - irrigation reaches 40% of its potential without canals and all of it
     with them;
@@ -1593,3 +1597,18 @@ vassal; threshold from one run's distribution. Numbers C.
 - `len(P["cities"])` thresholds see a camp as 0 cities, so it gets no
   provinces, steel or partition. Succession runs for camps as for
   states.
+
+## 2026-11-18: epidemics and upkeep (`epidemic`, `upkeep`, WP6 C)
+
+U asked for plague that spreads over time and reaches people outside
+states, and for capacity that rebuilds slowly after a crash; forms and
+numbers C.
+- `LandMixin.disasters` calls `plague_onset` and `plague_step` under
+  `epidemic` (else `plague_burst`, the old rule). `Sim.epi` holds the
+  epidemics under way: origin, host, start, mortality, a `seen` mask over
+  cells, the cells reached last tick (`src`), states struck, deaths.
+- `plague_step` spreads over `plague_adj()` (8-neighbour land grid plus
+  `W.sea_links`, cached on the world) and along `ties`; `plague_kill`
+  removes the dead (records via `dead`, so the growth account still
+  closes), sets immunity, hardship, city shocks and spikes.
+- `land_use` adds the `upkeep` lapse to the improvement decay.

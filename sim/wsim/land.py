@@ -1,7 +1,7 @@
 """Carrying capacity, climate, land and disasters."""
 import math
 import numpy as np
-from scipy import ndimage, signal
+from scipy import ndimage, signal, sparse
 
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
@@ -544,8 +544,19 @@ class LandMixin:
         build = np.zeros(W.N)
         build[occ] = IMP_BUILD * use[occ] * (0.5 + adm)
         build[occ] *= 0.5 + self.pati[L]
-        self.imp += DT * (build * (1 - self.imp) -
-                          IMP_DECAY * (1 - use) * self.imp)
+        lapse = IMP_DECAY * (1 - use)
+        if "upkeep" in self.on:
+            # works need hands: they are sized to the people who kept
+            # them, so where a cell's people fall below IMP_HANDS of their
+            # level over the last IMP_MEM years, fields go back to scrub
+            # and canals silt up; an emptied cell loses its works fastest.
+            # Herders' cells keep the slow silting alone.
+            ref = IMP_HANDS * self.pmem
+            short = np.clip((ref - self.pop) / np.maximum(ref, 1e-9), 0, 1)
+            short[self.herding] = 0
+            lapse = lapse + IMP_LAPSE * short
+            self.pmem += (self.pop - self.pmem) * -math.expm1(-DT / IMP_MEM)
+        self.imp += DT * (build * (1 - self.imp) - lapse * self.imp)
         np.clip(self.imp, 0, 1, out=self.imp)
 
     def disasters(self):
@@ -557,6 +568,16 @@ class LandMixin:
             big = cc[self.pop[cc] > 5 * self.pcity[np.maximum(
                 self.cul[cc], 0)]]
             self.imm[big] = np.maximum(self.imm[big], IMM_ENDEMIC)
+        if "epidemic" in self.on:
+            self.plague_onset(rng)
+            self.plague_step(rng)
+        else:
+            self.plague_burst(rng)
+
+    def plague_burst(self, rng):
+        """Plague before WP6 C (switch `epidemic` off): one outbreak at a
+        time, chance set by urban population, reaching every state it will
+        reach and killing in them all within one tick."""
         urban = sum(self.pop[c] * (self.peat[self.cul[c]] if self.cul[c] >= 0 else 1)
                     for c in self.cities)
         if self.cities and self.year >= getattr(self, "_plague_next", 0) \
@@ -614,3 +635,153 @@ class LandMixin:
                          f" (host: {self.keys[host]})",
                          cell=o, polities=sorted(hit),
                          peoples=[self.keys[host]], n=dead)
+
+    def plague_adj(self):
+        """Cell adjacency for contagion: land neighbours and short sea
+        crossings, as a CSR matrix (built once per world)."""
+        W = self.W
+        A = getattr(W, "_pl_adj", None)
+        if A is None:
+            nb = W.nb
+            i = np.repeat(np.arange(W.N), 8)
+            j = nb.ravel()
+            ok = j >= 0
+            sa, sb, _ = W.sea_links
+            I = np.concatenate([i[ok], sa, sb])
+            J = np.concatenate([j[ok], sb, sa])
+            A = sparse.csr_matrix((np.ones(len(I)), (I, J)),
+                                  shape=(W.N, W.N))
+            W._pl_adj = A
+        return A
+
+    def plague_onset(self, rng):
+        """New outbreaks (WP6 C). A crowd disease needs a large enough
+        community to keep going and contact to bring it in: each city's
+        chance per year is PL_EMERGE x min(1, its people / PL_CCS) x
+        (1 + PL_LINK x its state's trade ties, up to 1). A city already in
+        an epidemic does not start another."""
+        if not self.cities:
+            return
+        cc = np.fromiter(self.cities.keys(), int)
+        comm = self.pop[cc] * self.peat[np.maximum(self.cul[cc], 0)]
+        tie = {}
+        for (x, y), t in self.ties.items():
+            tie[x] = tie.get(x, 0.0) + t
+            tie[y] = tie.get(y, 0.0) + t
+        link = np.array([min(1.0, tie.get(self.cities[c]["polity"], 0.0))
+                         for c in cc])
+        h = PL_EMERGE * np.minimum(1, comm / PL_CCS) * (1 + PL_LINK * link)
+        new = cc[rng.random(len(cc)) < -np.expm1(-h * DT)]
+        for o in new:
+            o = int(o)
+            if self.cul[o] < 0 or any(e["seen"][o] for e in self.epi):
+                continue
+            seen = np.zeros(self.W.N, bool)
+            seen[o] = True
+            self.epi.append(dict(
+                origin=o, host=int(self.cul[o]), start=self.year,
+                mort=float(rng.uniform(PL_MORT[0], PL_MORT[1])),
+                seen=seen, src=np.array([o]), todo=np.array([o]),
+                pols=set(), dead=0.0, cells=0, trail=[]))
+
+    def plague_step(self, rng):
+        """Each epidemic spreads for one tick and kills where it arrives
+        (WP6 C). It moves cell to cell over land and short sea crossings,
+        PL_STEPS rings a tick at most, with a chance per infected
+        neighbour of PL_BETA x d / (d + PL_D0) (d: people per km2) x
+        susceptibility (1 - IMM_PROTECT x immunity), less into another
+        people's cells; and it jumps along trade ties to a tied state's
+        largest city, PL_JUMP x tie a tick. Stateless people catch it as
+        anyone else. A cell is struck once per epidemic; the epidemic ends
+        when it reaches no new cell."""
+        if not self.epi:
+            return
+        A = self.plague_adj()
+        pop, mpop, area = self.pop, self.mpop, self.W.area
+        keep = []
+        for e in self.epi:
+            host, seen = e["host"], e["seen"]
+            grown = []
+            front = e["src"]
+            for _ in range(PL_STEPS):
+                if not len(front):
+                    break
+                cand, k = np.unique(A[front].indices, return_counts=True)
+                cand, k = cand[~seen[cand]], k[~seen[cand]]
+                d = (pop[cand] + mpop[cand]) / area[cand]
+                p = PL_BETA * d / (d + PL_D0) * \
+                    (1 - IMM_PROTECT * self.imm[cand]) * \
+                    np.where(self.cul[cand] == host, 1, PLAGUE_CROSS + 0.4)
+                p = 1 - (1 - p) ** k
+                front = cand[rng.random(len(cand)) < p]
+                seen[front] = True
+                grown.append(front)
+            # trade carries it to tied states' largest cities
+            reached = np.concatenate([e["src"]] + grown)
+            here = set(np.unique(self.cell_pol[reached]).tolist()) - {-1}
+            if here:
+                for (x, y), t in self.ties.items():
+                    for a, b in ((x, y), (y, x)):
+                        if a in here and b not in here and \
+                                rng.random() < PL_JUMP * t:
+                            cs = [c for c in self.polities[b]["cities"]
+                                  if not seen[c]] if b in self.polities \
+                                else []
+                            if cs:
+                                c = max(cs, key=lambda c: pop[c])
+                                seen[c] = True
+                                grown.append(np.array([c]))
+            new = np.concatenate(grown) if grown else np.zeros(0, int)
+            self.plague_kill(e, np.concatenate([e["todo"], new]))
+            e["src"], e["todo"] = new, np.zeros(0, int)
+            if len(new) and self.year - e["start"] < PL_MAXT:
+                keep.append(e)
+            else:
+                self.plague_end(e)
+        self.epi = keep
+
+    def plague_kill(self, e, c):
+        """Deaths in cells c struck this tick by epidemic e: the host
+        people at the epidemic's rate, others at PLAGUE_CROSS of it, less
+        for the immune; city cells lose another 0.3 x that (crowding).
+        Survivors are immune (IMM_HIT)."""
+        if not len(c):
+            return
+        host = e["host"]
+        base = e["mort"] * (1 - IMM_PROTECT * self.imm[c])
+        f = base * np.where(self.cul[c] == host, 1, PLAGUE_CROSS)
+        fm = base * np.where(self.mcul[c] == host, 1, PLAGUE_CROSS)
+        city = np.isin(c, np.fromiter(self.cities.keys(), int,
+                                      len(self.cities)))
+        f = np.where(city, 1 - (1 - f) * (1 - 0.3 * f), f)
+        lost, mlost = self.pop[c] * f, self.mpop[c] * fm
+        self.pop[c] -= lost
+        self.mpop[c] -= mlost
+        self.dead("plague", c, lost)
+        self.dead("plague", c, mlost, minority=True)
+        self.hard[c] = 1
+        self.imm[c] = np.maximum(self.imm[c], IMM_HIT)
+        pols = set(np.unique(self.cell_pol[c]).tolist()) - {-1} - e["pols"]
+        for x in pols:
+            if x in self.polities:
+                self.shock(list(self.polities[x]["cities"]), "plague")
+                self.spike(x)
+        e["pols"] |= pols
+        e["dead"] += float(lost.sum() + mlost.sum())
+        e["cells"] += len(c)
+        e["trail"].append((len(c), round(float(lost.sum() + mlost.sum()))))
+
+    def plague_end(self, e):
+        """Record a finished epidemic: kind `plague` over 2e5 dead (as the
+        old burst), `outbreak` below that."""
+        if e["dead"] > 0:
+            o, host = e["origin"], e["host"]
+            yrs = self.year - e["start"] + DT
+            kind = "plague" if e["dead"] > 2e5 else "outbreak"
+            self.log(kind, f"{kind} from {self.place(o)}, {yrs:.0f} "
+                     f"years through {e['cells']} cells and "
+                     f"{len(e['pols'])} states, ~{e['dead']/1e6:.2f}M dead"
+                     f" (host: {self.keys[host]})",
+                     cell=o, polities=sorted(e["pols"]),
+                     peoples=[self.keys[host]], n=e["dead"],
+                     start=e["start"], trail=e["trail"])

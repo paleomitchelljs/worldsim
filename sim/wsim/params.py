@@ -96,7 +96,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "trade_local", "city_influence", "adm_reach", "dominion",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
-            "army", "camps"]
+            "army", "camps", "epidemic", "upkeep"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
@@ -1072,6 +1072,18 @@ PLAGUE_CROSS = 0.3
 PLAGUE_P, PLAGUE_GAP, DROUGHT_REC = 0.008, 50, 0.35
 IMM_HIT, IMM_DECAY, IMM_ENDEMIC = 0.8, 0.012, 0.5
 IMM_PROTECT = 0.8           # mortality x (1 - IMM_PROTECT * immunity)
+# Epidemics (`epidemic`, WP6 C, all C). Onset: per city per year
+# PL_EMERGE x min(1, its people in fe / PL_CCS, a critical community size)
+# x (1 + PL_LINK x its state's trade ties, up to 1). Spread per tick: up to
+# PL_STEPS rings over land and short sea crossings; chance per infected
+# neighbour PL_BETA x d / (d + PL_D0), d people per km2; trade jumps
+# PL_JUMP x tie per tick. Mortality drawn from PL_MORT per epidemic (the
+# range of the old burst). An epidemic ends when it reaches no new cell,
+# or after PL_MAXT years. PLAGUE_P and PLAGUE_GAP serve the old burst
+# only (`epidemic` off).
+PL_EMERGE, PL_CCS, PL_LINK = 5e-5, 3e4, 1.0
+PL_STEPS, PL_BETA, PL_D0, PL_JUMP = 60, 0.9, 1.0, 0.3
+PL_MORT, PL_MAXT = (0.15, 0.35), 100
 PRICE_EVERY = 100           # years between Price-equation snapshots
 # Roads (`roads`): every ROAD_EVERY years each state of 2+ cities builds
 # along the cheapest routes from its capital to its cities. A cell's road
@@ -1087,6 +1099,12 @@ ROAD_LIFE, ROAD_LIFE_WILD = 1500.0, 300.0
 IMP_BUILD, IMP_DECAY = 0.003, 1 / 400   # per year
 IMP_IRR0, IMP_RAIN, IMP_SETTLE = 0.4, 0.3, 2.0
 IMP_SACK = 0.6              # a sack wrecks up to this share, x violence
+# Upkeep (`upkeep`, WP6 C, C): works fall in without the hands to keep
+# them. Where a cell's people fall below IMP_HANDS of their mean over the
+# last IMP_MEM years (exponential), extra decay IMP_LAPSE per year x the
+# shortfall ((IMP_HANDS x mean - pop) / (IMP_HANDS x mean)); an emptied
+# cell has shortfall 1 (works gone in about a decade).
+IMP_HANDS, IMP_LAPSE, IMP_MEM = 0.7, 0.1, 50.0
 # Separation as spacing (`separation`, 2026-10-29; U: a separated people
 # may be tolerant and trade freely, yet live at low density). A lineage
 # fills a cell only to SEP_PREF = 1 - SEP_DENS x separation^2 of its

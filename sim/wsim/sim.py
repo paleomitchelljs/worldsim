@@ -186,6 +186,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.ext_in = np.zeros(N)         # food received (ruling people)
         self.new_state_v2()
         self.imm = np.zeros(N)            # plague immunity
+        self.epi = []                     # epidemics under way (WP6 C)
+        self.pmem = np.zeros(N)           # people, mean of ~50 yr (upkeep)
         self.road = np.zeros(N)           # road stock 0-1
         self.roadq = np.ones(N)           # road quality (`road_tech`)
         self.imp = np.zeros(N)            # improvements 0-1
@@ -402,6 +404,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.W.food_graph()
         if not hasattr(self, "dtp"):
             self.dtp = DT
+        if not hasattr(self, "epi"):
+            self.epi = []
+        if not hasattr(self, "pmem"):
+            self.pmem = self.pop.copy()
         if not hasattr(self, "army_x"):
             self.army_x = np.zeros(self.W.N)
         if hasattr(self, "fl_acc") and len(self.fl_acc["world"]) != \

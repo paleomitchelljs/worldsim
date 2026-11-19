@@ -35,6 +35,7 @@ what an entry holds.
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
 | 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
+| 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | HASH |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
 | 7 | C competition and settlement | not started | | |
@@ -1638,3 +1639,52 @@ two" because the baseline table it replaces is a five-seed range.
 `wp1f_fullclim_`. Population still sits near capacity once land fills;
 if crises are to last, the next step is lagged capacity or plague not
 tied to city size (stage A entry), both needing U.
+
+### WP6 stage C: epidemics and upkeep (2026-11-18, HASH)
+
+Not in the brief. **U (2026-11-18):** build both plague that spreads over
+time and slow rebuilding of food capacity, at once; plague should reach
+people outside states; which does what can be tested later with a switch
+off. Forms and numbers C.
+
+**Done.**
+- `epidemic` (on): `plague_onset` (per city: 5e-5/yr x min(1, people in
+  fe / 3e4) x (1 + trade ties)); `plague_step` spreads each epidemic up to
+  60 rings a tick over the land grid and short sea crossings, chance per
+  infected neighbour 0.9 x d/(d+1) x susceptibility, plus jumps along
+  trade ties to tied states' largest cities; each cell struck once;
+  stateless people included. Old rule kept as `plague_burst` (`--off
+  epidemic`). New state `Sim.epi` (in `upgrade()`).
+- `upkeep` (on): improvements lose up to 0.1 a year where a cell's people
+  fall below 0.7 of their 50-year mean (`Sim.pmem`, in `upgrade()`).
+- Records: events `plague` / `outbreak` at an epidemic's end, with
+  `start` and `trail` (cells and deaths per tick). `wp6_growth.py`
+  measures recovery from `start`.
+- Docs: rules/disasters.md, rules/population.md, model-description.md
+  (7, 17.2), structural.md, switch-inventory.md, running.md, run-log.md,
+  open-questions.md.
+
+**Runs.** `wp6c_seed101`, `103`, 8,000 years. A first form of each was
+run on both seeds and discarded (see run-log.md): 10 rings a tick left
+every big epidemic at the 100-year cap; upkeep against farming K halved
+improvements everywhere.
+
+**Results** (against `wp6b_`, seed 101 / 103):
+- 18 / 25 epidemics, most after year 5,000; median 1.3 / 3.4M dead; the
+  largest reach 11-13% of land cells and 109-154 states. Most deaths in
+  the first 5-20 years, then a thin tail.
+- Recovery to 90% median 100 / 80 years (85 / 75); in seed 101 the slow
+  tail is longer (90th percentile 365 against 210 years).
+- Volatility did not rise consistently; the largest 100-year falls are
+  smaller, because a wave spreads deaths over decades.
+- Population at 8,000 -17 / -25%; steel at 7,340 / 6,500 (5,425 /
+  5,955); 3+ city states -34 / -32%; wars -40 / -14%.
+
+**For U.**
+- Steel came within 660 years of the end in seed 101. A 5-seed batch
+  would show whether slow growth plus epidemics pushes steel past 8,000
+  often enough to need longer runs.
+- "Crises that last" got only a little closer: recovery is slower, and
+  the world is smaller, but population still tracks capacity.
+- `wp6b_` is no longer the current-default baseline; `wp6c_` (two seeds)
+  is. A fresh 5-seed batch was not run.

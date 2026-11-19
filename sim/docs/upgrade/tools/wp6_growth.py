@@ -57,7 +57,10 @@ def plague_recovery(r):
     ev = r.events
     out = []
     for _, e in ev[ev["kind"] == "plague"].iterrows():
-        i0 = int(np.searchsorted(hy, e["year"])) - 1
+        # an epidemic (WP6 C) is logged when it ends; measure from its start
+        y0 = e["start"] if "start" in e and e["start"] == e["start"] \
+            else e["year"]
+        i0 = int(np.searchsorted(hy, y0)) - 1
         if i0 < 0 or i0 + 1 >= len(hy):
             continue
         for p in e["polities"]:
@@ -66,7 +69,7 @@ def plague_recovery(r):
                 continue
             s = pop[:, cells].sum(axis=1).astype(float)
             before = s[i0]
-            j1 = int(np.searchsorted(hy, e["year"] + 50))
+            j1 = int(np.searchsorted(hy, y0 + 50))
             win = s[i0 + 1:j1 + 1]
             if not len(win) or before <= 0:
                 continue
@@ -75,8 +78,8 @@ def plague_recovery(r):
                 continue
             k = i0 + 1 + int(np.argmin(win))
             back = np.nonzero(s[k:] >= 0.9 * before)[0]
-            yrs = int(hy[k + back[0]] - e["year"]) if len(back) else None
-            out.append((int(e["year"]), int(p), 1 - low / before, yrs))
+            yrs = int(hy[k + back[0]] - y0) if len(back) else None
+            out.append((int(y0), int(p), 1 - low / before, yrs))
     m = {"plague state-falls over 10%": len(out)}
     if out:
         rec = [o[3] for o in out if o[3] is not None]

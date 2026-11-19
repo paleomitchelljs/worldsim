@@ -504,6 +504,10 @@ K. Growth, migration pressure and room use K × pref.
   changes per year by 0.003 × use × (0.5 + admin of the ruling lineage
   inside a state) × (1 − imp) (`[patience]` × (0.5 + patience)) − (1/400) ×
   (1 − use) × imp; limited to [0, 1].
+- `[upkeep]` (WP6 C, 2026-11-18, **C**) improvement also loses 0.1 ×
+  shortfall × imp per year, shortfall = clip((0.7 × pmem − pop) / (0.7 ×
+  pmem), 0, 1), 0 on herding cells; pmem = the cell's people, exponential
+  mean over 50 years (updated after the improvement step).
 - `[salinity]` salt (0–1) changes per year by 0.002 × use × irrigated
   share × (1 − salt) (`[patience]` × (1.5 − patience)) − 0.003 × (1 −
   use) × salt.
@@ -1415,6 +1419,22 @@ severity U(0.35, 0.7); drought factor = min(current, 1 − severity × clip(1
 
 ### 17.2 Plague
 
+`[epidemic]` (WP6 C, 2026-11-18; U: spread over time and outside states;
+numbers **C**) replaces the rule below:
+- Onset per city per year: 5e-5 × min(1, city cell people in fe / 3e4) ×
+  (1 + min(1, Σ trade ties of its state)); host = the city's people; no
+  gap; a city inside an epidemic starts none.
+- Each tick an epidemic spreads up to 60 rings over the land grid and
+  short sea crossings; each infected neighbour infects with p = 0.9 × d /
+  (d + 1) (d = target people per km², majority + minority) × (1 − 0.8 ×
+  immunity) × (0.7 if the target's majority is not the host); and with
+  chance 0.3 × tie per tick to each tied state's largest unstruck city.
+- Struck cells (once per epidemic) lose m × (1 − 0.8 × immunity), m =
+  U(0.15, 0.35) per epidemic, × 0.3 for peoples other than the host; city
+  cells a further 0.3 × that; immunity ≥ 0.8. Ends when no new cell is
+  reached, or after 100 years.
+
+Without `[epidemic]`:
 - Each year with chance 0.008 × min(1, city population / 3 million) (×
   DT per tick), city population in food-equivalents `[food_units]` or
   heads, at most once per 50 years.

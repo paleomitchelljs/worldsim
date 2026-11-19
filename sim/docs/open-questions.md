@@ -685,3 +685,21 @@ would tell whether this is real before anything is built on it.
   were made before WP4-WP6. Branch tests from them run the new code on
   an old world (twice the population, more cities). Remake them from
   `wp6b_` settings when a branch test is next needed.
+
+## Epidemics and upkeep (WP6 C, 2026-11-18)
+
+- **Steel near the end again.** With both on, seed 101 reached steel at
+  7,340 (5,425 without). If more seeds land after 8,000, that conflicts
+  with "steel as the final technology over 8,000 years" (U).
+- **Which of the two shrinks the world** (population -17 to -25% at
+  8,000, a third fewer 3+ city states) is untested; one run each with
+  `--off epidemic` and `--off upkeep` would say.
+- **The epidemic tail.** Epidemics linger for decades as a few cells a
+  tick in thin country, often up to the 100-year cap (PL_MAXT). The
+  deaths there are small, but it means an epidemic can still be "under
+  way" when another starts nearby (a city inside one cannot start
+  another). If this matters, a floor on density for transmission would
+  end them sooner.
+- **Plague recovery measure.** `wp6_growth.py` measures each state's
+  fall from the epidemic's start year, up to 50 years on. A wave that
+  reaches a state decades after it started is measured late or missed.

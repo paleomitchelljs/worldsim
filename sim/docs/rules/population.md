@@ -74,6 +74,19 @@ near capacity once land fills. R_SCALE does not scale the dragon cut, so a lower
 peoples below zero under dragons. The minority's rate takes R_SCALE and
 R_MAX too (it has no frontier term).
 
+**Upkeep** (`upkeep`, WP6 C, 2026-11-18, **C**). Improvements (cleared
+fields, terraces, canals; up to 1.3x rain-fed and 2.5x irrigated yield)
+need people to keep them, and are sized to the people who kept them.
+Where a cell's people fall below 0.7 of their mean over the last 50 years
+(an exponential mean), the works decay by an extra 0.1 a year x the
+shortfall ((0.7 x mean − pop) / (0.7 x mean)); an emptied cell loses them
+in about a decade. They are rebuilt at the old rate (0.003 a year at
+most), so a crash lowers the land's capacity for decades to centuries.
+Herders' cells keep the old slow silting only. A first form measured the
+shortfall against farming K; that halved improvements everywhere and all
+the time (many settled cells sit below 0.7 of farming K, since rent and
+tax take part of it), so it was replaced the same day.
+
 ## Movement within a lineage
 
 - **Who moves.** People leave crowded cells. Moving starts at crowding

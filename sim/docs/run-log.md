@@ -2108,3 +2108,51 @@ baseline batch".
   under 0.3% as before.
 - Every check in `checks.txt` passed; `final_maps.png` of seed 102 shows
   people across the habitable land, 191 states and the usual cities.
+
+### 2026-11-18 WP6 stage C: epidemics and upkeep (`wp6c_seed101`, `103`)
+
+What it tested: plague as an epidemic that spreads over time and reaches
+people outside states (`epidemic`; U asked for it), and improvements that
+need hands (`upkeep`), both on, against `wp6b_` (same seeds, both off).
+All numbers C. Standard settings, 8,000 years. A first form of each was
+run and discarded (both seeds; deleted): epidemics moved 10 rings a tick
+and every large one hit the 100-year cap still spreading; upkeep measured
+against farming K and halved improvements throughout (0.25-0.28 against
+0.51-0.55 at year 7,000). The table is the second form. Each cell is
+`wp6b` → `wp6c`.
+
+| Measure | seed 101 | seed 103 |
+|---|---|---|
+| population at 4,000 / 6,000 / 8,000 (M) | 22.4 / 40.0 / 62.1 → 20.8 / 32.2 / 51.7 | 19.4 / 40.2 / 78.9 → 17.8 / 34.5 / 59.0 |
+| first steel | 5,425 → 7,340 | 5,955 → 6,500 |
+| plagues over 200k dead (all epidemics) | 10 → 14 (18) | 18 → 23 (25) |
+| plague share of deaths | 0.04 → 0.06 | 0.20 → 0.16 |
+| plague falls over 10% (state x plague) | 281 → 357 | 683 → 899 |
+| years back to 90%, median (10-90%) | 85 (30-210) → 100 (50-365) | 75 (35-220) → 80 (45-210) |
+| never back to 90% | 55 → 13 | 27 → 42 |
+| log pop sd around 200-yr mean, after 3000 | 0.010 → 0.013 | 0.024 → 0.020 |
+| largest 100-yr fall (log), after 3000 | -0.11 → -0.05 | -0.14 → -0.11 |
+| improvements, pop-weighted, yr 7,000 | 0.51 → 0.45 | 0.55 → 0.50 |
+| states with 3+ cities | 129 → 85 | 252 → 171 |
+| wars | 1,337 → 800 | 2,150 → 1,861 |
+| population in a state, end | 0.65 → 0.58 | 0.81 → 0.69 |
+
+- **Epidemics.** 18 and 25 per run, starting from year 2,960 / 3,965,
+  most after year 5,000. The median one strikes 2,700-5,900 cells and
+  kills 1.3-3.4M; the largest strike 7,300-8,700 cells (11-13% of land
+  cells) in 109-154 states and kill 4.4-6.8M. Most deaths fall in the
+  first 1-4 ticks; a thin tail lasts decades (median duration 65-80
+  years, many still at the 100-year cap, where the tail is a few cells a
+  tick). Elves are the host of most large ones (the largest, densest
+  people).
+- **Recovery is somewhat slower and its tail longer** in seed 101 (90%
+  of falls back within 365 years, against 210); in seed 103 the change is
+  within noise. Volatility did not rise consistently, and the largest
+  100-year falls got smaller: a wave spreads its deaths over decades and
+  places instead of striking every state in one tick.
+- **The world is smaller and slower**: population -17 / -25% at 8,000,
+  steel 550-1,900 years later (seed 101: 7,340, near the end), a third
+  fewer 3+ city states. More plague deaths and the lag in rebuilding works
+  both contribute; these runs cannot separate them (`--off epidemic` or
+  `--off upkeep` would).
+- Not measured: how much plague now reaches people outside states.
