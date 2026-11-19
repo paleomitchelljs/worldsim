@@ -80,7 +80,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D6 | Keep the base city-cell boost (1.5 x development), which also adds capacity from nothing | keep, but show it as its own ledger line | 2026-11-17 (U): keep, as recommended (shown as `produced_boost` in `food.csv`) |
 | D7 | Lower growth rates, which stretches the early timeline (first cities arrive later) | try a few settings first; decide on the results | 2026-11-18 (U): R_SCALE 0.5, R_MAX 0.03; keep 8,000-year runs |
 | D8 | Cityless polities (tribes, confederations, herder states) | build, as "camp" seats | |
-| D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | |
+| D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | 2026-11-18 (U): `WP7-design.md` confirmed with a presence table (not slots), niche overlap, raids inside a cell, flight share = 1 − attacker violence |
 | D10 | When derived climate disagrees with the hand-drawn biome map | the drawn map wins; climate fields vary conditions within a biome | |
 | D11 | Earth test (needs public datasets downloaded) | scope it in WP9 stage C; decide after the sensitivity screen | |
 | D12 | Break seed-for-seed continuity with old runs when the RNG is split into named streams | yes, at the end of WP1, followed by a fresh baseline run or two | 2026-11-17 (U): yes, no problem; also yes to a fresh seed for a branch (`--branch-seed`) and to drawing the climate's local field at reduced resolution |

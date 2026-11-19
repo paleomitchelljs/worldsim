@@ -105,7 +105,8 @@ generalised to any slot). Deportation of subjects by a state is left out
 
 Clearance, sack, a raid takeover and expulsion now kill everyone they
 remove. Under `displacement`:
-- A share FLEE (0.5, C) of those removed flees; the rest die as now.
+- A share 1 − violence of the attacker (U, 2026-11-18) of those removed
+  flees; the rest die as now. Expulsion: 1 − the ruler's violence.
   Famine already moves its surplus (`famine`), unchanged.
 - Refugees go up to 3 rings, to cells where their people already lives
   or that are empty, in proportion to room there. Those who find no
@@ -158,10 +159,13 @@ in the plurality" and "cells with two or more peoples over 10%".
 - **D.** `displacement`: flight from clearance, sack, takeover and
   expulsion.
 
-## For U
+## Decisions (U, 2026-11-18)
 
-1. Slots (S = 4) instead of the presence table?
-2. Niche overlap as what lets peoples coexist, or plain competition first
-   and report?
-3. Raids between peoples living in one cell?
-4. Displacement: half of those removed flee, up to 3 rings, the rest die?
+1. **Presence table**, not slots: no limit on the peoples in a cell.
+   Section 1's slot proposal is not adopted; section 8's exact rerun
+   still applies to stage B.
+2. **Niche overlap** as in section 3.
+3. **Raids between peoples in one cell:** yes, as in section 6.
+4. **Flight depends on the attacker's violence:** the share of those
+   removed who flee is 1 − the attacker's violence (effective trait);
+   up to 3 rings as in section 5; those with no room die.

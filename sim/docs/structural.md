@@ -1612,3 +1612,22 @@ numbers C.
   removes the dead (records via `dead`, so the growth account still
   closes), sets immunity, hardship, city shocks and spikes.
 - `land_use` adds the `upkeep` lapse to the improvement decay.
+
+## 2026-11-18: the presence table (WP7 B)
+
+Storage only; no rule changed (U chose a presence table over fixed slots,
+and the layout with fixed first two rows; `docs/upgrade/WP7-design.md`).
+- `Sim.rows_new` builds one table of rows: cell `rc`, people `rp`,
+  lineage `rl`, heads `rh`, merchant cap `rm`. Row i < N is cell i's main
+  people, row N + i its minority; an empty row has people -1. Rows from
+  2N on will hold further peoples under `shared_cells` (WP7 C); none
+  exist yet.
+- `pop`, `cul`, `lin`, `mpop`, `mcul`, `mlin`, `mcap` are numpy views of
+  those rows (`rows_bind`), so every routine reads and writes the table
+  through them. Code must not rebind these names; a reallocation of the
+  table must call `rows_bind`.
+- Pickling leaves the views out and `__setstate__` rebinds them;
+  `upgrade()` copies an older state's arrays into a new table.
+- Check: `wp7b_seed101` reproduces `wp6c_seed101` exactly (`events.txt`
+  and `timeseries.csv` byte-identical), and a state saved at year 3,000
+  and continued to 3,500 ends as the run that saved it.

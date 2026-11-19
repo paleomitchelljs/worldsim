@@ -159,9 +159,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.peat
         self.Kcap = np.full(N, np.inf)    # city size caps (food-equivalent)
         self.blk = (W.row // BLOCK) * (NX // BLOCK + 1) + W.col // BLOCK
-        self.pop = np.zeros(N)
-        self.cul = -np.ones(N, int)       # people per cell
-        self.lin = -np.ones(N, int)       # lineage per cell
+        self.rows_new(N)                  # the presence table (WP7 B)
         self.drought = np.ones(N)
         self.Kcell = np.ones(N)
         # structural state
@@ -176,10 +174,6 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.n_avulsions = 0
         self.famine_movers = 0.0
         self._great_dry = -9999
-        self.mcul = -np.ones(N, int)      # minority people per cell
-        self.mlin = -np.ones(N, int)
-        self.mpop = np.zeros(N)
-        self.mcap = np.zeros(N, bool)     # minority capped (merchants)
         self.rul_c = -np.ones(N, int)     # ruling people of the cell's state
         self.rul_est = np.zeros(N)        # its state's establishment
         self.ext_x = np.zeros(N)          # extraction rate on subjects
@@ -337,6 +331,47 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.ca_on = self.cc_on and "city_admin" in self.on
         self.rt = "ruler_traits" in self.on and "rulers" in self.on
 
+    # per-cell views of the presence table's first two rows
+    ROW_VIEWS = ("pop", "cul", "lin", "mpop", "mcul", "mlin", "mcap")
+
+    def rows_new(self, N):
+        """The presence table (WP7 B): one row per people present in a
+        cell, with its cell (`rc`), people (`rp`), lineage (`rl`), heads
+        (`rh`) and, for a merchant quarter, a cap flag (`rm`). Row i < N
+        is cell i's main people and row N + i its minority, so `pop`,
+        `cul`, `lin` and `mpop`, `mcul`, `mlin`, `mcap` are views of those
+        rows and every routine reads and writes the table through them. An
+        empty row has people -1."""
+        self.rc = np.tile(np.arange(N), 2)
+        self.rp = -np.ones(2 * N, int)
+        self.rl = -np.ones(2 * N, int)
+        self.rh = np.zeros(2 * N)
+        self.rm = np.zeros(2 * N, bool)
+        self.rows_bind()
+
+    def rows_bind(self):
+        """Point the per-cell views at the table (after it is built,
+        loaded or reallocated)."""
+        N = self.W.N
+        self.pop, self.mpop = self.rh[:N], self.rh[N:2 * N]
+        self.cul, self.mcul = self.rp[:N], self.rp[N:2 * N]
+        self.lin, self.mlin = self.rl[:N], self.rl[N:2 * N]
+        self.mcap = self.rm[N:2 * N]
+
+    def __getstate__(self):
+        # a pickled view would come back as a copy cut off from the
+        # table: leave the views out and rebind them on loading
+        d = self.__dict__.copy()
+        if "rh" in d:
+            for k in self.ROW_VIEWS:
+                d.pop(k, None)
+        return d
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+        if "rh" in d:
+            self.rows_bind()
+
     def save(self, path):
         """Pickle the whole Sim, a state to branch from (worldsim.py
         --save-state). The travel and food distance caches are left out:
@@ -404,6 +439,13 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.W.food_graph()
         if not hasattr(self, "dtp"):
             self.dtp = DT
+        if not hasattr(self, "rh"):
+            # before WP7 B: separate per-cell arrays for the main people
+            # and the minority; copy them into the presence table
+            old = [getattr(self, k) for k in self.ROW_VIEWS]
+            self.rows_new(self.W.N)
+            for k, v in zip(self.ROW_VIEWS, old):
+                getattr(self, k)[:] = v
         if not hasattr(self, "epi"):
             self.epi = []
         if not hasattr(self, "pmem"):

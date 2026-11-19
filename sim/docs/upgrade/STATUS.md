@@ -36,8 +36,8 @@ what an entry holds.
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
 | 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
 | 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
-| 7 | A design note | written, awaiting U (D9) | 2026-11-18 | 5138b4c |
-| 7 | B presence table | not started | | |
+| 7 | A design note | confirmed (U, D9: presence table, niche overlap, inner raids, flight = 1 − violence) | 2026-11-18 | 5138b4c |
+| 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | HASH |
 | 7 | C competition and settlement | not started | | |
 | 7 | D displacement | not started | | |
 | 8 | A climate fields | not started | | |
@@ -1696,3 +1696,34 @@ improvements everywhere.
 a presence table, so stage B changes storage only and can be checked by
 an exact rerun. Coexistence by niche overlap (herding vs farming, biome
 fit) rather than a floor. Four questions for U at its end. Nothing built.
+
+### WP7 stage B: presence table (2026-11-18, HASH)
+
+**Decisions (U, 2026-11-18, D9):** presence table rather than slots; niche
+overlap for coexistence; raids between peoples in one cell; the share
+fleeing = 1 − the attacker's violence. Layout (U): the first two rows of
+each cell at fixed positions (row = cell, row = N + cell), further rows
+appended from 2N on. Recorded in `WP7-design.md` and the README register.
+
+**Done.** `Sim.rows_new` / `rows_bind`: the table (`rc`, `rp`, `rl`, `rh`,
+`rm`); today's per-cell arrays are views of its first 2N rows, so no
+routine changed. `__getstate__` / `__setstate__` keep the views tied to
+the table across saves; `upgrade()` converts older states. Docs:
+structural.md.
+
+**Runs.** `wp7b_seed101` (8,000 years): `events.txt` and
+`timeseries.csv` byte-identical to `wp6c_seed101`. A save at year 3,000
+continued to 3,500 ended identical to the run that saved it (test runs
+deleted).
+
+**Next stage needs to know.**
+- Stage C adds rows past 2N. Appending must grow the arrays, then call
+  `rows_bind()`; any routine holding a local reference to `self.pop` etc.
+  across an append would then hold a stale array. Keep appends at the
+  ends of routines (settlement, minorities), or re-read after.
+- Rows past 2N are invisible to every routine that reads `pop`/`mpop`.
+  Stage C must go through the list in `WP7-design.md` section 6 and make
+  each routine that should see every row read the table (`rc`, `rh`, ...)
+  instead. The design note's per-routine table is the checklist.
+- Price (`diagnostics.price`) still counts main rows only (design note
+  section 7).
