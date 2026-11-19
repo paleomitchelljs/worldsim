@@ -36,7 +36,7 @@ what an entry holds.
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
 | 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
 | 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
-| 7 | A design note | not started | | |
+| 7 | A design note | written, awaiting U (D9) | 2026-11-18 | HASH |
 | 7 | B presence table | not started | | |
 | 7 | C competition and settlement | not started | | |
 | 7 | D displacement | not started | | |
@@ -1688,3 +1688,11 @@ improvements everywhere.
   the world is smaller, but population still tracks capacity.
 - `wp6b_` is no longer the current-default baseline; `wp6c_` (two seeds)
   is. A fresh 5-seed batch was not run.
+
+### WP7 stage A: design note (2026-11-18, HASH)
+
+`docs/upgrade/WP7-design.md`. Main departure from the brief: slot arrays
+(S = 4, slot 0 the plurality, today's `pop`/`mpop` as views) instead of
+a presence table, so stage B changes storage only and can be checked by
+an exact rerun. Coexistence by niche overlap (herding vs farming, biome
+fit) rather than a floor. Four questions for U at its end. Nothing built.
