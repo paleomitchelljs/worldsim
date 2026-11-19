@@ -33,7 +33,7 @@ what an entry holds.
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
-| 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | HASH |
+| 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
 | 6 | B adopt | not started | | |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
@@ -1543,7 +1543,7 @@ run-log.md.
   stage B would settle which of B-F's population and war-count shifts
   are real.
 
-### WP6 stage A: growth-rate experiment (2026-11-18, HASH)
+### WP6 stage A: growth-rate experiment (2026-11-18, d3aa08e)
 
 **Done.**
 - New constants (C) in `params.py`, used by `land.grow` for majority and
