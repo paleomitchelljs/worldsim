@@ -35,7 +35,7 @@ what an entry holds.
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
 | 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | d3aa08e |
 | 6 | B adopt | done (D7: R_SCALE 0.5, R_MAX 0.03) | 2026-11-18 | b1913d7 |
-| 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | HASH |
+| 6 | C epidemics and upkeep (U, not in the brief) | done (both on by default) | 2026-11-18 | b1bafe1 |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
 | 7 | C competition and settlement | not started | | |
@@ -1640,7 +1640,7 @@ two" because the baseline table it replaces is a five-seed range.
 if crises are to last, the next step is lagged capacity or plague not
 tied to city size (stage A entry), both needing U.
 
-### WP6 stage C: epidemics and upkeep (2026-11-18, HASH)
+### WP6 stage C: epidemics and upkeep (2026-11-18, b1bafe1)
 
 Not in the brief. **U (2026-11-18):** build both plague that spreads over
 time and slow rebuilding of food capacity, at once; plague should reach
