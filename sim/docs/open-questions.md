@@ -658,3 +658,17 @@ talent "does not change their chance of going to war"), so it needs U.
 Separately, growth in 7000-8000 fell to 0.009%/yr in both seeds with
 small-state succession on (0.029 in seed 101 without it). A 5-seed batch
 would tell whether this is real before anything is built on it.
+
+## Plague and growth: two links that bias WP6's measures (2026-11-18)
+
+- **Plague reaches only people inside states.** `land.disasters` masks
+  the mortality by `cell_pol`, so people outside states (11% at the
+  2026-11-16 review) never catch it. Noted by the WP6 brief; not fixed.
+- **Plague frequency follows urban population.** The chance per year is
+  PLAGUE_P x min(1, urban / 3e6). With slower growth (WP6 stage A) there
+  are fewer and later cities, so fewer plagues: 15 in the seed 101
+  baseline and 1 at R_SCALE 0.33. That makes the slow-growth settings
+  look *less* volatile around the 200-year mean, although recovery from
+  a given fall takes longer. A test of recovery alone would need the
+  same shocks in each setting, for example branches from one saved state
+  with plague forced at one year.

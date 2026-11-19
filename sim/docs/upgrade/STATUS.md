@@ -33,7 +33,7 @@ what an entry holds.
 | 5 | D yearly political step | done (on by default) | 2026-11-18 | 0b1c30d |
 | 5 | E army stock | done (on by default) | 2026-11-18 | c65846f |
 | 5 | F cityless polities | done (on by default) | 2026-11-18 | 0c236c7 |
-| 6 | A experiment batch | not started | | |
+| 6 | A experiment batch | done (B needs U: D7) | 2026-11-18 | HASH |
 | 6 | B adopt | not started | | |
 | 7 | A design note | not started | | |
 | 7 | B presence table | not started | | |
@@ -1542,3 +1542,57 @@ run-log.md.
 - WP5 is now complete in its stages. The 5-seed batch suggested since
   stage B would settle which of B-F's population and war-count shifts
   are real.
+
+### WP6 stage A: growth-rate experiment (2026-11-18, HASH)
+
+**Done.**
+- New constants (C) in `params.py`, used by `land.grow` for majority and
+  minority: FRONT_K 1.5 and FRONT_END 0.5 (the old literals 1.5 and the
+  `2` in 2p/K); R_SCALE 1.0 (multiplies each lineage's r); R_MAX 0 (no
+  cap; else a ceiling on the effective yearly rate, declines uncapped).
+  Defaults reproduce the old model: `wp6a_base` matched `wp5f_seed101`.
+- R_SCALE does not scale the dragon cut, which is a separate cause of
+  death. A lower R_SCALE therefore makes dragons relatively deadlier.
+- `docs/upgrade/tools/wp6_growth.py`: the brief's measures (timeline,
+  plague recovery, shares by millennium, land occupied, arrivals), plus
+  the volatility measures from `wsim.metrics`.
+- Docs: rules/population.md, model-description.md section 7,
+  run-log.md (table), open-questions.md (plague confound).
+
+**Runs.** Seed 101 at four settings (`wp6a_base`, `wp6a_rmax03`,
+`wp6a_s05`, `wp6a_s033`) and seed 103 at three (`wp6a_*_s103`; base =
+`wp5f_seed103`), all 8,000 years. The seed 103 runs took about 2.5
+hours each because the machine was loaded (load average up to 30).
+
+**Results** (run-log.md has the table; seed 101 / 103):
+- R_MAX 0.03 alone is a small change: first city +150-300 years,
+  recovery unchanged (55 / 70 years median to 90%).
+- R_SCALE 0.5 with R_MAX 0.03: first city 1,120 / 865 (from 360),
+  10M people +1,400-2,000 years, steel 5,425 / 5,955 (from 6,050 /
+  4,940). Recovery 85 / 75 years (from 60 / 65). Population at 8,000
+  -25 / -42%. Wars -64 / -74%.
+- R_SCALE 0.33 with R_MAX 0.02: steel none / 7,695. Recovery 155 / 100
+  years. Population at 8,000 34 / 36M.
+- Volatility fell as growth slowed, the opposite of the brief's aim.
+  The cause is that plague frequency scales with urban population, so
+  slow worlds have fewer plagues (1-10 against 15-23).
+- Population still tracks capacity once land fills (mean pop / K
+  0.8-0.9). The brief's diagnosis ("the history of population is the
+  history of K") is unchanged by any setting. Slower r stretches the
+  timeline more than it lengthens crises.
+
+**Recommendation (C), for D7.** If U accepts a later first city (about
+year 900-1,100) and 10M people about 2,000 years later, adopt R_SCALE
+0.5 with R_MAX 0.03: steel still arrives before 8,000 in both seeds,
+and recovery is about 20-40% slower. R_SCALE 0.33 conflicts with "steel
+as the final technology over 8,000 years" (U, 2026-11-09) unless runs
+lengthen to about 10,000 years. If the aim is crises that last,
+neither setting does much. The next step is the lagged capacity named
+in the brief (destroyed improvements and herds rebuilding over
+decades), or plague that is not tied to city size. Either needs U.
+
+**Not done.** Stage B (adopt) waits on D7. No 5-seed batch.
+
+**Next stage needs to know.** Under R_SCALE, early-history measures
+(first city, war counts) shift by more than the seed spread, so any
+later baseline must be rerun after B.

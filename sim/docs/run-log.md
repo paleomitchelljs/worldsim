@@ -2005,3 +2005,66 @@ Camps (seed 101 / 103):
   city states have less room. One seed each.
 - **No herder path to large states.** Camps take cities, but stay small.
 - No people floods the map; minority shares and population moved little.
+
+### 2026-11-18 WP6 stage A: growth-rate experiment (`wp6a_*`)
+
+Standard settings, 8,000 years, every default switch. Four settings:
+baseline; R_MAX 0.03; R_SCALE 0.5 with R_MAX 0.03; R_SCALE 0.33 with
+R_MAX 0.02 (all **C**, from the brief). Seed 101: `wp6a_base`,
+`wp6a_rmax03`, `wp6a_s05`, `wp6a_s033`. Seed 103: `wp6a_rmax03_s103`,
+`wp6a_s05_s103`, `wp6a_s033_s103`. The seed 103 baseline is
+`wp5f_seed103`: `wp6a_base` reproduced `wp5f_seed101` exactly, so the
+new constants at their defaults change nothing. Measures from
+`docs/upgrade/tools/wp6_growth.py`. Each cell is seed 101 / 103.
+
+| Measure | base | R_MAX .03 | R_SCALE .5, R_MAX .03 | R_SCALE .33, R_MAX .02 |
+|---|---|---|---|---|
+| first city | 360 / 355 | 505 / 645 | 1120 / 865 | 2565 / 1910 |
+| 1M people | 405 / 425 | 445 / 485 | 710 / 690 | 1155 / 1100 |
+| 10M people | 845 / 805 | 1025 / 990 | 2260 / 2795 | 3915 / 3980 |
+| first bronze | 4185 / 3730 | 3330 / 3870 | 4220 / 4650 | 5635 / 5945 |
+| first iron | 5270 / 4315 | 3800 / 4705 | 4940 / 5330 | 7850 / 6915 |
+| first steel | 6050 / 4940 | 4320 / 5405 | 5425 / 5955 | none / 7695 |
+| land occupied, yr 400 | 0.037 / 0.039 | 0.032 / 0.029 | 0.011 / 0.014 | 0.007 / 0.008 |
+| land occupied, yr 2000 | 0.64 / 0.62 | 0.63 / 0.62 | 0.36 / 0.35 | 0.18 / 0.19 |
+| population at 8,000 (M) | 82.7 / 136 | 86.9 / 136 | 62.1 / 78.9 | 33.9 / 36.2 |
+| mean pop / K at 8,000 | 0.90 / 0.87 | 0.84 / 0.91 | 0.85 / 0.81 | 0.93 / 0.67 |
+| plagues | 15 / 23 | 17 / 16 | 10 / 18 | 1 / 9 |
+| plague falls over 10% (state x plague) | 397 / 1299 | 465 / 860 | 281 / 683 | 6 / 253 |
+| years back to 90%, median | 60 / 65 | 55 / 70 | 85 / 75 | 155 / 100 |
+| years back to 90%, 10-90% | 35-185 / 35-195 | 40-145 / 40-190 | 30-210 / 35-220 | 130-268 / 45-245 |
+| log pop sd around 200-yr mean, after 3000 | 0.014 / 0.028 | 0.012 / 0.023 | 0.010 / 0.024 | 0.004 / 0.010 |
+| largest 100-yr fall (log), after 3000 | -0.07 / -0.22 | -0.05 / -0.16 | -0.11 / -0.14 | -0.01 / -0.07 |
+| log sd of people shares, yr 8000 | 2.96 / 2.82 | 2.68 / 2.78 | 2.93 / 2.65 | 2.91 / 2.69 |
+| polities | 3,231 / 5,082 | 4,007 / 5,398 | 2,886 / 2,834 | 1,530 / 1,963 |
+| wars | 3,684 / 8,168 | 3,732 / 7,194 | 1,337 / 2,150 | 358 / 753 |
+
+- **Timeline.** R_MAX 0.03 alone moves the first city 150-300 years
+  and 10M people about 200 years; its metal dates go both ways between
+  seeds (path noise). R_SCALE 0.5 delays 10M people by 1,400-2,000
+  years and the metals by about 0-1,000 years; steel comes at
+  5,425 / 5,955. R_SCALE 0.33 delays the metals by 1,500-2,500 years;
+  steel comes at 7,695 in seed 103 and not at all in seed 101.
+- **Recovery is slower, but only a little at R_SCALE 0.5.** The median
+  time back to 90% after a plague goes from 60-65 to 75-85 years. At
+  R_SCALE 0.33 it is 100-155 years, but there are few cases.
+- **Volatility fell, not rose,** because plague frequency follows urban
+  population (open-questions.md) and the slow settings have fewer
+  cities. The sd and the falls are therefore not a clean measure of
+  recovery here.
+- **Population still sits on capacity** after the land fills: mean
+  pop / K is 0.8-0.9 at year 8,000 except in R_SCALE 0.33, seed 103
+  (0.67, still filling). Slower growth mostly delays the whole history,
+  and the late world is smaller because cities and technology, and
+  hence K, are behind.
+- **Peoples.** The Goblins' early lead shrinks with slower growth (63-69%
+  of people at year 1,000 at base, 17-26% at R_SCALE 0.33). Trolls,
+  Ogres and Giants stay under 0.6% in every setting: not squeezed
+  further. The log sd of shares at year 8,000 moves by less than the
+  seed difference.
+- **Head-start arrivals.** At year 400, when six peoples arrive, 3.7-3.9%
+  of land is taken at base and 0.7-1.4% with R_SCALE. Their wander
+  distances barely change (770-910 km median), so late peoples found
+  empty land in every setting.
+- **States and wars** fall steeply with slower growth: wars -70 to -90%
+  at R_SCALE 0.5-0.33, through fewer and later cities.

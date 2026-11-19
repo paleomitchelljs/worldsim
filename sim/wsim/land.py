@@ -387,6 +387,12 @@ class LandMixin:
                      cell=i, cities=[self.cities[c]['id'] for c in hit],
                      n=len(lost))
 
+    @staticmethod
+    def rcap(r):
+        """The effective yearly growth rate, capped at R_MAX (if set);
+        declines are not capped."""
+        return np.minimum(r, R_MAX) if R_MAX > 0 else r
+
     def grow(self):
         occ = np.nonzero(self.lin >= 0)[0]
         L = self.lin[occ]
@@ -410,11 +416,11 @@ class LandMixin:
                     self.peat[self.mcul[mo]], 1e-3), km)
                 coef = np.where(full, SHARE_ALPHA * wm / wM, 1.0)
             pm = self.mpop[mo]
-            rm = self.Lr[Lm]
+            rm = R_SCALE * self.Lr[Lm]
             am = 0.6 + 0.4 * self.agri[Lm]
-            pm0 = logistic(pm, km, rm * am)     # records: without dragons
+            pm0 = logistic(pm, km, self.rcap(rm * am))  # records: no dragons
             rm = rm - self.dragon_pen(mo)
-            self.mpop[mo] = logistic(pm, km, rm * am)
+            self.mpop[mo] = logistic(pm, km, self.rcap(rm * am))
             self.dead("hunger", mo, np.maximum(pm - pm0, 0), minority=True)
             self.forgone(mo, np.maximum(pm0 - self.mpop[mo], 0),
                          minority=True)
@@ -424,13 +430,15 @@ class LandMixin:
         k = k * self.pref(L, occ)
         p = self.pop[occ]
         # frontier fecundity: thinly settled land grows fastest
-        front = 1 + 1.5 * np.clip(1 - 2 * p / k, 0, 1)
-        r = self.Lr[L] * (0.6 + 0.4 * self.agri[L]) * front
+        front = 1 + FRONT_K * np.clip(1 - p / (FRONT_END * k), 0, 1)
+        r0 = R_SCALE * self.Lr[L]
+        r = self.rcap(r0 * (0.6 + 0.4 * self.agri[L]) * front)
         # dragons: a cut in the growth rate, the same for everyone;
         # only fast breeders stay above zero under a dragon
         pen = self.dragon_pen(occ)
-        rb = self.Lr[L] - pen
-        r_d = rb * (0.6 + 0.4 * self.agri[L]) * np.where(rb > 0, front, 1)
+        rb = r0 - pen
+        r_d = self.rcap(rb * (0.6 + 0.4 * self.agri[L]) *
+                        np.where(rb > 0, front, 1))
         e0 = np.exp(-r * DT)
         p0 = k * p / (p + (k - p) * e0)
         r = r_d

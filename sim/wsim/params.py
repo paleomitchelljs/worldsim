@@ -194,6 +194,12 @@ AVULSE_RATE, AVULSE_TOL = 2.5e-4, 0.03
 # cities, administration and metallurgy decay.
 SUPPLY_GRACE = 20           # years (was 4 ticks)
 DECAY_ADMIN, DECAY_METAL = 0.002, 0.0004   # per year, scaled by city loss
+# Growth (WP6, C): frontier fecundity multiplies the rate by up to
+# 1 + FRONT_K where a cell is empty, falling to 1 at FRONT_END x K.
+# R_SCALE multiplies every lineage's growth rate; R_MAX caps the
+# effective yearly rate (after farming and frontier; 0 = no cap).
+FRONT_K, FRONT_END = 1.5, 0.5
+R_SCALE, R_MAX = 1.0, 0.0
 # Minorities: one secondary people per cell, up to MIN_CAP of the cell's K.
 MIN_CAP = 0.2
 MIN_GARRISON = 0.04         # of the city, settled by a conqueror

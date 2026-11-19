@@ -53,10 +53,18 @@ reached about 460M people. Peaks now run around 100–170M.
 
 Logistic growth toward K over each 5-year tick, at rate:
 
-    r x (0.6 + 0.4 x farming) x (1 + 1.5 x clip(1 − 2 pop/K))
+    min(R_MAX, R_SCALE x r x (0.6 + 0.4 x farming) x
+        (1 + FRONT_K x clip(1 − pop / (FRONT_END x K))))
 
-The last term is frontier fecundity: thinly settled land grows up to 2.5x
-faster.
+The last term is frontier fecundity: thinly settled land grows up to
+1 + FRONT_K (2.5x) faster, falling to 1x at FRONT_END (0.5) of K.
+
+WP6 stage A (2026-11-18, **C**) made the two numbers constants and added
+R_SCALE (1.0, a multiplier on every lineage's r) and R_MAX (0 = no cap,
+a ceiling on the effective yearly rate). The defaults leave growth as it
+was. R_SCALE does not scale the dragon cut, so a lower R_SCALE puts more
+peoples below zero under dragons. The minority's rate takes R_SCALE and
+R_MAX too (it has no frontier term).
 
 ## Movement within a lineage
 
