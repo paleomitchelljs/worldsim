@@ -43,7 +43,7 @@ what an entry holds.
 | 8 | A climate fields | done (D10, U: report first; agreement 0.56, findings for U) | 2026-11-19 | e293026 |
 | 8 | B yields and runoff | done (`climate_fields` on) | 2026-11-19 | ad5305c |
 | 8 | C floodplain area | done (`floodplain` on by default, U) | 2026-11-19 | ad5305c |
-| 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | see entry |
+| 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | 9c0afdd |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1867,7 +1867,7 @@ added. All forms and numbers are C.
 - Plotting tools other than the run loader still build the old world.
 - One seed only.
 
-### WP8: D10, new defaults and baseline (2026-11-19)
+### WP8: D10, new defaults and baseline (2026-11-19, 9c0afdd)
 
 **Decisions (U, 2026-11-19).**
 - The drawn southern jungle belt is "probably an old error".
