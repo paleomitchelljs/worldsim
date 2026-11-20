@@ -48,8 +48,9 @@ what an entry holds.
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
 | 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
+| 8 | Monsoon westerly, rain timing (U) | done (baseline `wp8i_`) | 2026-11-20 | 23e3c6e |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
-| 9 | B sensitivity screen | not started | | |
+| 9 | B sensitivity screen | running (U: SALib, launch, summaries only) | 2026-11-20 | 23e3c6e |
 | 9 | C Earth test scoping | not started | | |
 
 ## Entries
@@ -2087,3 +2088,70 @@ band-edge seams, ocean currents.
   - the monsoon's reach over land;
   - the zonal monsoon wind;
   - the rain's season in biomes.
+
+### WP8: monsoon westerly and rain timing (2026-11-20, 23e3c6e)
+
+**Asked by U (2026-11-20).** "Yes to monsoons having their own wind,
+please do use rain seasonality, and a westerly wind is good."
+
+**Done** (`climate_world.py`; world-data.md has the model).
+- **Monsoon westerly.**
+  - Each month, a second march walks the summer-side trade rows
+    eastward.
+  - Its rain weighs in between the equator and the displaced ITCZ,
+    fading over W_ITCZ (MONSOON_W 1).
+  - A first form also weighted it by land fraction × sun. It changed
+    land rain by ±4%, so that weight was dropped: the ITCZ's
+    displacement already holds both.
+- **Rain timing.**
+  - A monthly bucket (S_MAX 0.15 m) compares the real rain timing with
+    the same rain spread evenly; the ratio is the timing factor.
+  - AET = Fu × the factor.
+  - `syn_aridity_season` (aridity × the factor) is read by the biome
+    rule and, in `wsim/geo.py`, by the sim's yields.
+- **New columns:** `syn_aridity_season`, `syn_warm_rain_share`.
+- **New QA maps:** timing factor, seasonal aridity, warm-half rain share,
+  July and January rain.
+- `world_v2` and `sites_v3.json` were rebuilt.
+- Docs: world-data, open-questions, run-log, BASELINE.
+
+**Runs.** Baseline `wp8i_seed101`-`104` and `106`:
+- population 35-57M;
+- 18-64 states with 3+ cities;
+- 289-1,225 wars;
+- steel in two seeds.
+
+**For the next session / U.**
+- **The westerly barely matters**, because the meridional supply
+  (V_MER 0.3) brings most monsoon rain.
+- **The society grew on the same land.** Savanna farms better than
+  jungle in the model; this is not traced.
+- **Snake folk now lead** in three seeds. Reported only (U: peoples
+  later).
+
+### WP9 stage B: sensitivity screen (running since 2026-11-20, 23e3c6e)
+
+**U (2026-11-20).**
+- SALib or hand-rolled: either.
+- Launch.
+- Keep only the summaries, plus the final map.
+
+**Set-up.**
+- `tools/wp9_screen.py` holds the design: 30 parameters, Morris with
+  r = 8 trajectories and 4 levels, so 248 points on seed 101, plus
+  `base_seed105`. The design is in `baseline/wp9b_design.json` (SALib
+  1.6.0, seed 9).
+- **Ranges.** A factor of 2 either way, log-scaled, except PATH_MIN
+  0.3-0.9, BUD_PRESS 0.3-0.6 and ODDS_MID 0.5-1.0.
+- **Five literals were named** for it: RAID_RATE, BUD_PRESS, AGRI_INV,
+  METAL_INV, CLIM_AMP. A 1,000-year run of seed 101 is identical.
+- **What each run keeps** (`runs/wp9b/<point>/`): metrics.json,
+  run.json, final_maps.png and the log tail. The run folder is deleted.
+- **Seed noise** comes from `wp8i_seed101`-`104`, `106` and
+  `base_seed105`.
+- `tools/wp9_analyze.py` gives mu*, mu, sigma and mu* / noise per
+  pattern of docs/patterns.md.
+- **Restart** after a stop: `wp9_screen.py run -j 8` skips points
+  already done.
+- **When done:** write `docs/sensitivity.md` from `wp9_analyze.py --md`,
+  with the brief's conclusions. Do not use the screen to pick values.

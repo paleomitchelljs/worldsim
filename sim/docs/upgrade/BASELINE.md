@@ -25,6 +25,10 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 adopted growth settings.
 
 **Update, 2026-11-20 (WP8, fifth).** The baseline is now
+`wp8i_seed101`-`104` and `106` (last section): the monsoon westerly and
+rain timing.
+
+**Update, 2026-11-20 (WP8, fifth).** The baseline was
 `wp8h_seed101`-`104` and `106` (last section): monthly circulation (ITCZ
 migration, land monsoon), gyre ocean currents, and exchange across band
 edges.
@@ -520,7 +524,7 @@ The code is that of `wp8f`, with the rain-out factor under sinking air
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
 
-## The current baseline batch (`wp8h_seed101`-`104`, `106`, 2026-11-20)
+## The baseline batch of the monthly circulation (`wp8h_seed101`-`104`, `106`, 2026-11-20)
 
 The code is that of `wp8g`, with three expansions of the climate model
 (U, 2026-11-20; [../world-data.md](../world-data.md)):
@@ -590,5 +594,72 @@ The code is that of `wp8g`, with three expansions of the climate model
   subtropics;
 - states stay few and small (10-36 with 3+ cities), and wars number
   147-368.
+
+None is tuned. Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8i_seed101`-`104`, `106`, 2026-11-20)
+
+The code is that of `wp8h`, with two more climate changes (U,
+2026-11-20; [../world-data.md](../world-data.md)):
+
+- **Monsoon westerly.** Between the equator and a displaced summer ITCZ
+  the wind is westerly. It moves July rain −20% to +15% within its zone,
+  but no biome area.
+- **Rain timing.** A monthly soil-water bucket gives a timing factor.
+  The biome rule and the sim's yields (`syn_aridity_season`) read
+  aridity times that factor.
+
+`world_v2` and `sites_v3.json` were rebuilt; all 13 hearths are placed.
+Biomes (M km²): jungle 23.8 (24.9), desert 5.5 (5.5), grassland 33.9
+(29.3), temperate forest 27.3 (30.8), tundra 31.5 (31.5). River cells are
+9.0% of land and lake cells 931.
+
+| Measure | wp8i (current) | wp8h (previous) |
+|---|---|---|
+| First city (year) | 490-810 | 520-875 |
+| 10M people (year) | 2,790-2,990 | 2,710-3,105 |
+| First bronze / iron (year) | 4,550-5,800 / 5,385-7,420 | 4,380-6,555 / 6,285-7,560 |
+| First steel (year) | 6,140 and 6,765 in two seeds; none in 3 | 7,460 in one seed |
+| World population at 8000 (M) | 35-57 | 31-38 |
+| Population at 1000 / 4000 / 7000 (M) | 2.7-3.4 / 16.6-18.2 / 29.8-42.4 | 2.5-3.5 / 13.7-16.7 / 26.4-33.0 |
+| Largest 100-yr fall after 3000 (log) | -0.19 to -0.06 | -0.20 to -0.07 |
+| Herding share, peak | 0.26-0.35, at years 2085-2695 | 0.27-0.42, at 1710-2610 |
+| Urban share at the end | 0.026-0.042 | 0.017-0.029 |
+| Rank-size slope at the end | -1.27 to -0.77 | -1.41 to -0.96 |
+| Largest city, share of world | 0.08-0.16% | 0.05-0.11% |
+| Polities | 1,865-2,676 | 1,460-1,806 |
+| Never above one city | 93-96% | 95-98% |
+| States with 3+ cities | 18-64 | 10-36 |
+| Ended 3+ city states, lifespan | median 642-1,626 yr; CV 0.63-0.95; over 1,000 yr 36-91% | median 515-1,180 yr; CV 0.45-0.92; over 1,000 yr 14-57% |
+| Largest state | 0.8-2.4M km² (0.7-2.0% of land) | 0.3-1.4M km² (0.3-1.2%) |
+| Largest state, land pieces | 1-6 | 1 |
+| Wars | 289-1,225 | 147-368 |
+| Wars ending inside one tick / within 5 yr | 3-6% / 51-59% | 2-5% / 50-59% |
+| Peer wars (ended, held-out definition) | 1-12 | 0-7 |
+| Sieges taken | 38-45% | 32-40% |
+| City food: trade / rent / provincial / capital | 0.01-0.03 / 0.43-0.52 / 0.05-0.11 / 0.38-0.50 | 0.01-0.02 / 0.45-0.51 / 0.01-0.09 / 0.40-0.50 |
+| Deaths: feud / raid / plague / hunger | 0.56-0.62 / 0.28-0.33 / 0.04-0.09 / 0.01-0.03 | 0.57-0.63 / 0.32-0.35 / 0.03-0.05 / 0.01-0.02 |
+| Pop share on river cells | 0.41-0.43 (land 0.092) | 0.35-0.41 (land 0.088) |
+| Pop share coast or river | 0.53-0.61 (land 0.165) | 0.48-0.53 (land 0.161) |
+| Pop share, \|lat\| 0-15 / 15-30 | 0.66-0.69 / 0.14-0.19 | 0.62-0.69 / 0.17-0.22 |
+| Pop share by biome: jungle / grassland / temperate forest / desert / tundra | 0.35-0.47 / 0.22-0.31 / 0.24-0.37 / 0.007-0.011 / 0.009-0.017 | 0.31-0.45 / 0.24-0.31 / 0.21-0.43 / 0.010-0.013 / 0.013-0.021 |
+| Population in a state / land area | 0.41-0.60 / 0.05-0.12 | 0.28-0.43 / 0.03-0.05 |
+| Held out: spacing vs density (rho) | -0.62 to -0.48 | -0.70 to -0.51 |
+| Held out: state slope, ranks 11-100 (peak / end) | -0.70 to -0.47 / -1.07 to -0.95 | -0.70 to -0.43 / -1.03 to -0.64 |
+| Held out: rule spells, p90 / over 500 yr | 400-500 yr / 7-10% | 375-525 yr / 7-10% |
+| Held out: traits between a lineage's cities (sd) | 0.009-0.012 | 0.009-0.036 |
+| Largest people at the end | Snake folk in 3 seeds (29-34%), Goblins (19%), Dwarves (25%) | Dwarves or Humans, 23-32% |
+
+**What moved.** The society is larger and more political on the same
+land:
+
+- population up by about a quarter to a half;
+- 18-64 states with 3+ cities, living longer;
+- two to three times the wars;
+- steel in two seeds.
+
+The likely path (not traced): rain timing turned seasonal jungle into
+grassland, which farms at FARM 1.0 against jungle's 0.45. The world
+gained farmland where most people already live.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).

@@ -2479,3 +2479,23 @@ on the current baseline (`realism.py --rebuild --group 'wp8h_seed10?'`):
 - **Lineage cities** (`lineage_cities`): traits differ between the cities
   of one lineage by sd 0.009-0.036, against 0.073-0.102 between the
   lineages of a people.
+
+### 2026-11-20 WP8: monsoon westerly and rain timing (`wp8i_seed101`-`104`, `106`)
+
+What it tested: `wp8h` plus the monsoon westerly and rain timing (U,
+2026-11-20; world-data.md). `world_v2` and `sites_v3.json` were rebuilt.
+
+- **World:** grassland 33.9M km² (+4.6), jungle 23.8 (-1.1), temperate
+  forest 27.3 (-3.5); desert and tundra unchanged. The largest river now
+  drains the southern temperate belt (12.3M km², 126,000 m³/s).
+- **The westerly** moves July rain -20% to +15% in its zone and no
+  biome area.
+
+**The batch.** Full table in BASELINE.md, last section.
+- Population at 8,000 is 35-57M (was 31-38M).
+- 18-64 states with 3+ cities (was 10-36); 289-1,225 wars (147-368).
+- Steel in two seeds (one before).
+- Snake folk are the largest people in three seeds.
+- Likely path: savanna farms better than jungle in the model (FARM 1.0
+  against 0.45). Not traced.
+- About 700-760 s per run, five at once.
