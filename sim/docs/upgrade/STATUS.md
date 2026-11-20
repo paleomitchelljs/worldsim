@@ -48,7 +48,7 @@ what an entry holds.
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
 | 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
-| 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | HASH |
+| 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
 
@@ -2041,7 +2041,7 @@ band-edge seams, ocean currents.
   no westerly summer monsoon.
 - **Biomes use annual totals**, not the rain's season.
 
-### WP9 stage A: patterns frozen (2026-11-20, HASH)
+### WP9 stage A: patterns frozen (2026-11-20, 90e91c0)
 
 **Done.**
 - `docs/patterns.md` lists 31 patterns. Each has its definition (a
