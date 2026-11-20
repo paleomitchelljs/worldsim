@@ -81,7 +81,7 @@ def value(m, fn, key):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--baseline", default="wp8i")
+    ap.add_argument("--baseline", default="wp8j")
     ap.add_argument("--md")
     a = ap.parse_args()
     with open(DESIGN) as fh:
