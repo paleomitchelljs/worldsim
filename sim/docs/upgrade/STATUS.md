@@ -45,7 +45,7 @@ what an entry holds.
 | 8 | C floodplain area | done (`floodplain` on by default, U) | 2026-11-19 | ad5305c |
 | 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | 9c0afdd |
 | 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | 6d9eea2 |
-| 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | see entry |
+| 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1951,7 +1951,7 @@ The full table is in BASELINE.md, and run-log.md has the entry.
 - **The Elves' fall and the weaker states** are results of the new world,
   not tuned; worth U's look.
 
-### WP8: Penman-Monteith PET (2026-11-20)
+### WP8: Penman-Monteith PET (2026-11-20, aa0f052)
 
 **Asked by U (2026-11-20).** "Bring in sunshine & humidity & rerun".
 
