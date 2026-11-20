@@ -45,6 +45,7 @@ what an entry holds.
 | 8 | C floodplain area | done (`floodplain` on by default, U) | 2026-11-19 | ad5305c |
 | 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | 9c0afdd |
 | 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | 6d9eea2 |
+| 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | see entry |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1945,6 +1946,35 @@ The full table is in BASELINE.md, and run-log.md has the entry.
 - **Desert nearly vanishes (1.2M km²).** PET from degree-days is too low
   in the subtropics; a radiation- or humidity-based PET is the
   physically grounded fix. Not done, because it changes the world again.
-- **No desert crop hearth** (no desert river cells).
+- **No desert crop hearth** (no desert river cells). Resolved by the
+  Penman-Monteith rebuild (2026-11-20): all 13 hearths are placed.
 - **The Elves' fall and the weaker states** are results of the new world,
   not tuned; worth U's look.
+
+### WP8: Penman-Monteith PET (2026-11-20)
+
+**Asked by U (2026-11-20).** "Bring in sunshine & humidity & rerun".
+
+**Done.**
+- **`climate_world.penman_pet`.** FAO-56 Penman-Monteith over 12
+  months, replacing degree-day PET (PET_K is gone). Inputs:
+  - monthly insolation;
+  - sunshine 0.85 to 0.35 by rain;
+  - dew point at the night minimum, less up to 2.5 °C in clear air;
+  - day-night range 6-16 °C by sunshine.
+- New QA maps: `climate_rel_humidity.png`, `climate_sunshine.png`.
+- `world_v2` and `sites_v3.json` were rebuilt; desert is 5.0M km².
+- Docs: world-data, open-questions, run-log, BASELINE.
+
+**Runs.** Baseline `wp8f_seed101`-`104` and `106`:
+
+- population 34-63M;
+- Dwarves 10-35%, Elves 1-3%;
+- otherwise close to `wp8e`.
+
+**For the next session / U.**
+- **Subtropical rain is about 0.3 m/yr.** The rain-out floor under
+  sinking air (Z_BASE 0.25) keeps the subtropics semi-arid; Earth's
+  great deserts get under 0.1. Not changed.
+- **The Elves' fall** (35-47% at `wp8d`, now 1-3%) is a result of the
+  new world, not tuned.

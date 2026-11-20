@@ -828,7 +828,8 @@ def derive(gpkg, previews_dir, climate=False):
             ("syn_precip_m_yr", "syn", src, "m/yr",
              "precipitation: ocean moisture carried on the prevailing wind of each "
              "circulation band, rained out by band, uplift and distance"),
-            ("syn_pet_m_yr", "syn", src, "m/yr", "potential evaporation from degree-days above 0 degC"),
+            ("syn_pet_m_yr", "syn", src, "m/yr", "potential evaporation, FAO-56 Penman-Monteith by month: insolation, "
+             "sunshine from cloud, dew-point humidity"),
             ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form)"),
             ("syn_aridity", "syn", src, "ratio", "precipitation / potential evaporation (UNEP index)"),
             ("syn_runoff_climate_m_yr", "syn", src, "m/yr", "precipitation - actual evaporation"),

@@ -22,7 +22,12 @@ from Earth's map (all forms and numbers C):
                   polar front, sinking air in the subtropics), more where
                   it is forced uphill and less where it descends; part of
                   the rain is evaporated again and carried on (recycling)
-  water balance   potential evaporation from degree-days above 0 degC;
+  water balance   potential evaporation by FAO-56 Penman-Monteith, month
+                  by month: net radiation from annual insolation, with
+                  monthly insolation, sunshine set by cloud (more under
+                  raining air), and humidity from the dew point (FAO-56's
+                  rule: the night minimum, a few degrees lower in dry
+                  climates; the day-night range widens under clear sky);
                   actual evaporation by Budyko's curve (Fu's form);
                   runoff = P - AET; aridity = P / PET (the UNEP index)
 
@@ -84,7 +89,14 @@ PARAMS = dict(
     K_EDDY=0.1,        # eddy mixing with each neighbouring row, per row-width travelled
     K_ORO=0.15,        # extra rain-out per (m of rise per km) of upwind slope
     K_LEE=0.1,         # rain suppression per (m of descent per km)
-    PET_K=1.75e-4,     # m of potential evaporation per degree-day above 0 degC
+    S_CLEAR=0.85,      # sunshine fraction under clear, sinking air
+    S_CLOUD=0.35,      # under the most rain-bearing cloud
+    P_CLOUD=1.0,       # m/yr of rain at which cloud is 1 - 1/e of its maximum
+    DTR_CLOUD=6.0,     # degC day-night range under full cloud
+    DTR_CLEAR=16.0,    # under clear sky
+    DEW_ARID=2.5,      # degC the dew point lies below the night minimum in clear, dry air
+    U2=2.0,            # m/s wind at 2 m (FAO-56 default)
+    ALBEDO=0.23,       # FAO-56 reference surface
     FU_W=2.6,          # Fu's Budyko parameter
 )
 P_GLOBAL = 1.0        # m/yr, mean precipitation over the whole globe
@@ -109,6 +121,50 @@ def degree_days(T, A, base):
     th = np.linspace(0, 2 * np.pi, 48, endpoint=False)
     d = np.maximum(T[..., None] + A[..., None] * np.sin(th) - base, 0)
     return 365.0 * d.mean(-1)
+
+
+def esat(T):
+    """Saturation vapour pressure (kPa) at T degC (FAO-56, Tetens)."""
+    return 0.6108 * np.exp(17.27 * T / (T + 237.3))
+
+
+def penman_pet(T, A, P, LAT, p):
+    """Potential evaporation (m/yr) by FAO-56 Penman-Monteith, summed over
+    12 months whose mean temperature is T + A sin(month), with that
+    month's top-of-atmosphere radiation (FAO-56 eq. 21; declination in
+    phase with the temperature, summer in each hemisphere together).
+    Sunshine falls from S_CLEAR toward S_CLOUD as rain rises (cloud);
+    Angstrom: Rs = (0.25 + 0.5 n/N) Ra. Humidity: the dew point is the
+    night minimum (month mean - half the day-night range, which widens
+    with sunshine), less up to DEW_ARID in clear air (FAO-56 Annex 6).
+    Months below 0 degC and negative values add nothing.
+    Returns (PET m/yr, annual-mean relative humidity, sunshine)."""
+    phi = np.radians(np.abs(LAT))
+    clear = 1 - np.exp(-np.clip(P, 0, None) / p["P_CLOUD"])
+    sun = p["S_CLEAR"] - (p["S_CLEAR"] - p["S_CLOUD"]) * clear
+    c = (sun - p["S_CLOUD"]) / (p["S_CLEAR"] - p["S_CLOUD"])   # 0 cloudy .. 1 clear
+    dtr = p["DTR_CLOUD"] + (p["DTR_CLEAR"] - p["DTR_CLOUD"]) * c
+    u2, gam = p["U2"], 0.0665            # psychrometric constant at ~0.5 km
+    tot, rh_sum = np.zeros(T.shape), np.zeros(T.shape)
+    for th in np.linspace(0, 2 * np.pi, 12, endpoint=False):
+        dec = np.radians(23.44) * np.sin(th)
+        ws = np.arccos(np.clip(-np.tan(phi) * np.tan(dec), -1, 1))
+        Ra = 24 * 60 / np.pi * 0.0820 * (ws * np.sin(phi) * np.sin(dec) +
+                                         np.cos(phi) * np.cos(dec) * np.sin(ws))
+        Rs = (0.25 + 0.5 * sun) * Ra
+        Rso = np.maximum(0.75 * Ra, 1e-6)
+        Tm = T + A * np.sin(th)
+        es = esat(Tm)
+        ea = esat(Tm - dtr / 2 - p["DEW_ARID"] * c)
+        rh_sum += ea / es
+        D = 4098 * es / (Tm + 237.3) ** 2
+        Rnl = 4.903e-9 * (Tm + 273.16) ** 4 * (0.34 - 0.14 * np.sqrt(ea)) * \
+            (1.35 * np.clip(Rs / Rso, 0, 1) - 0.35)
+        Rn = (1 - p["ALBEDO"]) * Rs - Rnl
+        et = (0.408 * D * Rn + gam * 900 / (Tm + 273) * u2 * (es - ea)) / \
+            (D + gam * (1 + 0.34 * u2))                        # mm/day
+        tot += np.where(Tm > 0, np.clip(et, 0, None), 0.0) * 365.25 / 12
+    return tot / 1000.0, rh_sum / 12, sun
 
 
 def march(q0_sea, land, dx, rate, west, south, mer):
@@ -199,7 +255,7 @@ def fields(inp, p=PARAMS):
         p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
 
     gdd = degree_days(T, A, GDD_BASE)
-    pet = p["PET_K"] * degree_days(T, A, 0.0)
+    pet, rh, sun = penman_pet(T, A, P, LAT, p)
     ratio = pet / np.maximum(P, 1e-6)
     w = p["FU_W"]
     aet = P * (1 + ratio - (1 + ratio ** w) ** (1 / w))
@@ -207,6 +263,7 @@ def fields(inp, p=PARAMS):
     arid = P / np.maximum(pet, 1e-3)
     return dict(temp_c=T, temp_range_c=2 * A, gdd=gdd, precip_m_yr=P,
                 pet_m_yr=pet, aet_m_yr=aet, runoff_m_yr=runoff, aridity=arid,
+                rel_humidity=rh, sunshine=sun,
                 continentality=cont)
 
 
@@ -262,7 +319,9 @@ def qa_figures(f, drawn, pred, land, folder=QA_DIR):
             ("precip_m_yr", "precipitation (m/yr)", "Blues", (0, 3)),
             ("pet_m_yr", "potential evaporation (m/yr)", "Oranges", None),
             ("runoff_m_yr", "runoff, P - AET (m/yr)", "PuBu", (0, 1.5)),
-            ("aridity", "aridity index P/PET", "BrBG", (0, 2))]
+            ("aridity", "aridity index P/PET", "BrBG", (0, 2)),
+            ("rel_humidity", "relative humidity, annual mean", "BuGn", (0, 1)),
+            ("sunshine", "sunshine fraction", "YlOrRd", (0, 1))]
     for k, title, cmap, lim in spec:
         v = np.where(land, f[k], np.nan)
         fig, ax = plt.subplots(figsize=(12, 6))

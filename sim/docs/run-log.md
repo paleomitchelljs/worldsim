@@ -2366,3 +2366,35 @@ Baseline batch: full table in `docs/upgrade/BASELINE.md`, last section.
   last longer: median life 652-1,862 yr. The urban share halves
   (0.02-0.04).
 - **People move to the equator:** 63-71% within 15° of it.
+
+### 2026-11-20 WP8: Penman-Monteith PET (`wp8f_seed101`-`104`, `106`)
+
+U: "bring in sunshine & humidity & rerun".
+
+**The change.** Potential evaporation is FAO-56 Penman-Monteith, month
+by month (`climate_world.penman_pet`):
+
+- top-of-atmosphere insolation for each month;
+- sunshine from cloud, which follows rain;
+- humidity from the dew point (the night minimum, lower in clear dry air);
+- wind 2 m/s.
+
+A first version also capped humidity by the moisture the wind carries.
+That made the raining equator dry (RH 0.56), so it was dropped.
+
+**The world.**
+- Median PET on land: 1.24 m/yr at 0-10°, 1.27 at 20-30°, 0.48 at
+  40-50°.
+- Desert 5.0M km² (was 1.2).
+- River cells 3,298 (6.8% of land); lake cells 852.
+- `sites_v3.json` was re-placed and has all 13 hearths.
+
+**The batch.** Full table in `docs/upgrade/BASELINE.md`, last section.
+
+- Population at 8,000 is 34-63M.
+- Dwarves 10-35%, among the top three in every seed; Elves 1-3%.
+- 35-69% of people live in states.
+- Close to `wp8e` otherwise.
+
+Runs took about 5,200 s each, against about 650 s: the machine was in
+Low Power Mode on a low battery.

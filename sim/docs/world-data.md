@@ -109,8 +109,20 @@ byte-identical to the committed copies, with 66,895 land cells.
     neighbouring rows.
   - Two laps round the globe; the result is smoothed by one cell.
 - **Water balance.**
-  - PET = 1.75e-4 m per degree-day above 0 °C (the year taken as a
-    sinusoid).
+  - PET by FAO-56 Penman–Monteith (U, 2026-11-20: "bring in sunshine &
+    humidity"), summed over 12 months of temperature T + A sin(month):
+    - radiation: that month's top-of-atmosphere insolation (FAO-56
+      eq. 21), with summer in phase with the warm months;
+    - sunshine fraction 0.85 under clear air, falling toward 0.35 as
+      rain rises (1 − e^(−P / 1 m/yr) of the way); Ångström
+      Rs = (0.25 + 0.5 n/N) Ra; albedo 0.23; FAO-56 net longwave;
+    - humidity: the dew point is the night minimum (month mean less half
+      the day-night range, 6 °C under cloud to 16 °C under clear sky),
+      less up to 2.5 °C in clear dry air (FAO-56 Annex 6);
+    - wind 2 m/s; months below 0 °C add nothing.
+    - A version that also capped humidity by the moisture the wind
+      carries made the raining equator dry (RH 0.56), because the march
+      counts rained-out air as gone; it was dropped.
   - AET by Budyko's curve in Fu's form, ω = 2.6.
   - Runoff = P − AET; aridity = P / PET (the UNEP index).
   - `syn_gdd` is degree-days above 5 °C.
@@ -158,23 +170,35 @@ Biome areas (`../gis/qa/climate_fit.json`):
 
 | Biome | Drawn (M km²) | `world_v2` (M km²) | Share of drawn area the climate agrees with |
 |---|---|---|---|
-| Jungle | 26.3 | 19.7 | 0.27 |
-| Desert | 12.3 | 1.2 | 0.01 |
-| Grassland | 29.0 | 39.6 | 0.38 |
-| Temperate forest | 38.1 | 30.0 | 0.23 |
+| Jungle | 26.3 | 20.4 | 0.27 |
+| Desert | 12.3 | 5.0 | 0.15 |
+| Grassland | 29.0 | 43.1 | 0.48 |
+| Temperate forest | 38.1 | 22.0 | 0.18 |
 | Tundra | 16.4 | 31.5 | 0.99 |
 
-- **The climate's pattern is zonal:**
-  - a wet equatorial belt;
-  - semi-arid subtropics (grassland);
-  - temperate forest at 30–50°;
-  - tundra from about 55° poleward on the southern supercontinent.
-- **Desert nearly vanishes.** Subtropical land gets about 0.3 m/yr
-  against about 0.9 m/yr of potential evaporation: P/PET 0.24–0.35,
-  semi-arid rather than arid.
-  - PET from degree-days ignores the clear-sky radiation and dry air
-    that make real subtropical PET 1.5–2 m/yr. So this is the likely
-    weak point, and it is not tuned (open-questions).
+The climate's pattern is zonal:
+
+- a wet equatorial belt;
+- semi-arid subtropics, with desert in their interiors (20–35°S on the
+  supercontinent, the northern continents' centres);
+- temperate forest at 35–50°;
+- tundra from about 55° poleward on the southern supercontinent.
+
+Median values on land by latitude band (m/yr; RH the annual mean):
+
+| \|lat\| | P | PET | RH | Sunshine | P/PET |
+|---|---|---|---|---|---|
+| 0–10 | 2.07 | 1.24 | 0.78 | 0.41 | 1.73 |
+| 10–20 | 0.66 | 1.41 | 0.65 | 0.61 | 0.46 |
+| 20–30 | 0.31 | 1.27 | 0.57 | 0.72 | 0.25 |
+| 30–40 | 0.42 | 0.78 | 0.57 | 0.68 | 0.50 |
+| 40–50 | 0.55 | 0.48 | 0.57 | 0.64 | 1.07 |
+
+Subtropical PET (1.27 m/yr) is now near Earth's range but below its
+deserts' 1.5–2. Subtropical rain is 0.31 m/yr against well under 0.1 in
+Earth's great deserts: the floor on rain-out under sinking air (Z_BASE
+0.25) keeps the subtropics semi-arid. With the degree-day PET used
+before (2026-11-19), desert was 1.2M km².
 
 ### Columns added in `world_v2.gpkg`
 
@@ -184,7 +208,7 @@ Biome areas (`../gis/qa/climate_fit.json`):
 | `syn_temp_range_c` | °C | warmest minus coldest month |
 | `syn_gdd` | °C·days | growing-degree days above 5 °C |
 | `syn_precip_m_yr` | m/yr | precipitation |
-| `syn_pet_m_yr` | m/yr | potential evaporation |
+| `syn_pet_m_yr` | m/yr | potential evaporation (Penman–Monteith) |
 | `syn_aet_m_yr` | m/yr | actual evaporation |
 | `syn_aridity` | ratio | P / PET |
 | `syn_runoff_climate_m_yr` | m/yr | P − AET (the same as `syn_runoff_m_yr` in this world) |
@@ -192,7 +216,9 @@ Biome areas (`../gis/qa/climate_fit.json`):
 
 Sea cells carry the fields too, except `syn_biome`.
 
-QA maps, one per field: `../gis/qa/climate_<field>.png`.
+QA maps, one per field: `../gis/qa/climate_<field>.png`; relative
+humidity and sunshine are drawn there (`climate_rel_humidity.png`,
+`climate_sunshine.png`) but not written to the world.
 
 ### Rivers on `world_v2` (WP8 stage B)
 
@@ -201,19 +227,19 @@ rain on lakes is the climate's precipitation. Discharge, rivers, basins,
 lakes, alluvial fill, wetness, soils and bedrock are then derived as
 before, with the same thresholds, from `syn_biome`.
 
-The result (after the physical refit and lake sizing):
+The result (physical refit, lake sizing, Penman–Monteith PET):
 
-- **River cells:** 6,243 → 3,923 (10.7% → 7.9% of land).
-- **The largest river** reaches the sea at 114°E on the equator
-  (125,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
+- **River cells:** 6,243 → 3,298 (10.7% → 6.8% of land).
+- **The largest river** reaches the sea at 88°W, 15°N
+  (146,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
   72°S) is gone: that land is tundra now.
 - **Lakes and closed basins.**
   - A closed basin's lake covers only as much area as evaporation less
     rain on it can balance the basin's inflow. It fills from the lowest
     cells, and the rest of the basin floor is alluvial fill (dry
     sediment) (`derive_world.drainage`, C; U 2026-11-19).
-  - Lake cells: 959, 1.4% of land. Before sizing it was 2,249; on the
-    old world it is 508. Endorheic cells: 7,450.
+  - Lake cells: 852, 1.3% of land. Before sizing it was 2,249; on the
+    old world it is 508. Endorheic cells: 7,572.
   - `world.gpkg` on disk predates the lake sizing. A rebuild of it would
     now size its closed-basin lakes too.
 
