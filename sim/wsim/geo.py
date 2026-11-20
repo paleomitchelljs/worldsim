@@ -108,6 +108,7 @@ def load_cells(gpkg):
 
 class World:
     def __init__(self, gpkg=GPKG):
+        self.gpkg = os.path.normpath(gpkg)
         d = load_cells(gpkg)
 
         def num(c, fill=0.0):

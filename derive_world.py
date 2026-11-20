@@ -564,19 +564,23 @@ def write_previews(df, dr, folder):
 
 
 # ---- main ----------------------------------------------------------------------
-def main(gpkg=GPKG):
+def main(gpkg=GPKG, out=None, climate=False):
     """Run on a temporary copy outside the synced folder, then swap it in:
-    rewriting layers in place while Dropbox syncs the file corrupts it."""
+    rewriting layers in place while Dropbox syncs the file corrupts it.
+    With `out`, the result goes there and `gpkg` is left alone."""
     import shutil
     import tempfile
+    out = out or gpkg
     tmp = os.path.join(tempfile.mkdtemp(prefix="world_gis_"), "world.gpkg")
     shutil.copy2(gpkg, tmp)
-    out = derive(tmp, os.path.join(os.path.dirname(gpkg), "previews"))
-    shutil.move(tmp, gpkg)
-    return out
+    previews = "previews" if out == gpkg else "previews_" + \
+        os.path.splitext(os.path.basename(out))[0].split("_")[-1]
+    res = derive(tmp, os.path.join(os.path.dirname(out), previews), climate=climate)
+    shutil.move(tmp, out)
+    return res
 
 
-def derive(gpkg, previews_dir):
+def derive(gpkg, previews_dir, climate=False):
     print("derive: loading ...")
     cells = gpd.read_file(gpkg, layer="cells")
     deps = gpd.read_file(gpkg, layer="ore_deposits")
@@ -594,6 +598,11 @@ def derive(gpkg, previews_dir):
     biome[df["row"].values, df["col"].values] = df["fic_biome"].values
     runoff = np.vectorize(lambda b: RUNOFF_M_YR.get(b, 0.0))(biome)
     precip = np.vectorize(lambda b: PRECIP_M_YR.get(b, 0.0))(biome)
+    clim = None
+    if climate:
+        print("derive: climate fields ...")
+        import climate_world as cw
+        clim, clim_biome, _, _ = cw.build(df)
 
     print("derive: tectonic setting ...")
     s, relief, trench, ridge, d_trench = tectonic_setting(E, land, emerged, LAT,
@@ -662,6 +671,13 @@ def derive(gpkg, previews_dir):
         "syn_seismic_index": np.exp(-d_conv[r, c] / 250.0),
         "syn_active_volcanic": volcanic_now[r, c].astype(np.int8),
     })
+    if clim is not None:
+        for k in ("temp_c", "temp_range_c", "gdd", "precip_m_yr", "pet_m_yr",
+                  "aet_m_yr", "aridity"):
+            new[f"syn_{k}"] = clim[k][r, c]
+        new["syn_runoff_climate_m_yr"] = clim["runoff_m_yr"][r, c]
+        new["syn_biome_climate"] = np.where(
+            land[r, c], np.array(cw.BIOMES, object)[clim_biome[r, c]], None)
     for k, v in new.items():
         df[k] = v
     # dist to derived river
@@ -779,6 +795,23 @@ def derive(gpkg, previews_dir):
         ("syn_active_volcanic", "syn", "derived", "0/1", "volcanic arc within 350 km of a trench"),
     ]
     meta += ore_meta
+    if clim is not None:
+        src = "climate_world"
+        meta += [
+            ("syn_temp_c", "syn", src, "degC", "annual mean temperature: insolation profile, lapse "
+             "rate, continentality, coastal upwelling"),
+            ("syn_temp_range_c", "syn", src, "degC", "warmest minus coldest month"),
+            ("syn_gdd", "syn", src, "degC days", "growing-degree days above 5 degC"),
+            ("syn_precip_m_yr", "syn", src, "m/yr",
+             "precipitation: ocean moisture carried on the prevailing wind of each "
+             "circulation band, rained out by band, uplift and distance"),
+            ("syn_pet_m_yr", "syn", src, "m/yr", "potential evaporation from degree-days above 0 degC"),
+            ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form)"),
+            ("syn_aridity", "syn", src, "ratio", "precipitation / potential evaporation (UNEP index)"),
+            ("syn_runoff_climate_m_yr", "syn", src, "m/yr", "precipitation - actual evaporation"),
+            ("syn_biome_climate", "syn", src, "class",
+             "biome the climate fields imply (climate_world.BIOME_RULE); fic_biome stays the truth"),
+        ]
     fd = pd.read_sql("select * from field_dictionary", con)
     fd = fd[~fd.field.isin([m[0] for m in meta])]
     fd = pd.concat([fd, pd.DataFrame(meta, columns=fd.columns)], ignore_index=True)
@@ -798,4 +831,9 @@ def derive(gpkg, previews_dir):
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--v2" in sys.argv:
+        # WP8: the world with climate fields, written beside world.gpkg
+        main(out=os.path.join(HERE, "gis", "world_v2.gpkg"), climate=True)
+    else:
+        main()

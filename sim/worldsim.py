@@ -174,6 +174,9 @@ def make_sim(argv=None):
     ap.add_argument("--sites", default="sites.json",
                     help="site file (sites_v2.json: landmass quotas, more "
                     "kinds, precious metals)")
+    ap.add_argument("--world", default=None, metavar="PATH",
+                    help="world file (default ../gis/world.gpkg); 'v2' is "
+                    "../gis/world_v2.gpkg, with climate fields (WP8)")
     ap.add_argument("--out", default=None,
                     help="run folder; a bare name goes in the runs root "
                     "($WORLDSIM_RUNS or sim/runs); default seed<N>")
@@ -235,7 +238,7 @@ def make_sim(argv=None):
     a.frame_every = 20 if a.frame_every is None else a.frame_every
     if saves and min(saves) > a.years:
         ap.error("--save-state: a YEAR is past --years")
-    world = World()
+    world = World(world_path(a.world))
     print(f"world: {world.N} land cells, loaded in {time.time()-t0:.1f}s")
     sim = Sim(world, seed=a.seed, years=a.years,
               frame_every=a.frame_every, out=out, homelands=a.homelands,
@@ -263,6 +266,16 @@ def make_sim(argv=None):
               " ".join(f"{t[:4]}={p.get(t, 0.5):.2f}" for t in params.TRAITS))
     sim.saves = saves
     return sim, out, t0
+
+
+def world_path(name):
+    """The world file a --world value names ('v2' is world_v2.gpkg beside
+    the default one); None is the default."""
+    if name is None:
+        return params.GPKG
+    if name == "v2":
+        return os.path.join(os.path.dirname(params.GPKG), "world_v2.gpkg")
+    return os.path.abspath(name)
 
 
 def branch(a, ap, off, saves, code, t0, argv):

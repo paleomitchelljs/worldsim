@@ -1,0 +1,110 @@
+{
+ "params": {
+  "T_EQ": 26.7105,
+  "T_POLE": -10.8947,
+  "LAPSE": 6.5,
+  "A0": 1.0,
+  "A1": 22.0,
+  "A_SEA": 0.25,
+  "C_COLD": 6.0,
+  "L_CONT": 1000.0,
+  "U_COOL": 4.0,
+  "PHI_HADLEY": 35.1343,
+  "PHI_POLAR": 60.0,
+  "W_ITCZ": 5.0,
+  "PHI_FRONT": 50.8366,
+  "W_FRONT": 12.0,
+  "Z_ITCZ": 0.5,
+  "Z_FRONT": 0.525,
+  "Z_BASE": 0.6733,
+  "P0": 6.0,
+  "CC": 0.07,
+  "L_OCEAN": 800.0,
+  "L_RAIN": 631.0346,
+  "RECYCLE": 0.1829,
+  "V_MER": 0.6,
+  "K_EDDY": 0.0,
+  "K_ORO": 0.4792,
+  "K_LEE": 0.1,
+  "PET_K": 0.0002,
+  "FU_W": 2.6
+ },
+ "fitted": [
+  "T_EQ",
+  "T_POLE",
+  "PHI_HADLEY",
+  "W_ITCZ",
+  "PHI_FRONT",
+  "Z_ITCZ",
+  "Z_FRONT",
+  "Z_BASE",
+  "P0",
+  "L_RAIN",
+  "K_ORO",
+  "RECYCLE",
+  "V_MER",
+  "K_EDDY"
+ ],
+ "rule": {
+  "TUNDRA_WARM": 10.0,
+  "DESERT_AI": 0.2,
+  "GRASS_AI": 0.65,
+  "JUNGLE_COLD": 18.0
+ },
+ "recall_by_biome": {
+  "Jungle": 0.251,
+  "Desert": 0.887,
+  "Grassland": 0.263,
+  "Temperate forest": 0.409,
+  "Tundra": 0.986
+ },
+ "mean_recall": 0.559,
+ "overall": 0.466,
+ "confusion": [
+  {
+   "drawn": "Jungle",
+   "Jungle": 0.251,
+   "Desert": 0.225,
+   "Grassland": 0.058,
+   "Temperate forest": 0.217,
+   "Tundra": 0.25,
+   "area_km2": 26316897.795
+  },
+  {
+   "drawn": "Desert",
+   "Jungle": 0.0,
+   "Desert": 0.887,
+   "Grassland": 0.092,
+   "Temperate forest": 0.02,
+   "Tundra": 0.0,
+   "area_km2": 12288469.682
+  },
+  {
+   "drawn": "Grassland",
+   "Jungle": 0.057,
+   "Desert": 0.495,
+   "Grassland": 0.263,
+   "Temperate forest": 0.181,
+   "Tundra": 0.005,
+   "area_km2": 28979132.829
+  },
+  {
+   "drawn": "Temperate forest",
+   "Jungle": 0.18,
+   "Desert": 0.142,
+   "Grassland": 0.16,
+   "Temperate forest": 0.409,
+   "Tundra": 0.109,
+   "area_km2": 38057418.849
+  },
+  {
+   "drawn": "Tundra",
+   "Jungle": 0.0,
+   "Desert": 0.01,
+   "Grassland": 0.003,
+   "Temperate forest": 0.0,
+   "Tundra": 0.986,
+   "area_km2": 16388388.614
+  }
+ ]
+}
