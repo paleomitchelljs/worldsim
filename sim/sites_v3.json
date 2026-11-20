@@ -23,22 +23,22 @@
   },
   {
    "kind": "fragrant timber",
-   "row": 262,
-   "col": 15,
+   "row": 263,
+   "col": 13,
    "landmass": 40,
    "precious": false
   },
   {
    "kind": "fine clay",
    "row": 155,
-   "col": 280,
+   "col": 281,
    "landmass": 32,
    "precious": false
   },
   {
-   "kind": "jade",
-   "row": 141,
-   "col": 395,
+   "kind": "lapis",
+   "row": 143,
+   "col": 392,
    "landmass": 26,
    "precious": false
   },
@@ -51,379 +51,379 @@
   },
   {
    "kind": "electrum",
-   "row": 179,
-   "col": 404,
+   "row": 178,
+   "col": 406,
    "landmass": 35,
    "precious": false
   },
   {
-   "kind": "lapis",
-   "row": 119,
-   "col": 214,
+   "kind": "ivory",
+   "row": 121,
+   "col": 223,
    "landmass": 20,
    "precious": false
   },
   {
-   "kind": "cotton fibre",
-   "row": 120,
-   "col": 203,
+   "kind": "fine fibre",
+   "row": 107,
+   "col": 220,
    "landmass": 20,
    "precious": false
   },
   {
    "kind": "incense",
    "row": 146,
-   "col": 471,
-   "landmass": 29,
-   "precious": false
-  },
-  {
-   "kind": "fine fibre",
-   "row": 154,
-   "col": 480,
+   "col": 459,
    "landmass": 29,
    "precious": false
   },
   {
    "kind": "spice",
-   "row": 155,
-   "col": 338,
+   "row": 194,
+   "col": 465,
+   "landmass": 29,
+   "precious": false
+  },
+  {
+   "kind": "cotton fibre",
+   "row": 150,
+   "col": 339,
+   "landmass": 22,
+   "precious": false
+  },
+  {
+   "kind": "jade",
+   "row": 151,
+   "col": 333,
    "landmass": 22,
    "precious": false
   },
   {
    "kind": "dark hardwood",
-   "row": 156,
-   "col": 316,
+   "row": 154,
+   "col": 322,
    "landmass": 22,
    "precious": false
   },
   {
-   "kind": "ivory",
-   "row": 129,
-   "col": 327,
-   "landmass": 22,
-   "precious": false
-  },
-  {
-   "kind": "spice",
-   "row": 182,
-   "col": 260,
+   "kind": "jade",
+   "row": 206,
+   "col": 261,
    "landmass": 36,
    "precious": false
   },
   {
    "kind": "pearls",
-   "row": 216,
-   "col": 301,
+   "row": 167,
+   "col": 255,
    "landmass": 36,
    "precious": false
   },
   {
-   "kind": "incense",
-   "row": 209,
-   "col": 277,
+   "kind": "electrum",
+   "row": 217,
+   "col": 263,
    "landmass": 36,
    "precious": false
   },
   {
    "kind": "cotton fibre",
-   "row": 203,
-   "col": 176,
+   "row": 202,
+   "col": 141,
    "landmass": 33,
    "precious": false
   },
   {
+   "kind": "ivory",
+   "row": 192,
+   "col": 150,
+   "landmass": 33,
+   "precious": false
+  },
+  {
+   "kind": "fine clay",
+   "row": 155,
+   "col": 178,
+   "landmass": 33,
+   "precious": false
+  },
+  {
+   "kind": "lapis",
+   "row": 224,
+   "col": 190,
+   "landmass": 33,
+   "precious": false
+  },
+  {
+   "kind": "incense",
+   "row": 208,
+   "col": 147,
+   "landmass": 33,
+   "precious": false
+  },
+  {
+   "kind": "purple dye",
+   "row": 191,
+   "col": 135,
+   "landmass": 33,
+   "precious": false
+  },
+  {
+   "kind": "amber",
+   "row": 356,
+   "col": 141,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "fine fibre",
+   "row": 271,
+   "col": 526,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "dark hardwood",
+   "row": 190,
+   "col": 584,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "spice",
+   "row": 170,
+   "col": 577,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "fragrant timber",
+   "row": 273,
+   "col": 440,
+   "landmass": 24,
+   "precious": false
+  },
+  {
    "kind": "obsidian",
-   "row": 218,
+   "row": 259,
+   "col": 460,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "cotton fibre",
+   "row": 207,
+   "col": 512,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "lapis",
+   "row": 199,
+   "col": 526,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "purple dye",
+   "row": 247,
+   "col": 643,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "fine fibre",
+   "row": 187,
+   "col": 569,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "spice",
+   "row": 193,
+   "col": 513,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "jade",
+   "row": 274,
+   "col": 537,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "incense",
+   "row": 213,
+   "col": 531,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "electrum",
+   "row": 173,
+   "col": 524,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "ivory",
+   "row": 216,
+   "col": 591,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "fine clay",
+   "row": 265,
+   "col": 470,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "dark hardwood",
+   "row": 184,
+   "col": 524,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "pearls",
+   "row": 121,
+   "col": 524,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "amber",
+   "row": 332,
+   "col": 351,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "fragrant timber",
+   "row": 269,
+   "col": 668,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "obsidian",
+   "row": 356,
+   "col": 445,
+   "landmass": 24,
+   "precious": false
+  },
+  {
+   "kind": "placer gold",
+   "row": 185,
+   "col": 456,
+   "landmass": 29,
+   "precious": true
+  },
+  {
+   "kind": "lode gold",
+   "row": 147,
+   "col": 309,
+   "landmass": 22,
+   "precious": true
+  },
+  {
+   "kind": "silver",
+   "row": 213,
+   "col": 284,
+   "landmass": 36,
+   "precious": true
+  },
+  {
+   "kind": "lode gold",
+   "row": 221,
+   "col": 210,
+   "landmass": 33,
+   "precious": true
+  },
+  {
+   "kind": "placer gold",
+   "row": 205,
    "col": 191,
    "landmass": 33,
-   "precious": false
-  },
-  {
-   "kind": "fine clay",
-   "row": 166,
-   "col": 208,
-   "landmass": 33,
-   "precious": false
-  },
-  {
-   "kind": "electrum",
-   "row": 172,
-   "col": 218,
-   "landmass": 33,
-   "precious": false
-  },
-  {
-   "kind": "jade",
-   "row": 199,
-   "col": 196,
-   "landmass": 33,
-   "precious": false
-  },
-  {
-   "kind": "ivory",
-   "row": 186,
-   "col": 176,
-   "landmass": 33,
-   "precious": false
-  },
-  {
-   "kind": "amber",
-   "row": 321,
-   "col": 680,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "dark hardwood",
-   "row": 188,
-   "col": 588,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "fine fibre",
-   "row": 254,
-   "col": 448,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "purple dye",
-   "row": 244,
-   "col": 620,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "fragrant timber",
-   "row": 271,
-   "col": 562,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "lapis",
-   "row": 253,
-   "col": 646,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "cotton fibre",
-   "row": 210,
-   "col": 561,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "electrum",
-   "row": 283,
-   "col": 436,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "purple dye",
-   "row": 215,
-   "col": 501,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "dark hardwood",
-   "row": 165,
-   "col": 566,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "fine fibre",
-   "row": 150,
-   "col": 523,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "spice",
-   "row": 184,
-   "col": 515,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "lapis",
-   "row": 356,
-   "col": 633,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "incense",
-   "row": 229,
-   "col": 579,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "ivory",
-   "row": 239,
-   "col": 587,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "fine clay",
-   "row": 193,
-   "col": 568,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "jade",
-   "row": 272,
-   "col": 552,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "amber",
-   "row": 356,
-   "col": 232,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "pearls",
-   "row": 227,
-   "col": 486,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "fragrant timber",
-   "row": 182,
-   "col": 571,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "obsidian",
-   "row": 198,
-   "col": 534,
-   "landmass": 24,
-   "precious": false
-  },
-  {
-   "kind": "placer gold",
-   "row": 166,
-   "col": 477,
-   "landmass": 29,
-   "precious": true
-  },
-  {
-   "kind": "lode gold",
-   "row": 149,
-   "col": 302,
-   "landmass": 22,
    "precious": true
   },
   {
    "kind": "silver",
-   "row": 167,
-   "col": 244,
-   "landmass": 36,
-   "precious": true
-  },
-  {
-   "kind": "lode gold",
-   "row": 203,
-   "col": 209,
+   "row": 189,
+   "col": 226,
    "landmass": 33,
    "precious": true
   },
   {
    "kind": "silver",
-   "row": 196,
-   "col": 235,
-   "landmass": 33,
-   "precious": true
-  },
-  {
-   "kind": "placer gold",
-   "row": 218,
-   "col": 213,
-   "landmass": 33,
-   "precious": true
-  },
-  {
-   "kind": "lode gold",
    "row": 348,
-   "col": 329,
-   "landmass": 24,
-   "precious": true
-  },
-  {
-   "kind": "silver",
-   "row": 325,
-   "col": 6,
-   "landmass": 24,
-   "precious": true
-  },
-  {
-   "kind": "placer gold",
-   "row": 269,
-   "col": 442,
+   "col": 194,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "lode gold",
-   "row": 283,
-   "col": 644,
-   "landmass": 24,
-   "precious": true
-  },
-  {
-   "kind": "silver",
-   "row": 339,
-   "col": 386,
+   "row": 328,
+   "col": 661,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "placer gold",
-   "row": 247,
-   "col": 482,
+   "row": 308,
+   "col": 601,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "lode gold",
-   "row": 254,
-   "col": 625,
+   "row": 328,
+   "col": 94,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "silver",
-   "row": 292,
-   "col": 437,
+   "row": 182,
+   "col": 531,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "placer gold",
-   "row": 274,
-   "col": 542,
+   "row": 163,
+   "col": 526,
    "landmass": 24,
    "precious": true
   },
   {
    "kind": "silver",
-   "row": 171,
-   "col": 537,
+   "row": 297,
+   "col": 427,
+   "landmass": 24,
+   "precious": true
+  },
+  {
+   "kind": "lode gold",
+   "row": 263,
+   "col": 661,
+   "landmass": 24,
+   "precious": true
+  },
+  {
+   "kind": "placer gold",
+   "row": 191,
+   "col": 535,
+   "landmass": 24,
+   "precious": true
+  },
+  {
+   "kind": "silver",
+   "row": 330,
+   "col": 10,
    "landmass": 24,
    "precious": true
   }
@@ -432,80 +432,80 @@
   {
    "kind": "crop",
    "biome": "Grassland",
-   "row": 249,
-   "col": 568
+   "row": 251,
+   "col": 640
   },
   {
    "kind": "crop",
    "biome": "Grassland",
+   "row": 149,
+   "col": 464
+  },
+  {
+   "kind": "crop",
+   "biome": "Temperate forest",
+   "row": 192,
+   "col": 134
+  },
+  {
+   "kind": "crop",
+   "biome": "Temperate forest",
+   "row": 177,
+   "col": 543
+  },
+  {
+   "kind": "crop",
+   "biome": "Jungle",
+   "row": 154,
+   "col": 182
+  },
+  {
+   "kind": "crop",
+   "biome": "Jungle",
+   "row": 192,
+   "col": 260
+  },
+  {
+   "kind": "crop",
+   "biome": "Desert",
+   "row": 215,
+   "col": 177
+  },
+  {
+   "kind": "animal",
+   "biome": "Grassland",
    "row": 145,
-   "col": 385
-  },
-  {
-   "kind": "crop",
-   "biome": "Temperate forest",
-   "row": 190,
-   "col": 216
-  },
-  {
-   "kind": "crop",
-   "biome": "Temperate forest",
-   "row": 173,
    "col": 547
   },
   {
-   "kind": "crop",
-   "biome": "Jungle",
-   "row": 153,
-   "col": 185
-  },
-  {
-   "kind": "crop",
-   "biome": "Jungle",
-   "row": 191,
-   "col": 519
-  },
-  {
-   "kind": "crop",
-   "biome": "Desert",
-   "row": 243,
-   "col": 610
-  },
-  {
    "kind": "animal",
    "biome": "Grassland",
-   "row": 123,
-   "col": 534
-  },
-  {
-   "kind": "animal",
-   "biome": "Grassland",
-   "row": 206,
-   "col": 512
+   "row": 215,
+   "col": 286
   },
   {
    "kind": "animal",
    "biome": "Desert",
-   "row": 222,
-   "col": 531
+   "row": 215,
+   "col": 220
   },
   {
    "kind": "animal",
    "biome": "Tundra",
-   "row": 326,
-   "col": 31
+   "row": 289,
+   "col": 408
   },
   {
    "kind": "animal",
    "biome": "Temperate forest",
-   "row": 168,
-   "col": 535
+   "row": 272,
+   "col": 431
   },
   {
    "kind": "animal",
    "biome": "Jungle",
-   "row": 204,
-   "col": 448
+   "row": 190,
+   "col": 535
   }
  ],
  "seed": 1,

@@ -24,8 +24,12 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 `wp6b_seed101`-`104` and `106` (last section), after WP4, WP5 and the
 adopted growth settings.
 
-**Update, 2026-11-20 (WP8, third).** The baseline is now
-`wp8f_seed101`-`104` and `106` (last section): potential evaporation by
+**Update, 2026-11-20 (WP8, fourth).** The baseline is now
+`wp8g_seed101`-`104` and `106` (last section): the rain-out floor under
+sinking air lowered from 0.25 to 0.1.
+
+**Update, 2026-11-20 (WP8, third).** The baseline was
+`wp8f_seed101`-`104` and `106`: potential evaporation by
 Penman-Monteith, with sunshine and humidity.
 
 **Update, 2026-11-19 (WP8, second).** The baseline was
@@ -360,7 +364,9 @@ timeline rows from `docs/upgrade/tools/wp6_growth.py`).
 None of these is tuned. Not remeasured: contingency across seeds
 (`--cross`).
 
-## The current baseline batch (`wp8f_seed101`-`104`, `106`, 2026-11-20)
+## The baseline batch of Penman-Monteith PET (`wp8f_seed101`-`104`, `106`, 2026-11-20)
+
+**Replaced the same day** by the next section.
 
 The code is that of `wp8e`, with potential evaporation by FAO-56
 Penman-Monteith (U, 2026-11-20: "bring in sunshine & humidity"):
@@ -434,5 +440,75 @@ machine was in Low Power Mode on a low battery, not a code change.
 - the seeds spread wider (wars 263-3,128; population 34-63M);
 - the Dwarves are in the top three in every seed;
 - the Elves stay at 1-3%.
+
+None is tuned. Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8g_seed101`-`104`, `106`, 2026-11-20)
+
+The code is that of `wp8f`, with the rain-out factor under sinking air
+(`climate_world` Z_BASE) lowered from 0.25 to 0.1 (U, 2026-11-20).
+`world_v2` and `sites_v3.json` were rebuilt; all 13 hearths are placed.
+
+| Biome | `wp8g` (M km²) | `wp8f` (M km²) |
+|---|---|---|
+| Jungle | 22.3 | 20.4 |
+| Desert | 22.8 | 5.0 |
+| Grassland | 23.4 | 43.1 |
+| Temperate forest | 22.0 | 22.0 |
+| Tundra | 31.5 | 31.5 |
+
+- **Rain:** subtropical land (20-30°) gets 0.18 m/yr, against 0.31.
+  Desert forms belts at about 15-35° on every continent.
+- **Rivers and lakes:** river cells 7.0% of land; lake cells 867.
+
+| Measure | wp8g (current) | wp8f (previous) |
+|---|---|---|
+| First city (year) | 605-1,240 | 685-785 |
+| 10M people (year) | 2,915-3,365 | 3,115-3,270 |
+| First steel (year) | none in any seed | 5,555-6,760; none in 3 of 5 |
+| World population at 8000 | 26-40M | 34-63M |
+| Population at 1000 / 4000 / 7000 (M) | 2.6-3.2 / 10.4-19.7 / 22.1-37.8 | 2.5-3.1 / 11.3-17.5 / 28.8-49.5 |
+| Growth by millennium, 2000-8000 (%/yr) | -0.014 to 0.066 | -0.011 to 0.069 |
+| Largest 100-yr fall after 3000 (log) | -0.23 to -0.08 | -0.32 to -0.07 |
+| Plague recovery, years back to 90%, median | 85-100 | 90-100 |
+| Herding share, peak | 0.26-0.36, at years 2075-2750 | 0.28-0.35, at years 1485-2740 |
+| Urban share at the end | 0.019-0.030 | 0.022-0.048 |
+| Rank-size slope at the end | -1.28 to -0.99 | -1.27 to -0.49 |
+| Largest city, share of world | 0.06-0.17% (16-60k) | 0.08-0.15% (26-72k) |
+| Minority share of heads, end | 2.3-3.0% | 1.4-3.0% |
+| Polities | 1,257-1,676 | 1,330-2,922 |
+| Never above one city | 94-97% | 87-95% |
+| States with 3+ cities | 17-46 | 20-161 |
+| Ended 3+ city states, lifespan | median 776-2,102 yr; mean 1,123-2,391; CV 0.59-0.90; over 1,000 yr 41-64% | median 464-1,181 yr; mean 593-1,493; CV 0.73-0.90; over 1,000 yr 14-63% |
+| Largest state | 0.5-1.4M km² (0.4-1.2% of land) | 0.6-2.5M km² (0.5-2.0% of land) |
+| Top-10 states, median land pieces | 1 | 1-2 |
+| Wars | 155-418 | 263-3,128 |
+| Wars ending inside one tick / within 5 yr | 3-5% / 52-68% | 1-8% / 47-63% |
+| Peer wars | 0-0.2% | 0-0.4% |
+| Sieges taken | 34-39% | 30-43% |
+| Siege odds at launch, median (attacker) | 0.27-0.33 | 0.27-0.37 |
+| City food: trade / rent / provincial / capital | 0.01-0.03 / 0.49-0.56 / 0.02-0.12 / 0.32-0.47 | 0.02-0.04 / 0.46-0.55 / 0.05-0.12 / 0.33-0.40 |
+| Deaths: feud / raid / plague / hunger | 0.55-0.63 / 0.32-0.34 / 0.03-0.09 / 0.02-0.03 | 0.53-0.61 / 0.26-0.34 / 0.03-0.15 / 0.02-0.03 |
+| Pop share on river cells | 0.38-0.41 (land 0.071) | 0.32-0.39 (land 0.069) |
+| Pop share coast or river | 0.49-0.54 (land 0.14) | 0.46-0.53 (land 0.14) |
+| Pop share alluvial fill | 0.077-0.100 (land 0.055) | 0.063-0.107 (land 0.052) |
+| Pop share, \|lat\| 0-15 / 15-30 / beyond 45 | 0.64-0.81 / 0.09-0.16 / 0.022-0.037 | 0.65-0.73 / 0.14-0.22 / 0.018-0.027 |
+| Pop share by biome: jungle / grassland / temperate forest / desert / tundra | 0.31-0.39 / 0.19-0.31 / 0.21-0.44 / 0.03-0.07 / 0.012-0.018 | 0.20-0.32 / 0.32-0.48 / 0.19-0.41 / 0.003-0.006 / 0.008-0.016 |
+| Population in a state / land area | 0.29-0.50 / 0.03-0.05 | 0.35-0.69 / 0.04-0.17 |
+| Occupied land cells, end | 0.62-0.66 | 0.65-0.68 |
+| Largest people at the end | Dwarves or Humans, 24-35% | Dwarves, Humans or Snake folk, 31-43% |
+
+**What moved.**
+
+- **People and land.** There are fewer people (26-40M): grassland, the
+  best farm and herd land outside the equator, halves. People crowd
+  further onto the equator.
+- **States.** Fewer and smaller:
+  - 17-46 with 3+ cities;
+  - the largest covers 1.2% of land at most;
+  - 29-50% of people live in states;
+  - states that form last long (median 776-2,102 yr).
+- **War and technology.** Wars fall to 155-418, and no seed reaches
+  steel.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).

@@ -2398,3 +2398,25 @@ That made the raining equator dry (RH 0.56), so it was dropped.
 
 Runs took about 5,200 s each, against about 650 s: the machine was in
 Low Power Mode on a low battery.
+
+### 2026-11-20 WP8: rain-out under sinking air lowered (`wp8g_seed101`-`104`, `106`)
+
+U: "Let's lower it". The rain-out factor under sinking air was lowered
+from 0.25 to 0.1, 1/20 of the ITCZ's factor (C, a round value). The
+values 0.15 and 0.05 were looked at, giving desert 15.4M and 28.1M km².
+P0 recalibrates to 2.71.
+
+**The world.**
+- Desert 22.8M km², grassland 23.4M km². Subtropical land rain is
+  0.18 m/yr.
+- Agreement with the drawn desert rises from 0.15 to 0.46. This was not
+  aimed for.
+- River cells 3,373 (7.0% of land); lake cells 867.
+
+**The batch.** Full table in `docs/upgrade/BASELINE.md`, last section.
+
+- Population at 8,000 is 26-40M.
+- States are fewer and smaller (17-46 with 3+ cities), and wars number
+  155-418.
+- No seed reaches steel.
+- Runs took about 1,500 s each, still in Low Power Mode.

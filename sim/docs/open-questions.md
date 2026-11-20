@@ -741,10 +741,9 @@ would tell whether this is real before anything is built on it.
   - Refit (U, 2026-11-19): the parameters now take physical values, with
     only P0 calibrated to 1.0 m/yr of global rain; agreement with the
     drawn map is reported, not fitted.
-  - PET is Penman–Monteith since 2026-11-20 (U): desert 5.0M km².
-    Still open: subtropical rain is about 0.3 m/yr, against under 0.1 in
-    Earth's great deserts. The rain-out floor under sinking air (Z_BASE)
-    sets it. A drier floor would widen the deserts; not changed.
+  - PET is Penman–Monteith since 2026-11-20 (U), and the rain-out floor
+    under sinking air (Z_BASE) was lowered from 0.25 to 0.1 the same day
+    (U). Desert is 22.8M km²; subtropical land gets 0.18 m/yr.
 - **Closed-basin lakes are sized** (U, 2026-11-19): a closed basin's lake
   covers only what its net evaporation needs to balance the inflow,
   lowest cells first; the rest of the basin is alluvial fill. Lake cells

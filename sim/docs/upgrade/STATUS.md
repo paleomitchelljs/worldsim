@@ -46,6 +46,7 @@ what an entry holds.
 | 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | 9c0afdd |
 | 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | 6d9eea2 |
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
+| 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | see entry |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1978,3 +1979,30 @@ The full table is in BASELINE.md, and run-log.md has the entry.
   great deserts get under 0.1. Not changed.
 - **The Elves' fall** (35-47% at `wp8d`, now 1-3%) is a result of the
   new world, not tuned.
+
+### WP8: rain-out under sinking air lowered (2026-11-20)
+
+**Asked by U (2026-11-20).** "Let's lower it", and refine the physical
+world first, before any work on the peoples.
+
+**Done.**
+- `climate_world` Z_BASE 0.25 → 0.1. `world_v2` and `sites_v3.json` were
+  rebuilt.
+- Desert 22.8M km², grassland 23.4M km², in subtropical desert belts at
+  about 15-35°.
+- Docs: world-data, open-questions, run-log, BASELINE.
+
+**Runs.** Baseline `wp8g_seed101`-`104` and `106`:
+
+- population 26-40M;
+- 17-46 states with 3+ cities;
+- 155-418 wars;
+- no steel in any seed.
+
+**For the next session / U.**
+- **U's priority** is the physical world before the peoples.
+- **Still simplified in the climate:**
+  - no seasons in the circulation (no monsoon, no migrating ITCZ);
+  - rows show seams at the band edges (30°, 60°);
+  - no ocean currents beyond upwelling;
+  - `world.gpkg` on disk predates the lake sizing.

@@ -142,6 +142,8 @@ The climate-to-biome rule is fixed at standard thresholds:
 - They take physically motivated values (`climate_world.PARAMS`, C):
   - band edges at 30° and 60° (the Hadley and Ferrel cells);
   - the ITCZ 10° wide, the polar front at 50°;
+  - rain-out under sinking air (Z_BASE) 0.1, 1/20 of the ITCZ's factor
+    (lowered from 0.25 on 2026-11-20, U);
   - rain-out over 2,000 km of land, with half of land rain recycled;
   - T_eq 27 °C, T_pole −15 °C.
 - One constant is calibrated: P0, the air's rain potential, set so mean
@@ -170,17 +172,17 @@ Biome areas (`../gis/qa/climate_fit.json`):
 
 | Biome | Drawn (M km²) | `world_v2` (M km²) | Share of drawn area the climate agrees with |
 |---|---|---|---|
-| Jungle | 26.3 | 20.4 | 0.27 |
-| Desert | 12.3 | 5.0 | 0.15 |
-| Grassland | 29.0 | 43.1 | 0.48 |
+| Jungle | 26.3 | 22.3 | 0.27 |
+| Desert | 12.3 | 22.8 | 0.46 |
+| Grassland | 29.0 | 23.4 | 0.31 |
 | Temperate forest | 38.1 | 22.0 | 0.18 |
 | Tundra | 16.4 | 31.5 | 0.99 |
 
 The climate's pattern is zonal:
 
 - a wet equatorial belt;
-- semi-arid subtropics, with desert in their interiors (20–35°S on the
-  supercontinent, the northern continents' centres);
+- desert belts across the subtropics (about 15–35°) on every continent,
+  with grassland on their equatorward and poleward edges;
 - temperate forest at 35–50°;
 - tundra from about 55° poleward on the southern supercontinent.
 
@@ -188,17 +190,19 @@ Median values on land by latitude band (m/yr; RH the annual mean):
 
 | \|lat\| | P | PET | RH | Sunshine | P/PET |
 |---|---|---|---|---|---|
-| 0–10 | 2.07 | 1.24 | 0.78 | 0.41 | 1.73 |
-| 10–20 | 0.66 | 1.41 | 0.65 | 0.61 | 0.46 |
-| 20–30 | 0.31 | 1.27 | 0.57 | 0.72 | 0.25 |
-| 30–40 | 0.42 | 0.78 | 0.57 | 0.68 | 0.50 |
-| 40–50 | 0.55 | 0.48 | 0.57 | 0.64 | 1.07 |
+| 0–10 | 2.33 | 1.23 | 0.79 | 0.40 | 1.98 |
+| 10–20 | 0.56 | 1.44 | 0.63 | 0.64 | 0.38 |
+| 20–30 | 0.18 | 1.32 | 0.54 | 0.77 | 0.14 |
+| 30–40 | 0.38 | 0.79 | 0.56 | 0.69 | 0.44 |
+| 40–50 | 0.64 | 0.46 | 0.58 | 0.61 | 1.38 |
 
-Subtropical PET (1.27 m/yr) is now near Earth's range but below its
-deserts' 1.5–2. Subtropical rain is 0.31 m/yr against well under 0.1 in
-Earth's great deserts: the floor on rain-out under sinking air (Z_BASE
-0.25) keeps the subtropics semi-arid. With the degree-day PET used
-before (2026-11-19), desert was 1.2M km².
+Subtropical PET (1.32 m/yr) is near Earth's range, a little below its
+deserts' 1.5–2. Earlier versions, for the record (desert area):
+
+- degree-day PET, Z_BASE 0.25: 1.2M km²;
+- Penman–Monteith, Z_BASE 0.25: 5.0M km², with subtropical land rain
+  0.31 m/yr;
+- Penman–Monteith, Z_BASE 0.1 (current): 22.8M km², 0.18 m/yr.
 
 ### Columns added in `world_v2.gpkg`
 
@@ -229,17 +233,17 @@ before, with the same thresholds, from `syn_biome`.
 
 The result (physical refit, lake sizing, Penman–Monteith PET):
 
-- **River cells:** 6,243 → 3,298 (10.7% → 6.8% of land).
-- **The largest river** reaches the sea at 88°W, 15°N
-  (146,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
+- **River cells:** 6,243 → 3,373 (10.7% → 7.0% of land).
+- **The largest river** reaches the sea at 114°E on the equator
+  (159,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
   72°S) is gone: that land is tundra now.
 - **Lakes and closed basins.**
   - A closed basin's lake covers only as much area as evaporation less
     rain on it can balance the basin's inflow. It fills from the lowest
     cells, and the rest of the basin floor is alluvial fill (dry
     sediment) (`derive_world.drainage`, C; U 2026-11-19).
-  - Lake cells: 852, 1.3% of land. Before sizing it was 2,249; on the
-    old world it is 508. Endorheic cells: 7,572.
+  - Lake cells: 867, 1.3% of land. Before sizing it was 2,249; on the
+    old world it is 508. Endorheic cells: 7,492.
   - `world.gpkg` on disk predates the lake sizing. A rebuild of it would
     now size its closed-basin lakes too.
 
