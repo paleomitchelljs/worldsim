@@ -25,7 +25,8 @@ gives back the earlier model draw for draw ([running.md](running.md)).
 | `immunity` | 9 | plague with a host people and immunity per cell |
 | `diagnostics` | 10 | `price.csv` and `checks.txt` ([diagnostics.md](diagnostics.md)) |
 | `roads` | later | states build roads that cut travel cost ([roads](#roads-roads)) |
-| `improvements` | later | cleared fields, terraces and canals, built up and wrecked ([improvements](#improvements-improvements)) |
+| `improvements` | later | field works, terraces and canals, built up and wrecked ([improvements](#improvements-improvements)) |
+| `clearing` | on (2026-11-20, U) | farmers and herders clear forest, which farms and herds as grassland; unused clearings grow back ([land clearing](#land-clearing-clearing)) |
 | `separation` | later | separation becomes preferred spacing; its hostile effects move to low tolerance ([separation](#separation-as-spacing-separation)) |
 | `hierarchy` | later | a hierarchy trait: elite growth, extraction, levies ([traits/cultural.md](traits/cultural.md)) |
 | `patience` | later | a patience trait: building, granaries, land care ([traits/cultural.md](traits/cultural.md)) |
@@ -387,7 +388,9 @@ cells in 29 basins on this map).
 
 ## Improvements (`improvements`)
 
-- **What:** cleared fields, terraces and canals: 0–1 per cell.
+- **What:** field works, terraces and canals: 0–1 per cell. Clearing
+  the forest itself is `clearing` (below); until 2026-11-20 this stock
+  stood for cleared fields too.
 - **Building:** 0.003 x use x (0.5 + the ruler's administration) x (1 −
   stock) per year. Use = farming level x min(1, pop/farm K), on farming
   cells.
@@ -409,6 +412,44 @@ cells in 29 basins on this map).
   - raids take 0.3 x the population loss.
 - **Side effect:** early irrigation now reaches less than before, because
   canals must be built.
+
+## Land clearing (`clearing`)
+
+U (2026-11-20): "do we have a capacity for people to change their
+biomes? Eg, can humans clear forest to make grass/farm land?" Form and
+numbers **C**.
+
+- **What:** the cleared share of a jungle or temperate-forest cell, 0–1
+  (`Sim.clear`). The climate's biome does not change; clearing is land
+  use on top of it.
+- **Effect:** the cleared share farms, forages and herds at grassland's
+  values. Rain-fed farming, forage and herd capacity are each multiplied
+  by 1 + clear × (grassland's value / the biome's − 1), the blend the
+  climate's ecotones use. At full clearing:
+  - jungle farms × 2.2, forages × 0.6 and herds × 22.5 (from 0.02);
+  - temperate forest farms × 1.33, forages × 0.83 and herds × 3.75.
+  The people's fitness stays that of the climate's biome. Cleared forest
+  has no grassland sod to break.
+- **Clearing:** each cell moves toward a target at CLEAR_RATE 0.01 per
+  year of the gap, about a century; medieval assarting cleared lowland
+  Europe over about three.
+  - On a farming cell the target is the share of the land in use: farming
+    level × pop / farming capacity (the improvements' `use`).
+  - On a herding cell it is CLEAR_HERD 0.5 × pop / herding capacity
+    (burning for pasture).
+- **Regrowth:** above the target, a clearing grows back at
+  CLEAR_REGROW 1/150 per year. An emptied cell's target is 0. Secondary
+  forest closes its canopy in decades to a century or two.
+- **Not modelled:** clearing's effect on movement and defence (edge
+  costs are fixed at the start), on the climate (albedo, rain recycling)
+  and on erosion; burning by foragers; clearing in sacks and wars.
+- **Records:** `cleared_km2` in `timeseries.csv`; `clear` in
+  `final_state.npz`.
+- **Test** (`wp8j_sanity_seed101`, 3,000 years; with `--off clearing`
+  the run is identical to `wp8i_seed101`).
+  - 5.6M km² is cleared by year 3,000: 11% of jungle and of temperate
+    forest, most in the long-settled cores.
+  - Population is 13-26% above `wp8i` at years 1,000-3,000.
 
 ## Separation as spacing (`separation`)
 

@@ -557,6 +557,12 @@ K. Growth, migration pressure and room use K × pref.
 - `[salinity]` salt (0–1) changes per year by 0.002 × use × irrigated
   share × (1 − salt) (`[patience]` × (1.5 − patience)) − 0.003 × (1 −
   use) × salt.
+- `[clearing]` (2026-11-20, U; **C**) on jungle and temperate-forest
+  cells, clear (0–1) moves toward a target: use on farmed cells, 0.5 ×
+  clip(pop / herding K, 0, 1) on herding cells, 0 on empty ones. It rises
+  at 0.01 × gap per year and falls at (1/150) × gap. In capacity (5.3),
+  rain-fed farming, forage and herd are each × (1 + clear × (grassland's
+  FARM, FORAGE or HERD / the cell's biome's − 1)).
 
 ---
 

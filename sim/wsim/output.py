@@ -523,7 +523,7 @@ def write_outputs(sim, out):
                         minority_pop=sim.mpop, waste=sim.waste,
                         rows_cell=sim.rc, rows_people=sim.rp,
                         rows_lineage=sim.rl, rows_heads=sim.rh,
-                        salt=sim.salt,
+                        salt=sim.salt, clear=sim.clear,
                         river=sim.W.river, flow_to=sim.W.flow,
                         **((dict(
                             dragon_home=sim.dhome, dragon_ally=sim.dally,

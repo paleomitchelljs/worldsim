@@ -79,8 +79,8 @@ near capacity once land fills. R_SCALE does not scale the dragon cut, so a lower
 peoples below zero under dragons. The minority's rate takes R_SCALE and
 R_MAX too (it has no frontier term).
 
-**Upkeep** (`upkeep`, WP6 C, 2026-11-18, **C**). Improvements (cleared
-fields, terraces, canals; up to 1.3x rain-fed and 2.5x irrigated yield)
+**Upkeep** (`upkeep`, WP6 C, 2026-11-18, **C**). Improvements (field
+works, terraces, canals; clearing the forest is `clearing`, 2026-11-20; up to 1.3x rain-fed and 2.5x irrigated yield)
 need people to keep them, and are sized to the people who kept them.
 Where a cell's people fall below 0.7 of their mean over the last 50 years
 (an exponential mean), the works decay by an extra 0.1 a year x the

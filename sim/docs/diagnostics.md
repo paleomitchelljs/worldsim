@@ -70,6 +70,7 @@ The references are rough orders of magnitude, not tuning targets.
 | `famine_movers` | people moved by famine migration this tick |
 | `avulsions` | river course changes so far |
 | `road_cells`, `improvements` | cells with road stock over 0.3; population-weighted improvements |
+| `cleared_km2` | forest area cleared (`clearing`): sum of cleared share × cell area |
 | `minority_pop` | people living as minorities |
 | `dragons_wild`, `dragons_allied` | dragons alive (with `dragons`) |
 | `dragon_kills`, `dragon_kills_<people>` | people lost to dragons this tick: the shortfall against growth without them |

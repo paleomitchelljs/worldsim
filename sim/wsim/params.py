@@ -112,7 +112,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
-            "displacement", "climate_fields", "floodplain"]
+            "displacement", "climate_fields", "floodplain", "clearing"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -1127,7 +1127,8 @@ PRICE_EVERY = 100           # years between Price-equation snapshots
 # ROAD_LIFE years with upkeep (inside a state) and ROAD_LIFE_WILD without.
 ROAD_EVERY, ROAD_BUILD, ROAD_EFFECT = 50, 0.6, 0.5   # build x admin per round
 ROAD_LIFE, ROAD_LIFE_WILD = 1500.0, 300.0
-# Improvements (`improvements`): cleared fields, terraces and canals (0-1).
+# Improvements (`improvements`): field works, terraces and canals (0-1);
+# clearing the forest itself is `clearing` (2026-11-20).
 # Built by farming (faster under capable states), silting away when unused,
 # wrecked by sacks and raids. Irrigation reaches IMP_IRR0 of its potential
 # without canals; rain-fed farming gains up to IMP_RAIN; settlers prefer
@@ -1268,3 +1269,16 @@ BUD_PRESS = 0.45            # budding: crowding threshold, - 0.35 x expansion
 AGRI_INV = 0.0009           # farming invented per year x innovation x scale
 METAL_INV = 0.0005          # metallurgy per year x scale x innovation^2
 CLIM_AMP = 1.0             # climate: scales the precipitation anomaly (PREC_SD)
+# Land clearing (`clearing`, 2026-11-20; U: "can humans clear forest to
+# make grass/farm land?"; numbers C). Each jungle or temperate-forest cell
+# has a cleared share (0-1) that farms, forages and herds at grassland's
+# values (FARM, FORAGE, HERD), as the ecotone blend does; the people's
+# fitness stays that of the climate's biome. Farmers clear toward the
+# share of the land they use (agri x pop / farming K), herders burn toward
+# CLEAR_HERD x pop / herding K, at CLEAR_RATE per year of the gap
+# (medieval assarting cleared lowland Europe over about three centuries);
+# above that target, unused clearings grow back at CLEAR_REGROW per year
+# (secondary forest closes its canopy in decades to a century or two).
+CLEAR_RATE = 0.01
+CLEAR_REGROW = 1 / 150
+CLEAR_HERD = 0.5

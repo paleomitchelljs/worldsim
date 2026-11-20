@@ -194,6 +194,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.road = np.zeros(N)           # road stock 0-1
         self.roadq = np.ones(N)           # road quality (`road_tech`)
         self.imp = np.zeros(N)            # improvements 0-1
+        self.clear = np.zeros(N)          # cleared share of forest (`clearing`)
         self.salt = np.zeros(N)           # salt on irrigated land 0-1
         self.hard = np.zeros(N)           # hardship this tick (0/1)
         self.raided = np.zeros(N)         # raided or raiding this tick
@@ -468,6 +469,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.epi = []
         if not hasattr(self, "pmem"):
             self.pmem = self.pop.copy()
+        if not hasattr(self, "clear"):
+            self.clear = np.zeros(self.W.N)
         if not hasattr(self, "army_x"):
             self.army_x = np.zeros(self.W.N)
         if hasattr(self, "fl_acc") and len(self.fl_acc["world"]) != \

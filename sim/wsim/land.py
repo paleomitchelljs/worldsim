@@ -6,6 +6,12 @@ from scipy import ndimage, signal, sparse
 from .params import *  # noqa: F401,F403
 from .geo import *  # noqa: F401,F403
 
+# `clearing`: per biome, grassland's FARM, FORAGE and HERD over the biome's,
+# less 1 (0 where nothing is cleared); CLEARABLE marks the forest biomes
+CLEARABLE = np.array([b in ("Jungle", "Temperate forest") for b in BIOMES], float)
+CLEAR_X = np.array([[(t["Grassland"] / t[b] - 1) * c for b, c in
+                     zip(BIOMES, CLEARABLE)] for t in (FARM, FORAGE, HERD)])
+
 
 class LandMixin:
     def prepare_capacity(self):
@@ -151,7 +157,13 @@ class LandMixin:
         rain = W.rain_ws[j]
         forage = W.forage[j] * cm[2, j]
         herd = W.herd[j] * cm[3, j]
-        # canals carry irrigation; clearance and terraces help rain-fed
+        if "clearing" in self.on:
+            # cleared forest farms, forages and herds as grassland
+            cl, b0 = self.clear[j], W.biome[j]
+            rain = rain * (1 + cl * CLEAR_X[0, b0])
+            forage = forage * (1 + cl * CLEAR_X[1, b0])
+            herd = herd * (1 + cl * CLEAR_X[2, b0])
+        # canals carry irrigation; field works and terraces help rain-fed
         cm0, cm1 = cm[0, j], cm[1, j]
         imp = self.imp[j]
         farm = rain * cm0 * (1 + IMP_RAIN * imp) + \
@@ -562,6 +574,19 @@ class LandMixin:
             self.pmem += (self.pop - self.pmem) * -math.expm1(-DT / IMP_MEM)
         self.imp += DT * (build * (1 - self.imp) - lapse * self.imp)
         np.clip(self.imp, 0, 1, out=self.imp)
+        if "clearing" in self.on:
+            # farmers clear what they work; herders burn for pasture;
+            # land beyond that grows back
+            tgt = np.zeros(W.N)
+            tgt[occ] = np.where(
+                self.herding[occ],
+                CLEAR_HERD * np.clip(self.pop[occ] / np.maximum(Kh, 1e-3), 0, 1),
+                use[occ])
+            tgt *= CLEARABLE[W.biome]
+            gap = tgt - self.clear
+            self.clear += DT * np.where(gap > 0, CLEAR_RATE * gap,
+                                        CLEAR_REGROW * gap)
+            np.clip(self.clear, 0, 1, out=self.clear)
 
     def disasters(self):
         rng = self.R("disasters")
