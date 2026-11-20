@@ -55,7 +55,7 @@ digest of every part of the state:
 
     ~/.venvs/worldsim/bin/python snapcheck.py save /tmp/s5000.pkl --year 5000 -- \
         --peoples peoples_regional --starts 20 --start-vary 0.1 --vary 0 \
-        --sites sites_v2.json --seed 101 --years 8000
+        --sites sites_v3.json --seed 101 --years 8000
     ~/.venvs/worldsim/bin/python snapcheck.py run /tmp/s5000.pkl --ticks 20 --code OLD --digest old.json
     ~/.venvs/worldsim/bin/python snapcheck.py run /tmp/s5000.pkl --ticks 20 --digest new.json
     ~/.venvs/worldsim/bin/python snapcheck.py diff old.json new.json
@@ -72,7 +72,7 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
 
     # once: the base run, saving states on the way
     ~/.venvs/worldsim/bin/python worldsim.py --peoples peoples_regional \
-        --starts 20 --start-vary 0.1 --vary 0 --sites sites_v2.json \
+        --starts 20 --start-vary 0.1 --vary 0 --sites sites_v3.json \
         --seed 101 --years 8000 --frame-every 100 --out base_seed101 \
         --save-state 3000 s101_y3000.pkl --save-state 5000 s101_y5000.pkl
     # each variant

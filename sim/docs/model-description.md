@@ -262,6 +262,12 @@ the same way from the sites stream with `--shuffle-sites`.
   | lode gold (precious) | relief > 0.8 km |
   | silver (precious) | relief > 0.7 km |
 
+- **Sites v3** (`--sites sites_v3.json`, `make_sites.py --v3`; the
+  standard since 2026-11-19, U): the v2 rules and quotas on
+  `world_v2.gpkg` (the climate's biomes and rivers, with `climate_fields`
+  and `floodplain` on), and hearths placed afresh by the v1 rule on the
+  same world; the old hearths sat on the drawn biomes. Seed 1.
+
 ---
 
 ## 3. Peoples and lineages

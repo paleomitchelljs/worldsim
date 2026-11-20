@@ -305,9 +305,25 @@ def drainage(E, land, drawn_river, runoff, precip, area, LAT, setting_name):
     alluvial = np.zeros((NY, NX), bool)
     for i in range(1, n + 1):
         reg = lab == i
-        # a depression stays open water if most of it subsides, or if it is a
-        # closed (evaporative) basin; otherwise it silts up
-        if subsiding[reg].mean() > 0.5 or endorheic[reg].any():
+        # a closed (evaporative) basin holds a lake only as large as
+        # evaporation less rain on it can balance its inflow, filling from
+        # the lowest cells; the rest of its floor is dry sediment. Any
+        # other depression stays open water if most of it subsides (it
+        # fills and spills), else it silts up
+        if endorheic[reg].any():
+            rr, cc = np.nonzero(reg)
+            k = np.argsort(Eb[rr, cc])
+            net = np.maximum(lake_evap(LAT[rr, cc]) - precip[rr, cc], 1e-3)[k]  # m/yr
+            inflow = acc_q[reg].max() * 3.156e7                      # m3/yr
+            # cells, lowest first, while their net evaporation is still
+            # needed to balance the inflow (always at least one)
+            need = np.cumsum(net * area[rr, cc][k] * 1e6) - net * area[rr, cc][k] * 1e6
+            wet = np.zeros(len(k), bool)
+            wet[k[need < inflow]] = True
+            wet[k[0]] = True
+            lake[rr[wet], cc[wet]] = True
+            alluvial[rr[~wet], cc[~wet]] = True
+        elif subsiding[reg].mean() > 0.5:
             lake |= reg
         else:
             alluvial |= reg

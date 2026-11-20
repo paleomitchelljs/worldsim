@@ -26,13 +26,19 @@ from Earth's map (all forms and numbers C):
                   actual evaporation by Budyko's curve (Fu's form);
                   runoff = P - AET; aridity = P / PET (the UNEP index)
 
-The free parameters are fitted so that a fixed climate-to-biome rule
-(Koppen and UNEP thresholds, BIOME_RULE) reproduces the drawn biome map
-(fic_biome) as well as it can. Where they still disagree the climate's
-biome is used in world_v2 (syn_biome; D10, U 2026-11-19).
+The parameters take physically motivated values (PARAMS), not values
+fitted to the drawn biome map: a first version was fitted to it, and the
+fit learnt the map's errors (no equatorial rain belt, dry interiors; U,
+2026-11-19, asked for a refit on physical grounds). One constant is set
+from a global constraint: P0, the air's rain potential, is chosen so that
+mean precipitation over the whole globe is P_GLOBAL (1.0 m/yr, the
+planetary water cycle set by the surface energy budget). A fixed
+climate-to-biome rule (Koppen and UNEP thresholds, BIOME_RULE) then gives
+each cell's biome; world_v2 uses it (syn_biome; D10, U 2026-11-19). Its
+agreement with the drawn map (fic_biome) is reported, not fitted.
 
 Run:  python derive_world.py --v2   (adds these fields to gis/world_v2.gpkg)
-      python climate_world.py       (fit and QA figures only, no write)
+      python climate_world.py       (QA figures and record only, no write)
 """
 import json
 import os
@@ -46,8 +52,11 @@ QA_DIR = os.path.join(HERE, "gis", "qa")
 BIOMES = ["Jungle", "Desert", "Grassland", "Temperate forest", "Tundra"]
 
 # ---- parameters (C) ---------------------------------------------------------
-# Defaults; FIT_KEYS are refitted by fit() against the drawn biome map and
-# the fitted values are kept in gis/qa/climate_fit.json.
+# Values with physical grounds where there are any (lapse rate,
+# Clausius-Clapeyron, Fu's w, band edges at the Hadley and Ferrel cell
+# boundaries, recycling about half of land rain); the rest are round
+# values. P0 is calibrated (calibrate) and kept, with the rest, in
+# gis/qa/climate_fit.json.
 PARAMS = dict(
     T_EQ=27.0,         # degC, sea-level annual mean at the equator
     T_POLE=-15.0,      # degC, the same at the poles (maritime)
@@ -66,10 +75,10 @@ PARAMS = dict(
     Z_ITCZ=2.0,        # rain-out factor at the ITCZ
     Z_FRONT=1.0,       # at the polar front
     Z_BASE=0.25,       # under sinking air (subtropics, poles)
-    P0=1.6,            # m/yr, rain potential of saturated air at 25 degC
+    P0=2.3,            # m/yr, rain potential of saturated air at 25 degC (calibrated)
     CC=0.07,           # per degC, Clausius-Clapeyron
     L_OCEAN=800.0,     # km of sea for air to come back to saturation
-    L_RAIN=1500.0,     # km over land to rain out 1-1/e of the air's water at factor 1
+    L_RAIN=2000.0,     # km over land to rain out 1-1/e of the air's water at factor 1
     RECYCLE=0.5,       # share of rain evaporated again into the passing air
     V_MER=0.3,         # meridional / zonal wind speed
     K_EDDY=0.1,        # eddy mixing with each neighbouring row, per row-width travelled
@@ -78,14 +87,7 @@ PARAMS = dict(
     PET_K=1.75e-4,     # m of potential evaporation per degree-day above 0 degC
     FU_W=2.6,          # Fu's Budyko parameter
 )
-FIT_KEYS = ["T_EQ", "T_POLE", "PHI_HADLEY", "W_ITCZ", "PHI_FRONT", "Z_ITCZ",
-            "Z_FRONT", "Z_BASE", "P0", "L_RAIN", "K_ORO", "RECYCLE", "V_MER",
-            "K_EDDY"]
-BOUNDS = dict(T_EQ=(22, 32), T_POLE=(-30, 0), PHI_HADLEY=(20, 38),
-              W_ITCZ=(5, 20), PHI_FRONT=(40, 62), Z_ITCZ=(0.5, 4),
-              Z_FRONT=(0.3, 3), Z_BASE=(0.05, 1), P0=(0.5, 6),
-              L_RAIN=(400, 4000), K_ORO=(0, 0.5), RECYCLE=(0, 0.8),
-              V_MER=(0, 0.6), K_EDDY=(0, 0.25))
+P_GLOBAL = 1.0        # m/yr, mean precipitation over the whole globe
 
 # Climate-to-biome rule (fixed, C, standard thresholds): Koppen E (warmest
 # month under 10 degC) is tundra; UNEP arid (P/PET < 0.2) is desert; UNEP
@@ -231,60 +233,13 @@ def agreement(pred, drawn, land, area):
     return rec, float(np.mean(list(rec.values()))), overall
 
 
-def fit(inp, drawn, area, n_random=300, n_rounds=4, seed=0, verbose=True):
-    """Fit FIT_KEYS: a random search inside BOUNDS, then coordinate
-    refinement, maximising mean per-biome agreement (so no biome's area
-    swamps the others)."""
-    rng = np.random.default_rng(seed)
-    land = inp["land"]
-
-    def score(p):
-        return agreement(biome_rule(fields(inp, p)), drawn, land, area)[1]
-
-    best = dict(PARAMS)
-    best_s = score(best)
-    for _ in range(n_random):
-        p = dict(best)
-        for k in FIT_KEYS:
-            lo, hi = BOUNDS[k]
-            p[k] = rng.uniform(lo, hi)
-        s = score(p)
-        if s > best_s:
-            best, best_s = p, s
-    if verbose:
-        print(f"climate fit: random search best {best_s:.3f}")
-    for rd in range(n_rounds):
-        step = 0.25 / (rd + 1)
-        for k in FIT_KEYS:
-            lo, hi = BOUNDS[k]
-            for sgn in (-1, 1):
-                p = dict(best)
-                p[k] = float(np.clip(best[k] + sgn * step * (hi - lo), lo, hi))
-                s = score(p)
-                if s > best_s:
-                    best, best_s = p, s
-        if verbose:
-            print(f"climate fit: round {rd + 1} {best_s:.3f}")
-    return best, best_s
-
-
-def within_biome(v, drawn, area, land, cap=4.0):
-    """v relative to its drawn biome's area-weighted mean on land, capped
-    at `cap` and renormalised to a mean of 1 in each biome (1 at sea and
-    where a biome's mean is 0). Used to give a by-biome quantity the
-    climate's gradient while keeping each biome's total (C)."""
-    out = np.ones(v.shape)
-    for k in range(len(BIOMES)):
-        m = land & (drawn == k)
-        a, x = area[m], np.clip(v[m], 0, None)
-        for _ in range(3):
-            mu = (x * a).sum() / max(a.sum(), 1e-9)
-            if mu <= 0:
-                break
-            x = np.minimum(x / mu, cap)
-        else:
-            out[m] = x / ((x * a).sum() / a.sum())
-    return out
+def calibrate(inp, area, p=PARAMS):
+    """p with P0 set so that area-weighted precipitation over the whole
+    globe (land and sea) is P_GLOBAL; precipitation scales with P0, so
+    one rescaling is exact."""
+    f = fields(inp, p)
+    mean = (f["precip_m_yr"] * area).sum() / area.sum()
+    return dict(p, P0=p["P0"] * P_GLOBAL / mean)
 
 
 # ---- QA ------------------------------------------------------------------------
@@ -381,24 +336,24 @@ def inputs_from_cells(df):
         drawn, g("area_km2", 0.0)
 
 
-def build(df, refit=True, verbose=True):
-    """Fit (or load the saved fit), compute the fields, write the QA
-    figures and the fit record. Returns (fields, climate biome, params,
-    record)."""
+def build(df, verbose=True):
+    """Calibrate P0, compute the fields, write the QA figures and the
+    record (parameters, biome areas, agreement with the drawn map).
+    Returns (fields, climate biome, params, record)."""
     inp, drawn, area = inputs_from_cells(df)
     land = inp["land"]
     path = os.path.join(QA_DIR, "climate_fit.json")
-    if refit or not os.path.exists(path):
-        p, s = fit(inp, drawn, area, verbose=verbose)
-    else:
-        with open(path) as fh:
-            p = {**PARAMS, **json.load(fh)["params"]}
+    p = calibrate(inp, area)
     f = fields(inp, p)
     pred = biome_rule(f)
     rec, mean_rec, overall = agreement(pred, drawn, land, area)
     conf = confusion(pred, drawn, land, area)
     record = dict(params={k: float(f"{v:.4g}") for k, v in p.items()},
-                  fitted=FIT_KEYS, rule=BIOME_RULE,
+                  calibrated=["P0"], rule=BIOME_RULE,
+                  land_precip_m_yr=round(float((f["precip_m_yr"] * area)[land].sum()
+                                               / area[land].sum()), 3),
+                  biome_area_mkm2={b: round(float(area[land & (pred == k)].sum()) / 1e6, 1)
+                                   for k, b in enumerate(BIOMES)},
                   recall_by_biome={k: round(v, 3) for k, v in rec.items()},
                   mean_recall=round(mean_rec, 3), overall=round(overall, 3),
                   confusion=conf.round(3).to_dict(orient="records"))
@@ -407,6 +362,8 @@ def build(df, refit=True, verbose=True):
         json.dump(record, fh, indent=1)
     qa_figures(f, drawn, pred, land)
     if verbose:
+        print("climate: P0", round(p["P0"], 3), "land P", record["land_precip_m_yr"],
+              "biome areas", record["biome_area_mkm2"])
         print("climate: agreement by drawn biome", record["recall_by_biome"],
               "mean", record["mean_recall"], "overall", record["overall"])
         print(conf.round(3).to_string(index=False))

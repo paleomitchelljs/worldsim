@@ -70,7 +70,7 @@ from the source maps:
 
 The second command copies `world.gpkg`, runs every derivation again with
 `climate=True`, and writes `../gis/world_v2.gpkg` (previews in
-`../gis/previews_v2/`). It refits the climate each time (about 40 s).
+`../gis/previews_v2/`). It recalibrates P0 each time (a few seconds).
 `run.json` records the world file a run used as `world`.
 
 **Rebuild check (2026-11-19).** `world.gpkg` was rebuilt from the scripts on
@@ -115,7 +115,7 @@ byte-identical to the committed copies, with 66,895 land cells.
   - Runoff = P − AET; aridity = P / PET (the UNEP index).
   - `syn_gdd` is degree-days above 5 °C.
 
-### Fit against the drawn biomes (D10: U, 2026-11-19)
+### Parameters and biomes (refit on physical grounds, U 2026-11-19)
 
 The climate-to-biome rule is fixed at standard thresholds:
 
@@ -125,69 +125,56 @@ The climate-to-biome rule is fixed at standard thresholds:
 - otherwise jungle if the coldest month is 18 °C or more (Köppen A);
 - otherwise temperate forest.
 
-Twelve parameters were fitted to maximise the mean, over drawn biomes, of
-the share of each biome's area the rule reproduces: 300 random draws
-inside bounds, then four rounds of coordinate steps. Result
-(`../gis/qa/climate_fit.json`):
+**The parameters are not fitted to the drawn map.**
 
-| Drawn biome | Area (M km²) | Climate agrees | Climate says instead (largest) |
-|---|---|---|---|
-| Jungle | 26.3 | 0.25 | tundra 0.25, desert 0.23, temperate forest 0.22 |
-| Desert | 12.3 | 0.89 | grassland 0.09 |
-| Grassland | 29.0 | 0.26 | desert 0.50, temperate forest 0.18 |
-| Temperate forest | 38.1 | 0.41 | jungle 0.18, grassland 0.16, desert 0.14 |
-| Tundra | 16.4 | 0.99 | - |
+- They take physically motivated values (`climate_world.PARAMS`, C):
+  - band edges at 30° and 60° (the Hadley and Ferrel cells);
+  - the ITCZ 10° wide, the polar front at 50°;
+  - rain-out over 2,000 km of land, with half of land rain recycled;
+  - T_eq 27 °C, T_pole −15 °C.
+- One constant is calibrated: P0, the air's rain potential, set so mean
+  precipitation over the whole globe is 1.0 m/yr. That is the planetary
+  water cycle, set by the surface energy budget. Result: P0 2.29 m/yr;
+  land averages 0.81 m/yr.
+- **History.** A first version fitted twelve parameters to the drawn map.
+  Mean agreement was 0.56, but the fit learnt the map's errors (no
+  equatorial rain belt, very dry interiors; P0, V_mer, the ITCZ at
+  their bounds). U (2026-11-19) asked for a refit on physical grounds.
 
-Mean agreement is 0.56; by area, 0.47 of land agrees.
+**The drawn map was wrong in large coherent regions** (D10). The first
+fit found:
 
-Fitted values: T_eq 26.7 °C, T_pole −10.9 °C, φ_H 35°, polar front 51°,
-P0 6.0 m/yr, L_rain 630 km, K_oro 0.48, RECYCLE 0.18, V_mer 0.6.
-Five parameters ended at a bound:
-
-- ITCZ width 5° and strength 0.5, both at the minimum;
-- P0 and V_mer at the maximum;
-- K_eddy 0, at the minimum.
-
-The fit wants no equatorial rain belt, and wet coasts with dry
-interiors.
-
-**The disagreements are large and coherent. They are findings for U, not
-noise** (map: `../gis/qa/climate_biome_disagreement.png`).
-
-- **The southern supercontinent's jungle belt.** The drawn map has 6.4M km²
-  of jungle at 60–70°S and 1.4M km² at 70–80°S, along the edge of the
-  polar tundra. Most of the supercontinent's jungle and temperate forest
-  lies at 40–70°S, with desert at 20–40°S north of it. That is the
-  latitude order of a climate centred near 35°S. No circulation with a
-  cold south pole gives it: the rule calls that belt tundra or desert.
-  The drawn map would need a warm, wet source to the south (a warm
-  current or a warm polar sea), and the tundra beside it says there is
-  none. Alternatively, "jungle" there means a cool temperate rainforest.
-- **Temperate forest in the tropics.** 16.6M km² of temperate forest lies
-  at 0–30°N, where the rule gives jungle or grassland. The drawn jungle
-  there is coastal and patchy.
-- **Grassland as desert.** Half the drawn grassland is desert to the
-  rule. These are mostly continental interiors far from the windward
-  ocean, which the rain-out march dries more than the drawn map does.
+- jungle and temperate forest at 40–75°S beside the polar tundra
+  (6.4M km² of jungle at 60–70°S), with desert at 20–40°S, the
+  latitude order of a climate centred near 35°S;
+- 16.6M km² of temperate forest at 0–30°N.
 
 **Decision (D10, U, 2026-11-19).** The southern belt is "probably an old
-error" in the drawn map. The climate's biome replaces the drawn one
-wherever they disagree, in `world_v2` only: column `syn_biome`, which
-the simulator and the rest of the build read in place of `fic_biome`.
-`fic_biome` keeps the drawn map, and the fit above is still made against
-it.
+error". The climate's biome replaces the drawn one everywhere, in
+`world_v2` only: column `syn_biome`, which the simulator and the rest of
+the build read in place of `fic_biome`. `fic_biome` keeps the drawn map.
 
-| Biome | Drawn (M km²) | `world_v2` (M km²) |
-|---|---|---|
-| Jungle | 26.3 | 15.1 |
-| Desert | 12.3 | 36.7 |
-| Grassland | 29.0 | 16.4 |
-| Temperate forest | 38.1 | 26.8 |
-| Tundra | 16.4 | 27.0 |
+Biome areas (`../gis/qa/climate_fit.json`):
 
-Desert triples: the march dries continental interiors more than the
-drawn map did. The fitted parameters were chosen to match the drawn map,
-errors included.
+| Biome | Drawn (M km²) | `world_v2` (M km²) | Share of drawn area the climate agrees with |
+|---|---|---|---|
+| Jungle | 26.3 | 19.7 | 0.27 |
+| Desert | 12.3 | 1.2 | 0.01 |
+| Grassland | 29.0 | 39.6 | 0.38 |
+| Temperate forest | 38.1 | 30.0 | 0.23 |
+| Tundra | 16.4 | 31.5 | 0.99 |
+
+- **The climate's pattern is zonal:**
+  - a wet equatorial belt;
+  - semi-arid subtropics (grassland);
+  - temperate forest at 30–50°;
+  - tundra from about 55° poleward on the southern supercontinent.
+- **Desert nearly vanishes.** Subtropical land gets about 0.3 m/yr
+  against about 0.9 m/yr of potential evaporation: P/PET 0.24–0.35,
+  semi-arid rather than arid.
+  - PET from degree-days ignores the clear-sky radiation and dry air
+    that make real subtropical PET 1.5–2 m/yr. So this is the likely
+    weak point, and it is not tuned (open-questions).
 
 ### Columns added in `world_v2.gpkg`
 
@@ -214,17 +201,24 @@ rain on lakes is the climate's precipitation. Discharge, rivers, basins,
 lakes, alluvial fill, wetness, soils and bedrock are then derived as
 before, with the same thresholds, from `syn_biome`.
 
-The result is fewer, more coastal rivers:
+The result (after the physical refit and lake sizing):
 
-- river cells fall from 6,243 to 2,779 (10.7% → 5.4% of land);
-- endorheic cells rise from 1,024 to 8,443, and lake cells from 508 to
-  2,249;
-- the old largest river (152,000 m³/s, mouth at 10°E, 72°S) is gone. The
-  largest now reaches the sea at 114°E on the equator (87,000 m³/s).
+- **River cells:** 6,243 → 3,923 (10.7% → 7.9% of land).
+- **The largest river** reaches the sea at 114°E on the equator
+  (125,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
+  72°S) is gone: that land is tundra now.
+- **Lakes and closed basins.**
+  - A closed basin's lake covers only as much area as evaporation less
+    rain on it can balance the basin's inflow. It fills from the lowest
+    cells, and the rest of the basin floor is alluvial fill (dry
+    sediment) (`derive_world.drainage`, C; U 2026-11-19).
+  - Lake cells: 959, 1.4% of land. Before sizing it was 2,249; on the
+    old world it is 508. Endorheic cells: 7,450.
+  - `world.gpkg` on disk predates the lake sizing. A rebuild of it would
+    now size its closed-basin lakes too.
 
-(Before D10 was decided, a version that kept each drawn biome's mean
-runoff gave 3,332 river cells; [run-log.md](run-log.md), "2026-11-19 WP8
-stages B and C".)
+Earlier versions, for the record:
+[run-log.md](run-log.md), "2026-11-19 WP8".
 
 ### Known limits
 
@@ -232,6 +226,6 @@ stages B and C".)
   ITCZ.
 - Moisture moves along rows. Meridional transport is a share per step,
   and only between rows walked the same way, so precipitation shows a
-  seam at the band edge (35°).
+  seam at the band edges (30° and 60°).
 - The straight-edged strips at 100–120°E (above) show in temperature
   and precipitation too, through elevation.

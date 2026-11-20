@@ -4,7 +4,7 @@ them to sites.json (read by worldsim.py). The placement is drawn once with
 a fixed seed, so it is part of the world; worldsim's --shuffle-sites draws
 a fresh placement from the run seed instead (same rules).
 
-Run:  ~/.venvs/worldsim/bin/python make_sites.py [--seed 1] [--v2]
+Run:  ~/.venvs/worldsim/bin/python make_sites.py [--seed 1] [--v2 | --v3]
 
 v2 (U, 2026-10-30; kinds, rules and numbers C): landmass quotas (every
 landmass of 0.1M km2+ gets at least one of the 45 unique-resource sites,
@@ -12,6 +12,13 @@ the rest shared by area), more kinds (woods, fibres, clay, obsidian), and
 precious metals on top (16 sites shared by area with no minimum: placer
 gold, lode gold, silver). Hearths are those of v1 (U: unchanged).
 Writes sites_v2.json.
+
+v3 (U, 2026-11-19, WP8): the v2 rules on world_v2.gpkg (the climate's
+biomes and rivers), with the hearths placed afresh by the v1 rule on the
+same world, since the old ones sat on the drawn biomes. Capacity terms as
+the simulator's defaults (`climate_fields`, `floodplain`). Writes
+sites_v3.json; sites.json and sites_v2.json stay as they were, for the
+runs that used them.
 """
 import argparse
 import json
@@ -202,15 +209,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--v2", action="store_true")
+    ap.add_argument("--v3", action="store_true")
     a = ap.parse_args()
     import worldsim
-    W = worldsim.World()
-    if a.v2:
+    if a.v3:
+        W = worldsim.World(worldsim.world_path("v2"))
+        W.use_climate()
+        W.floodplain = True
+        W.derive_rivers()
+        s = place_sites_v2(W, a.seed, place_sites(W, a.seed)["hearths"])
+        s["version"], s["world"] = 3, "world_v2.gpkg"
+        name = "sites_v3.json"
+    elif a.v2:
+        W = worldsim.World(worldsim.world_path("v1"))
         with open(os.path.join(HERE, "sites.json")) as fh:
             h = json.load(fh)["hearths"]
         s = place_sites_v2(W, a.seed, h)
         name = "sites_v2.json"
     else:
+        W = worldsim.World(worldsim.world_path("v1"))
         s = place_sites(W, a.seed)
         name = "sites.json"
     with open(os.path.join(HERE, name), "w") as fh:

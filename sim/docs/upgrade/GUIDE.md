@@ -73,7 +73,7 @@ files into online-only placeholders. Reading one can hang for minutes.
 The sweep's settings, used for every comparison:
 
     ~/.venvs/worldsim/bin/python worldsim.py --peoples peoples_regional \
-        --starts 20 --start-vary 0.1 --vary 0 --sites sites_v2.json \
+        --starts 20 --start-vary 0.1 --vary 0 --sites sites_v3.json \
         --seed 101 --years 8000 --frame-every 100 --out <folder>
 
 - Seed 101 is the usual test seed (101-106 if a batch is wanted). Always

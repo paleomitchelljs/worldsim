@@ -738,20 +738,24 @@ would tell whether this is real before anything is built on it.
 
   [world-data.md](world-data.md) has the table, and the map is
   `../gis/qa/climate_biome_disagreement.png`.
-  - Still open: the climate parameters were fitted against the drawn map,
-    errors included (no equatorial rain belt, dry interiors). With
-    the map no longer the truth, the fit's target is in question, and
-    desert now covers 30% of land.
-- **Closed basins become lakes wholesale.** On `world_v2` the dry
-  interiors drain to closed basins: endorheic cells rise from 1,024 to
-  8,443 and lake cells from 508 to 2,249. `derive_world.drainage` marks a
-  whole closed depression as lake. A lake sized to balance inflow against
-  evaporation would be smaller, but it is not built.
+  - Refit (U, 2026-11-19): the parameters now take physical values, with
+    only P0 calibrated to 1.0 m/yr of global rain; agreement with the
+    drawn map is reported, not fitted.
+  - Still open: desert nearly vanishes (1.2M km²). PET from degree-days
+    gives subtropical land about 0.9 m/yr; real subtropical PET is
+    1.5–2 m/yr (clear skies, dry air). A radiation- or humidity-based PET
+    would bring the deserts back. Not tuned.
+- **Closed-basin lakes are sized** (U, 2026-11-19): a closed basin's lake
+  covers only what its net evaporation needs to balance the inflow,
+  lowest cells first; the rest of the basin is alluvial fill. Lake cells
+  on `world_v2`: 959 (2,249 before). `world.gpkg` on disk predates this.
 - **Ecotones** still use distance to the nearest other biome. Now that the
   biomes come from the climate, the aridity field could say directly
   which cells sit near a threshold. Not changed.
 - **Tools that build a World** (`figures.py`, `timeline.py`,
-  `landmasses.py`, `landmass_report.py`, `make_sites.py`) load the
-  default world, now `world_v2.gpkg`. `sites_v2.json` was made on
-  `world.gpkg`. The run loader (`wsim/runio.Run.W`) uses each run's world
-  since WP8, but these tools draw an older run on the new world.
+  `landmasses.py`, `landmass_report.py`) load the default world, now
+  `world_v2.gpkg`. The run loader (`wsim/runio.Run.W`) uses each run's
+  world since WP8, but these tools draw an older run on the new world.
+- **Sites:** `sites_v3.json` is placed on `world_v2`
+  (`make_sites.py --v3`) and is in the standard command. `sites.json` and
+  `sites_v2.json` stay as they were, made on `world.gpkg`.

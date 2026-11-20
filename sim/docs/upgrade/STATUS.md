@@ -44,6 +44,7 @@ what an entry holds.
 | 8 | B yields and runoff | done (`climate_fields` on) | 2026-11-19 | ad5305c |
 | 8 | C floodplain area | done (`floodplain` on by default, U) | 2026-11-19 | ad5305c |
 | 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | 9c0afdd |
+| 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | see entry |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1908,3 +1909,42 @@ The full table is in BASELINE.md, and run-log.md has the entry.
   and not regenerated (U's world file; ask first).
 - Lakes in closed basins are not sized by their water balance: 2,249
   lake cells.
+
+### WP8: physical climate refit, lake sizing, sites v3 (2026-11-19)
+
+**Asked by U (2026-11-19).**
+- Refit the climate.
+- Fix the lakes.
+- Regenerate the resource sites.
+
+**Done.**
+- **`climate_world.py`.**
+  - The drawn-map fit (`fit`, FIT_KEYS, BOUNDS) is gone.
+  - PARAMS take physical values: L_RAIN 2,000 km. P0 is calibrated so
+    global rain is 1.0 m/yr (`calibrate`).
+  - Agreement with the drawn map is reported, not fitted (mean 0.38).
+- **`derive_world.drainage`.** A closed basin's lake fills from its
+  lowest cells only as far as net evaporation balances the inflow; the
+  rest of the basin is alluvial fill. Lake cells 959 on `world_v2`.
+- **`make_sites.py --v3`.** Writes `sites_v3.json`: the v2 rules on
+  `world_v2`, with hearths re-placed by the v1 rule. It is in the
+  standard command (GUIDE, running). The old site files stay.
+- **Docs:** world-data, model-description, open-questions, run-log,
+  BASELINE.
+
+**Runs.** New baseline `wp8e_seed101`-`104` and `106`
+(BASELINE.md, last section):
+
+- population 33-51M;
+- the Elves fall from 35-47% to 1-8%, and the end shares are more even;
+- states are fewer and smaller but longer-lived; 37-57% of people live
+  in states;
+- the urban share halves.
+
+**For the next session / U.**
+- **Desert nearly vanishes (1.2M km²).** PET from degree-days is too low
+  in the subtropics; a radiation- or humidity-based PET is the
+  physically grounded fix. Not done, because it changes the world again.
+- **No desert crop hearth** (no desert river cells).
+- **The Elves' fall and the weaker states** are results of the new world,
+  not tuned; worth U's look.

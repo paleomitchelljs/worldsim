@@ -24,8 +24,12 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 `wp6b_seed101`-`104` and `106` (last section), after WP4, WP5 and the
 adopted growth settings.
 
-**Update, 2026-11-19 (WP8).** The baseline is now `wp8d_seed101`-`104`
-and `106` (last section): the default world is `world_v2.gpkg`, with
+**Update, 2026-11-19 (WP8, second).** The baseline is now
+`wp8e_seed101`-`104` and `106` (last section): the climate refit on
+physical grounds, closed-basin lakes sized, and `sites_v3.json`.
+
+**Update, 2026-11-19 (WP8).** The baseline was `wp8d_seed101`-`104`
+and `106`: the default world is `world_v2.gpkg`, with
 climate fields and the climate's biomes (D10). `floodplain` and
 `climate_fields` are on.
 
@@ -201,7 +205,9 @@ Not remeasured: contingency across seeds (`--cross`). The saved states
 for branching (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`) are from the old
 code and should not be used as a baseline any more.
 
-## The current baseline batch (`wp8d_seed101`-`104`, `106`, 2026-11-19)
+## The baseline batch of WP8 D10 (`wp8d_seed101`-`104`, `106`, 2026-11-19)
+
+**Replaced the same day** by the next section.
 
 These runs use the code after WP8 on the new defaults:
 
@@ -261,3 +267,89 @@ The world moved a lot:
 | Elves' share of people, end | 35-47% (Dwarves 2-18%) | 29-56% |
 
 Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8e_seed101`-`104`, `106`, 2026-11-19)
+
+The code is that of `wp8d`, with three changes asked for by U on
+2026-11-19:
+
+- **The climate is refit on physical grounds**, not to the drawn map.
+  Only P0 is calibrated, to 1.0 m/yr of global rain.
+- **Closed-basin lakes are sized** to their water balance.
+- **The resource sites and hearths are placed on `world_v2`**
+  (`--sites sites_v3.json`, now in the standard command).
+
+World areas (M km²):
+
+| Biome | `wp8e` | `wp8d` |
+|---|---|---|
+| Jungle | 19.7 | 15.1 |
+| Desert | 1.2 | 36.7 |
+| Grassland | 39.6 | 16.4 |
+| Temperate forest | 30.0 | 26.8 |
+| Tundra | 31.5 | 27.0 |
+
+Rivers and lakes:
+
+- river cells 7.9% of land (`wp8d` 5.4%);
+- lake cells 959 (`wp8d` 2,249).
+
+The sites file has 12 hearths, not 14. There are no desert river cells,
+so the desert crop hearth finds no cell; the desert animal hearth is
+placed.
+
+Ranges are across the five seeds (`realism.py --group 'wp8e_seed10?'`;
+timeline rows from `docs/upgrade/tools/wp6_growth.py`).
+
+| Measure | wp8e (current) | wp8d (previous) |
+|---|---|---|
+| First city (year) | 710-995 | 670-805 |
+| 10M people (year) | 2,790-3,220 | 3,285-3,700 |
+| First steel (year) | 6,125-6,880; none in 2 of 5 | 6,005-7,420 |
+| World population at 8000 | 33-51M | 35-50M |
+| Population at 1000 / 4000 / 7000 (M) | 2.4-3.2 / 13.9-19.6 / 24.1-40.7 | 1.9-2.5 / 11.4-14.5 / 22.7-36.6 |
+| Growth by millennium, 2000-8000 (%/yr) | -0.017 to 0.054 | 0.015 to 0.059 |
+| Largest 100-yr fall after 3000 (log) | -0.23 to -0.07 | -0.20 to -0.07 |
+| Plague recovery, years back to 90%, median | 90-125 | 75-95 |
+| Herding share, peak | 0.22-0.31, at years 2350-6415 | 0.22-0.35, at years 2110-2990 |
+| Urban share at the end | 0.021-0.037 | 0.045-0.062 |
+| Rank-size slope at the end | -1.27 to -0.76 | -0.93 to -0.64 |
+| Largest city, share of world | 0.05-0.13% (17-63k) | 0.16-0.21% (64-105k) |
+| Minority share of heads, end | 2.1-2.8% | 2.4-2.9% |
+| Polities | 1,559-2,672 | 1,039-1,795 |
+| Never above one city | 90-96% | 83-89% |
+| States with 3+ cities | 22-93 | 70-157 |
+| Ended 3+ city states, lifespan | median 652-1,862 yr; mean 880-1,878; CV 0.71-1.04; over 1,000 yr 26-62% | median 266-345 yr; mean 483-644; CV 1.14-1.38; over 1,000 yr 13-20% |
+| Largest state | 0.6-2.6M km² (0.5-2.1% of land) | 2.0-4.0M km² (1.7-3.3% of land) |
+| Top-10 states, median land pieces | 1 | 2-5.5 |
+| Wars | 306-1,138 | 409-1,808 |
+| Wars ending inside one tick / within 5 yr | 3-8% / 46-56% | 5-10% / 54-60% |
+| Peer wars | 0 | 0.1-0.5% |
+| Sieges taken | 32-45% | 46-54% |
+| Siege odds at launch, median (attacker) | 0.29-0.39 | 0.40-0.51 |
+| City food: trade / rent / provincial / capital | 0.02-0.03 / 0.48-0.51 / 0.03-0.12 / 0.38-0.48 | 0.04-0.07 / 0.38-0.44 / 0.16-0.20 / 0.33-0.35 |
+| Deaths: feud / raid / plague / hunger | 0.56-0.63 / 0.30-0.32 / 0.03-0.09 / 0.02-0.03 | 0.46-0.53 / 0.33-0.36 / 0.09-0.16 / 0.03-0.04 |
+| Pop share on river cells | 0.36-0.38 (land 0.081) | 0.35-0.37 (land 0.054) |
+| Pop share coast or river | 0.49-0.57 (land 0.15) | 0.58-0.63 (land 0.13) |
+| Pop share alluvial fill | 0.070-0.111 (land 0.053) | 0.070-0.082 (land 0.024) |
+| Pop share, \|lat\| 0-15 / 15-30 / beyond 45 | 0.63-0.71 / 0.15-0.23 / 0.017-0.033 | 0.35-0.47 / 0.41-0.48 / 0.014-0.025 |
+| Pop share by biome: jungle / grassland / temperate forest / desert / tundra | 0.24-0.38 / 0.30-0.46 / 0.17-0.45 / 0.002 / 0.01-0.02 | 0.27-0.36 / 0.09-0.16 / 0.50-0.60 / 0.02-0.03 / 0.01 |
+| Population in a state / land area / land cells | 0.37-0.57 / 0.05-0.11 / 0.03-0.07 | 0.68-0.80 / 0.10-0.16 / 0.06-0.10 |
+| Occupied land cells, end | 0.63-0.67 | 0.62-0.68 |
+| Largest people at the end | Humans, Snake folk or Dwarves, 31-41% | Elves, 35-47% |
+| Elves' share, end | 1-8% | 35-47% |
+
+**What moved.**
+
+- **Peoples.** The Elves lose their lead: 35-47% in `wp8d`, 1-8% now.
+  The end shares are more even: the largest people holds 31-41%, and
+  it is Humans, Snake folk or Dwarves by seed.
+- **States.** Fewer and smaller:
+  - fewer states with 3+ cities, and fewer people in states;
+  - larger states are compact (top-10 median land pieces 1);
+  - states that do form last longer.
+- **People move to the equator.** The wet equatorial belt holds 63-71% of
+  people, against 35-47% in `wp8d`.
+
+None of these is tuned. Not remeasured: contingency across seeds
+(`--cross`).

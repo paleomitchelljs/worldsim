@@ -2337,3 +2337,32 @@ table is in `docs/upgrade/BASELINE.md`, last section. Main points:
 - **No people floods the map, and the Dwarves survive (2-18%).** Their
   homeland is now tundra rather than frozen "jungle". Elves are
   35-47%.
+
+### 2026-11-19 WP8: physical climate refit, lake sizing, sites v3 (`wp8e_seed101`-`104`, `106`)
+
+U asked for three changes after the `wp8d` report.
+
+- **Climate refit.** The parameters take physical values, not a fit to
+  the drawn map; P0 is calibrated to 1.0 m/yr of global rain.
+  - Biomes (M km²): jungle 19.7, desert 1.2, grassland 39.6, temperate
+    forest 30.0, tundra 31.5.
+  - Desert nearly vanishes: PET from degree-days is too low in the
+    subtropics (open-questions).
+- **Lakes.** A closed basin's lake is sized to balance its inflow, and
+  the rest of the basin floor is alluvial fill. Lake cells 2,249 → 959.
+  River cells: 3,923 (7.9% of land).
+- **Sites v3.** `make_sites.py --v3` places resources and hearths on
+  `world_v2` and writes `sites_v3.json`, now in the standard command. It
+  has 12 hearths, not 14: no desert crop hearth.
+
+Baseline batch: full table in `docs/upgrade/BASELINE.md`, last section.
+
+- **Population** at 8,000 is 33-51M (`wp8d` 35-50M). 10M people arrive
+  earlier, at years 2,790-3,220.
+- **The Elves fall** from 35-47% to 1-8%. The largest people (31-41%) is
+  Humans, Snake folk or Dwarves by seed.
+- **States are fewer and smaller.** People in states: 37-57%, against
+  68-80%. States with 3+ cities: 22-93, against 70-157. Those states
+  last longer: median life 652-1,862 yr. The urban share halves
+  (0.02-0.04).
+- **People move to the equator:** 63-71% within 15° of it.
