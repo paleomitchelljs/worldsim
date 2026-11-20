@@ -2457,3 +2457,25 @@ U asked for three expansions of the climate model (C forms and numbers;
 - 10-36 states with 3+ cities; 147-368 wars.
 - Steel in one seed.
 - About 590 s per run.
+
+### 2026-11-20 WP9 stage A: patterns frozen (`wp8h_seed101`-`104`, `106`; no new runs)
+
+No rules changed and no runs made. `docs/patterns.md` lists the patterns
+runs are judged on, marks which have been used to choose a value
+(spent), and adds six held-out measures to `wsim/metrics.py`, read here
+on the current baseline (`realism.py --rebuild --group 'wp8h_seed10?'`):
+
+- **City spacing** (`spacing`): the nearest other city is a median 229-278
+  km away; spacing against local density, Spearman rho -0.70 to -0.51
+  (denser land, closer cities, in every seed).
+- **States below the top ten** (`minor_states`): rank-size slope over
+  ranks 11-100 -0.70 to -0.43 by peak size, -1.03 to -0.64 at the end.
+- **Peer wars** (`peer_wars`): 0-7 per run, too few to read.
+- **Waterside cities** (`waterside`): 87-100% of cities are on a coast or
+  river in every size third, so the pattern barely varies with size.
+- **Rule spells** (`rule_spells`): median exactly 100 years (one-city
+  states abandoned at URBAN_GRACE, likely); p90 375-525 years; 7-10%
+  over 500 years.
+- **Lineage cities** (`lineage_cities`): traits differ between the cities
+  of one lineage by sd 0.009-0.036, against 0.073-0.102 between the
+  lineages of a people.

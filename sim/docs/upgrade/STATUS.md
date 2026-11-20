@@ -48,7 +48,7 @@ what an entry holds.
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
 | 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
-| 9 | A metrics freeze | not started | | |
+| 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | HASH |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
 
@@ -2040,3 +2040,50 @@ band-edge seams, ocean currents.
 - **The zonal wind still blows one way per row all year**, so there is
   no westerly summer monsoon.
 - **Biomes use annual totals**, not the rain's season.
+
+### WP9 stage A: patterns frozen (2026-11-20, HASH)
+
+**Done.**
+- `docs/patterns.md` lists 31 patterns. Each has its definition (a
+  function in `wsim/metrics.py`), reference and source, how rough it is,
+  scale, status and the `wp8h` range.
+- **Spent** (a value or form was chosen on it):
+  - population at the end and the timeline (development 0.25; D7);
+  - recovery;
+  - urban share and city food sources (FF_RENT, FF_TRADE);
+  - war count (WAR_BASE);
+  - war endings (WP5 B gate form);
+  - biome areas (the first climate fit; Z_BASE);
+  - people shares (roster balancing);
+  - trait spread between peoples (PATH_MIN, EXP_SCALE, KIN_RAID).
+- **Seen, nothing adopted:**
+  - rank-size slope and largest city (the capital levers);
+  - state lifespans (the turnover sweep);
+  - long-run growth.
+- **Held out, new** (`wsim/metrics.py`; registered `citytraits` in
+  `runio`):
+  - `spacing`;
+  - `minor_states`;
+  - `peer_wars`;
+  - `waterside`;
+  - `rule_spells`;
+  - `lineage_cities`.
+- Docs: diagnostics (measure table), README index, run-log.
+
+**Runs.** None new; the measures were read on `wp8h_seed101`-`104` and
+`106` (run-log).
+
+**Next stage needs to know.**
+- **Stage B needs U** (D4: SALib, or hand-roll Morris). It is about 248
+  runs: at about 600 s each, 8 at a time, that is about 5-6 hours.
+- **Disk.** Each run writes about 65 MB, so 248 runs need about 16 GB;
+  9.6 GB is free. The screen should run with `--no-video`, drop the
+  frames, or prune as it goes.
+- **Two of the new patterns are weak at present:**
+  - W3: peer wars are almost absent;
+  - C6: nearly every city is waterside.
+- **S6's median sits on URBAN_GRACE.** Read its p90 instead.
+- **Climate questions the user left open** (`wp8h` entry):
+  - the monsoon's reach over land;
+  - the zonal monsoon wind;
+  - the rain's season in biomes.

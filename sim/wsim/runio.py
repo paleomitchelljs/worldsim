@@ -33,6 +33,7 @@ FILES = {
     "revolts": "revolts.csv",
     "city_sizes": "city_sizes.csv",
     "cityfood": "cityfood.csv",
+    "citytraits": "citytraits.csv",
     "deaths": "deaths.csv",
     "food": "food.csv",
     "growth": "growth.csv",

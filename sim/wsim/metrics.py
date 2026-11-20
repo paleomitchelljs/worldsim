@@ -618,11 +618,157 @@ def price(run):
     return m
 
 
+# ---- held-out patterns (WP9 stage A, 2026-11-20) --------------------------
+# Patterns no value has been chosen on (docs/patterns.md). Each is read on
+# its spread across seeds; none has a target.
+
+SPACING_KM = 300.0      # radius of the local density around a city (C)
+
+
+def _km(chord):
+    return 2 * EARTH_R * np.arcsin(np.clip(chord / 2, 0, 1))
+
+
+def spacing(run):
+    """Cities standing at the end: distance to the nearest other city
+    against the density of people within SPACING_KM (central-place
+    spacing: denser land, closer cities). Spearman rank correlation."""
+    from scipy.stats import spearmanr
+    cs = run.city_sizes
+    cs = cs[cs.status == "city"]
+    cells = np.unique(cs.loc[cs.year == cs.year.max(), "cell"].to_numpy())
+    if len(cells) < 10:
+        return {}
+    W, p = run.W, run.final["pop"]
+    d, _ = cKDTree(W.xyz[cells]).query(W.xyz[cells], k=2)
+    nn = _km(d[:, 1])
+    r = 2 * math.sin(SPACING_KM / EARTH_R / 2)
+    tree = cKDTree(W.xyz)
+    dens = np.array([p[j].sum() / W.area[j].sum() for j in
+                     tree.query_ball_point(W.xyz[cells], r)])
+    rho = spearmanr(nn, dens)[0]
+    return {"cities at the end": len(cells),
+            "nearest city, median (km)": float(np.median(nn)),
+            "nearest city, p10-p90 ratio": float(
+                np.percentile(nn, 90) / max(np.percentile(nn, 10), 1)),
+            "spacing vs local density, Spearman rho": float(rho)}
+
+
+def minor_states(run):
+    """Size distribution of states below the top ten: rank-size slope of
+    peak cells over ranks 11-100 of every polity, and over ranks 11-100 of
+    the states standing at the end (cells of final_state.npz)."""
+    m = {}
+    pk = np.sort(run.polities.peak_cells.to_numpy(float))[::-1]
+    for nm, s in (("peak", pk),
+                  ("end", np.sort(np.bincount(
+                      run.final["polity"][run.final["polity"] >= 0]))[::-1])):
+        s = s[s > 0]
+        m[f"states at rank 11+, {nm}"] = int(max(len(s) - 10, 0))
+        t = s[10:100]
+        if len(t) >= 20:
+            rk = np.arange(11, 11 + len(t))
+            m[f"rank-size slope, ranks 11-100, {nm}"] = float(
+                np.polyfit(np.log(rk), np.log(t), 1)[0])
+            m[f"10th / 100th or last, {nm}"] = float(s[9] / t[-1])
+    return m
+
+
+PEER_RATIO = 0.5        # weaker / stronger strength at declaration (C)
+
+
+def peer_wars(run):
+    """Durations of wars between peers: both sides 2+ cities and the
+    weaker at least PEER_RATIO of the stronger's strength at declaration."""
+    w = run.wars
+    w = w[w.end.notna()]
+    sa, sd = w.strength_att.astype(float), w.strength_dfn.astype(float)
+    peer = ((w.cities_att >= 2) & (w.cities_dfn >= 2) &
+            (np.minimum(sa, sd) >= PEER_RATIO * np.maximum(sa, sd)))
+    y = w.loc[peer, "years"].to_numpy(float)
+    m = {"peer wars (ended)": len(y), "peer wars, share of ended": share(peer)}
+    if len(y) >= 5:
+        m["peer war years, median"] = float(np.median(y))
+        m["peer war years, mean"] = float(y.mean())
+        m["peer war years, CV"] = float(y.std() / max(y.mean(), 1e-9))
+        m["peer war years, over 20, share"] = float((y > 20).mean())
+    return m
+
+
+def waterside(run):
+    """Cities at the last cityfood.csv year in thirds by urban size: the
+    share on a coast, on a river, on either."""
+    cf = run.cityfood
+    cf = cf[cf.year == cf.year.max()].sort_values("urban")
+    m = {}
+    if len(cf) < 9:
+        return m
+    cut = np.linspace(0, len(cf), 4).astype(int)
+    for k, nm in enumerate(("small", "middle", "large")):
+        g = cf.iloc[cut[k]:cut[k + 1]]
+        m[f"{nm} third: coastal"] = share(g.coastal > 0)
+        m[f"{nm} third: river"] = share(g.river > 0)
+        m[f"{nm} third: coast or river"] = share((g.coastal > 0) |
+                                                 (g.river > 0))
+    return m
+
+
+def rule_spells(run):
+    """history.npz: spells of a cell under one state (the same polity id
+    in consecutive snapshots). Only spells that began and ended inside the
+    record count; lengths in years."""
+    H = run.history
+    P, yr = H["polity"].T, H["year"]          # cells x snapshots
+    dt = float(np.median(np.diff(yr)))
+    ch = np.ones((P.shape[0], P.shape[1] + 1), bool)
+    ch[:, 1:-1] = P[:, 1:] != P[:, :-1]
+    i, j = np.nonzero(ch)                     # spell starts and ends
+    out = []
+    for c in np.unique(i):
+        b = j[i == c]
+        s, e = b[:-1], b[1:]
+        ok = (P[c, s] >= 0) & (s > 0) & (e < P.shape[1])
+        out.append((e - s)[ok])
+    L = np.concatenate(out) * dt if out else np.array([])
+    m = {"rule spells (completed)": len(L)}
+    if len(L):
+        m["rule spell years, median"] = float(np.median(L))
+        m["rule spell years, p90"] = float(np.percentile(L, 90))
+        m["rule spell over 500 yr, share"] = float((L > 500).mean())
+    return m
+
+
+def lineage_cities(run):
+    """citytraits.csv, last year: the spread of commons traits between the
+    cities of one lineage (3+ cities), against the spread between lineage
+    means within a people (3+ lineages). SDs averaged over traits."""
+    ct = run.citytraits
+    ct = ct[ct.year == ct.year.max()]
+    cols = [c for c in ct.columns if c.startswith("m_")]
+    m = {}
+    g = ct.groupby("lineage")
+    big = g.size()[lambda s: s >= 3].index
+    if len(big):
+        within = ct[ct.lineage.isin(big)].groupby("lineage")[cols].std()
+        m["lineages with 3+ cities"] = len(big)
+        m["between cities of a lineage, sd (median)"] = float(
+            within.mean(axis=1).median())
+    means = g[cols].mean().join(g.people.first())
+    pp = means.groupby("people")
+    sd = pp[cols].std()[pp.size() >= 3]
+    if len(sd):
+        m["between lineages of a people, sd (median)"] = float(
+            sd.mean(axis=1).median())
+    return m
+
+
 SINGLE = [population, growth, volatility, landmass_volatility,
           city_hierarchy, city_lives, states, lifespans, contiguity, wars,
           sieges, war_time, food, food_ledger, deaths, growth_account,
           settlement, turnover,
-          price]
+          price,
+          spacing, minor_states, peer_wars, waterside, rule_spells,
+          lineage_cities]
 
 
 def measure(run, only=None):

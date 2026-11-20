@@ -99,6 +99,10 @@ these counters include every event.
 
 ## Run measures (`wsim/metrics.py`, 2026-11-17)
 
+The patterns runs are judged on, which of them have been used to choose
+a value, and the held-out ones are listed in [patterns.md](patterns.md)
+(WP9 stage A, frozen 2026-11-20).
+
 `wsim/metrics.py` holds every measure of a finished run, one function per
 group, each taking a `wsim.runio.Run` and returning a flat dict; the run
 writes them all to `metrics.json` at its end. They took in the realism
@@ -126,6 +130,12 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | `settlement` | population against land share by coast, river, alluvial fill, latitude band, biome; density percentiles; population, land area and land cells inside states |
 | `turnover` | per 500 years: share of cells whose people changed; occupied cells inside a state; cells emptied |
 | `price` | Price decomposition summed over the run |
+| `spacing` | cities at the end: nearest other city (km) against the density of people within SPACING_KM 300 km; Spearman rho (WP9 A, held out) |
+| `minor_states` | rank-size slope of states at ranks 11-100, by peak cells and at the end (WP9 A, held out) |
+| `peer_wars` | durations of wars between peers: both 2+ cities, the weaker at least PEER_RATIO 0.5 of the stronger (WP9 A, held out) |
+| `waterside` | cities in thirds by urban size: share coastal, on a river, either (WP9 A, held out) |
+| `rule_spells` | `history.npz`: completed spells of a cell under one state; median, p90, share over 500 yr (WP9 A, held out) |
+| `lineage_cities` | `citytraits.csv`, last year: sd of commons traits between a lineage's cities, against between lineages of a people (WP9 A, held out) |
 
 `metrics.cross(runs)` compares final maps pairwise: cells held by the same
 people, city sites within one cell, correlation of log(1 + cell
