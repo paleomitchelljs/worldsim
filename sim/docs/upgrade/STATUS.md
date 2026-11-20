@@ -52,7 +52,7 @@ what an entry holds.
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | running on `wp8j` code (U: SALib, launch, summaries only) | 2026-11-20 | 6a63c34 |
-| 9 | C Earth test scoping | not started | | |
+| 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | HASH |
 
 ## Entries
 
@@ -2196,3 +2196,30 @@ please do use rain seasonality, and a westerly wind is good."
 The screen restarted on the `wp8j` code by `runs/wp8j_then_screen.sh`,
 after the baseline. The design is the same 249 points. Seed noise comes
 from `wp8j` plus `base_seed105` (`wp9_analyze.py` defaults to `wp8j`).
+
+### WP9 stage C: Earth test scoped (2026-11-20, HASH)
+
+**Done.** `docs/earth-test-plan.md` covers:
+- **Inputs.** Datasets with licences to confirm and rough sizes, and a
+  new builder `earth_world.py` producing the same columns.
+- **Two climate routes:**
+  - observed climate, which tests the society model alone;
+  - `climate_world.py` on Earth, which also tests the climate model.
+- **Roster.** One people, dragons off, two kinds of start (known hearths
+  or the sim's own rules), and a fixed time zero.
+- **Scoring against nulls:**
+  - Reba et al. city sites;
+  - HYDE density;
+  - Seshat or Turchin's state areas;
+  - timing to the nearest millennium.
+- **What a failure means.**
+- **Cost:** steps A-G, about 6-9 sessions.
+
+**Runs.** None; nothing was downloaded.
+
+**For U (D11).**
+1. Do the climate check alone?
+2. Do the whole test?
+3. Neither?
+
+Recommended: 1 now; decide on 2 after the screen.
