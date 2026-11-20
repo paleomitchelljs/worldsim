@@ -47,7 +47,7 @@ what an entry holds.
 | 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | 6d9eea2 |
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
-| 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | see entry |
+| 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -2008,7 +2008,7 @@ world first, before any work on the peoples.
   - no ocean currents beyond upwelling;
   - `world.gpkg` on disk predates the lake sizing.
 
-### WP8: monthly circulation, ocean currents, seams (2026-11-20)
+### WP8: monthly circulation, ocean currents, seams (2026-11-20, 5d07290)
 
 **Asked by U (2026-11-20).** The three expansions: seasons and monsoon,
 band-edge seams, ocean currents.
