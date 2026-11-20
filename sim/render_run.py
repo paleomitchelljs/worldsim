@@ -213,10 +213,13 @@ def make(run, layers=("states", "peoples"), proj="mollweide", fmt="mp4",
         if verbose and i % 50 == 0:
             print(f"  frame {i + 1}/{len(ts)}, year {int(y[t])}", flush=True)
     if fmt != "png":
-        encode(fdir, len(ts), path, fmt, fps)
-        shutil.rmtree(fdir)
-        if not os.listdir(out):
-            os.rmdir(out)
+        try:
+            encode(fdir, len(ts), path, fmt, fps)
+        finally:
+            # a failed encode (e.g. no ffmpeg) must not leave the frames
+            shutil.rmtree(fdir)
+            if not os.listdir(out):
+                os.rmdir(out)
     if verbose:
         print(f"{len(ts)} frames -> {path}")
     return path
