@@ -132,7 +132,7 @@ class WarMixin:
             pa = self.pop[att] / np.maximum(Kt, 1e-3)
             same_state = (self.cell_pol[att] >= 0) & \
                 (self.cell_pol[att] == self.cell_pol[dfn])
-            p = DT * 0.02 * self.viol[La] * (0.5 + pa) * \
+            p = DT * RAID_RATE * self.viol[La] * (0.5 + pa) * \
                 (1 + self.hostile(La)) * self.tolf(La, 0.5) * \
                 np.where(same_state, 0.2, 1) * kinf
             p = p * self.raid_order(att, dfn, same_state)

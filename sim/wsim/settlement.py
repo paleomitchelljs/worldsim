@@ -328,7 +328,7 @@ class SettlementMixin:
         neighbour. Expansive lineages split before they are full."""
         W, N = self.W, self.W.N
         c = self.Lpeople[L]
-        thr = 0.45 - 0.35 * self.expn[L]
+        thr = BUD_PRESS - 0.35 * self.expn[L]
         can = occ & (press > thr) & (self.pop > 2 * FOUND_MIN)
         noise = self.R("migrate").uniform(0.6, 1.4, (N, 8))
         # only cells that can bud are scored (elsewhere every score is 0)

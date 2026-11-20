@@ -1260,3 +1260,11 @@ SIM_OTHER = (0.15, 0.35)
 TOL_TRADE = (0.4, 0.15)
 TOL_ALLY = (0.8, 0.08)
 TOL_FUSE = (1.0, 0.06)
+
+# Leading rates named for the sensitivity screen (WP9 stage B, 2026-11-20;
+# literals until then, same values, no change at the defaults):
+RAID_RATE = 0.02            # raids: per year x violence x (0.5 + crowding) ...
+BUD_PRESS = 0.45            # budding: crowding threshold, - 0.35 x expansion
+AGRI_INV = 0.0009           # farming invented per year x innovation x scale
+METAL_INV = 0.0005          # metallurgy per year x scale x innovation^2
+CLIM_AMP = 1.0             # climate: scales the precipitation anomaly (PREC_SD)

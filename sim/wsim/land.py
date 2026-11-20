@@ -294,7 +294,8 @@ class LandMixin:
                          f"{ev['where']} (~{ev['years']:.0f} yrs)",
                          n=ev['years'])
         self.moist = m
-        pa = np.clip((PREC_SD[0] + PREC_SD[1] * W.dryness) * m, -0.7, 0.7)
+        pa = np.clip(CLIM_AMP * (PREC_SD[0] + PREC_SD[1] * W.dryness) * m,
+                     -0.7, 0.7)
         el = 1 + W.dryness
         rain = np.clip(1 + el * pa, 0.1, 1.6)
         forage = np.clip(1 + 0.8 * el * pa, 0.2, 1.5)

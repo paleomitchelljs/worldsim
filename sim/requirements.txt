@@ -13,3 +13,4 @@ scikit-image==0.26.0
 scipy==1.18.1
 shapely==2.2.0
 xarray==2026.9.0
+SALib==1.6.0

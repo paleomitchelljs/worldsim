@@ -102,8 +102,8 @@ class TechnologyMixin:
         ag, mt, sl, ad = (self.agri[A], self.metal[A], self.sail[A],
                           self.admin[A])
         nc = ncity[A]
-        ag2 = ag + DT * (0.0009 * inn * g * (1 - ag) + diffuse(ag, 0.004))
-        mt2 = mt + DT * (0.0005 * F * inn ** 2 * (ag > 0.5) *
+        ag2 = ag + DT * (AGRI_INV * inn * g * (1 - ag) + diffuse(ag, 0.004))
+        mt2 = mt + DT * (METAL_INV * F * inn ** 2 * (ag > 0.5) *
                          (1 + np.log1p(nc) / 3) + diffuse(mt, 0.0008))
         # fishing grows with innovation where there is water to fish
         fs = self.fishing[A]
