@@ -125,6 +125,20 @@ byte-identical to the committed copies, with 66,895 land cells.
       the equator and a displaced ITCZ the meridional wind runs toward
       the summer pole, bringing equatorial moisture onto the summer
       continent.
+    - **Monsoon westerly** (U, 2026-11-20). Air crossing the equator
+      toward a displaced ITCZ is turned east by the Coriolis force. So
+      between the equator and the ITCZ the wind is westerly, fading over
+      5° below the ITCZ (MONSOON_W 1). Each month a second march walks
+      the summer-side trade rows eastward. Its rain replaces the
+      easterly march's rain by that weight. How far the ITCZ has moved
+      already holds the land fraction and the season.
+    - **What it changes.** Within the westerly zone, July rain moves
+      −20% to +15% (5th-95th percentile), toward western coasts. Over
+      the year, land rain moves at most ±9%, and no biome area changes
+      by 0.1M km². Most monsoon rain in this model arrives with the
+      meridional flow from the equatorial ocean, which the westerly
+      does not change. An isolated march, with no meridional exchange,
+      is far more sensitive to the wind's direction (−73% to +324%).
     - **Band edges and the polar front** move 5° poleward in the summer
       hemisphere and 5° equatorward in the winter one.
     - **ITCZ width.** The ITCZ's half-width is 5°, its width at one
@@ -165,8 +179,23 @@ byte-identical to the committed copies, with 66,895 land cells.
     - A version that also capped humidity by the moisture the wind
       carries made the raining equator dry (RH 0.56), because the march
       counts rained-out air as gone; it was dropped.
-  - AET by Budyko's curve in Fu's form, ω = 2.6.
+  - AET by Budyko's curve in Fu's form, ω = 2.6, times the rain-timing
+    factor below.
+  - **Rain timing** (U, 2026-11-20: "use rain seasonality").
+    - A monthly soil-water bucket (S_MAX 0.15 m of plant-available
+      water, a typical 100-200 mm) takes each month's rain and loses up
+      to that month's PET. Water above S_MAX runs off.
+    - Its evaporation with the real monthly rain, over its evaporation
+      with the same total spread evenly, is the timing factor. Fu's
+      curve stands for rain spread through the year.
+    - Rain in a short wet season or in the cold season runs off unused,
+      so the factor is below 1. Rain in phase with the warm season is a
+      little above 1.
+    - Monthly rain comes from the circulation's months (the sun's side
+      s, with southern cells taking −s), rescaled to the annual total.
   - Runoff = P − AET; aridity = P / PET (the UNEP index).
+  - `syn_aridity_season` is aridity × the timing factor. The biome rule
+    reads it, and so do the sim's yields under `climate_fields`.
   - `syn_gdd` is degree-days above 5 °C.
 
 ### Parameters and biomes (refit on physical grounds, U 2026-11-19)
@@ -215,17 +244,26 @@ Biome areas (`../gis/qa/climate_fit.json`):
 
 | Biome | Drawn (M km²) | `world_v2` (M km²) | Share of drawn area the climate agrees with |
 |---|---|---|---|
-| Jungle | 26.3 | 24.9 | 0.30 |
+| Jungle | 26.3 | 23.8 | 0.29 |
 | Desert | 12.3 | 5.5 | 0.08 |
-| Grassland | 29.0 | 29.3 | 0.30 |
-| Temperate forest | 38.1 | 30.8 | 0.22 |
+| Grassland | 29.0 | 33.9 | 0.37 |
+| Temperate forest | 38.1 | 27.3 | 0.20 |
 | Tundra | 16.4 | 31.5 | 0.99 |
+
+With rain timing (2026-11-20), the pieces change:
+
+- jungle at the rain belt's seasonal margins becomes savanna
+  (grassland), −1.1M km²;
+- winter-rain temperate forest at 30–40° becomes grassland, −3.5M km²;
+- grassland gains 4.6M km²;
+- desert and tundra do not change.
 
 The climate's pattern is zonal:
 
 - a wet equatorial belt;
 - monsoon lobes: the summer ITCZ wets the continents to about 20° of
-  latitude, savanna and grassland beyond;
+  latitude, savanna and grassland beyond, and savanna wherever the rain
+  comes in one season;
 - desert only where the monsoon does not reach: the supercontinent's
   interior at 25–35°S, and the northern continents' centres at 20–30°N;
 - temperate forest at 35–50°;
@@ -233,13 +271,15 @@ The climate's pattern is zonal:
 
 Median values on land by latitude band (m/yr; RH the annual mean):
 
-| \|lat\| | P | PET | RH | Sunshine | P/PET |
-|---|---|---|---|---|---|
-| 0–10 | 1.96 | 1.25 | 0.78 | 0.42 | 1.56 |
-| 10–20 | 1.01 | 1.34 | 0.70 | 0.53 | 0.77 |
-| 20–30 | 0.31 | 1.29 | 0.57 | 0.72 | 0.24 |
-| 30–40 | 0.59 | 0.75 | 0.60 | 0.63 | 0.74 |
-| 40–50 | 0.83 | 0.44 | 0.62 | 0.57 | 1.82 |
+| \|lat\| | P | PET | RH | Sunshine | P/PET | with timing | timing factor | warm-half rain share |
+|---|---|---|---|---|---|---|---|---|
+| 0–10 | 1.95 | 1.25 | 0.78 | 0.42 | 1.55 | 1.35 | 0.88 | 0.79 |
+| 10–20 | 1.01 | 1.34 | 0.70 | 0.53 | 0.77 | 0.64 | 0.86 | 0.87 |
+| 20–30 | 0.31 | 1.29 | 0.57 | 0.72 | 0.24 | 0.24 | 1.00 | 0.44 |
+| 30–40 | 0.59 | 0.75 | 0.60 | 0.63 | 0.74 | 0.60 | 0.78 | 0.30 |
+| 40–50 | 0.83 | 0.44 | 0.62 | 0.57 | 1.82 | 1.79 | 1.00 | 0.45 |
+
+(RH and sunshine as before the timing change, which does not touch them.)
 
 Desert area, by version:
 
@@ -248,7 +288,8 @@ Desert area, by version:
 | degree-day PET, Z_BASE 0.25 | 1.2 | |
 | Penman–Monteith, Z_BASE 0.25 | 5.0 | 0.31 |
 | Penman–Monteith, Z_BASE 0.1 | 22.8 | 0.18 |
-| + monthly circulation, currents, cross-edge pass (current) | 5.5 | 0.31 |
+| + monthly circulation, currents, cross-edge pass | 5.5 | 0.31 |
+| + monsoon westerly, rain timing (current) | 5.5 | 0.31 |
 
 The monsoon brings the subtropics' rain back. Switching the pieces off
 one at a time (Z_BASE 0.1, ITCZ half-width still 10°):
@@ -277,6 +318,8 @@ poleward of that and on the western sides of continents.
 | `syn_pet_m_yr` | m/yr | potential evaporation (Penman–Monteith) |
 | `syn_aet_m_yr` | m/yr | actual evaporation |
 | `syn_aridity` | ratio | P / PET |
+| `syn_aridity_season` | ratio | P / PET × the rain-timing factor; read by the biome rule and the sim |
+| `syn_warm_rain_share` | share | the year's rain falling in the warm half-year |
 | `syn_runoff_climate_m_yr` | m/yr | P − AET (the same as `syn_runoff_m_yr` in this world) |
 | `syn_biome` | class | the biome the rule gives; replaces `fic_biome` in this world |
 
@@ -284,7 +327,11 @@ Sea cells carry the fields too, except `syn_biome`.
 
 QA maps, one per field: `../gis/qa/climate_<field>.png`; relative
 humidity and sunshine are drawn there (`climate_rel_humidity.png`,
-`climate_sunshine.png`) but not written to the world.
+`climate_sunshine.png`) but not written to the world; so are the timing
+factor (`climate_season_factor.png`) and July and January rain
+(`climate_precip_jul.png`, `climate_precip_jan.png`). A clean biome map
+with rivers and lakes is `../gis/qa/biome_map.png`
+(`docs/upgrade/tools/biome_map.py`).
 
 ### Rivers on `world_v2` (WP8 stage B)
 
@@ -293,19 +340,23 @@ rain on lakes is the climate's precipitation. Discharge, rivers, basins,
 lakes, alluvial fill, wetness, soils and bedrock are then derived as
 before, with the same thresholds, from `syn_biome`.
 
-The result (physical refit, lake sizing, Penman–Monteith PET):
+The result (physical refit, lake sizing, Penman–Monteith PET, monthly
+circulation, rain timing):
 
-- **River cells:** 6,243 → 4,278 (10.7% → 8.7% of land).
-- **The largest river** reaches the sea at 80°W, 14°N
-  (111,000 m³/s). The old world's largest (152,000 m³/s, mouth at 10°E,
-  72°S) is gone: that land is tundra now.
+- **River cells:** 6,243 → 4,447 (10.7% → 9.0% of land).
+- **The largest river** reaches the sea at 129°E, 58°S (126,000 m³/s).
+  It drains 12.3M km² of the southern supercontinent's temperate belt,
+  from 30°S to 60°S. Next is the river at 80°W, 14°N (125,000 m³/s),
+  which was the largest before the rain timing. The old world's largest
+  (152,000 m³/s, mouth at 10°E, 72°S) is gone: that land is tundra now.
 - **Lakes and closed basins.**
   - A closed basin's lake covers only as much area as evaporation less
     rain on it can balance the basin's inflow. It fills from the lowest
     cells, and the rest of the basin floor is alluvial fill (dry
     sediment) (`derive_world.drainage`, C; U 2026-11-19).
-  - Lake cells: 1,000, 1.5% of land. Before sizing it was 2,249; on the
-    old world it is 508. Endorheic cells: 7,105.
+  - Lake cells: 931, 1.4% of land (1,000 before the rain timing).
+    Before sizing it was 2,249; on the old world it is 508. Endorheic
+    cells: 7,090.
   - `world.gpkg` on disk predates the lake sizing. A rebuild of it would
     now size its closed-basin lakes too.
 
@@ -314,12 +365,11 @@ Earlier versions, for the record:
 
 ### Known limits
 
-- **Monsoon winds.** The monsoon moves the ITCZ and turns the
-  meridional wind. The zonal wind still blows the same way all year in
-  each row: a row is walked one way per month. So there is no westerly
-  summer monsoon; the moisture arrives through the meridional part.
-- **Seasonal rain timing.** Rain's season is not used: biomes and runoff
-  use annual totals.
+- **Monsoon winds.** The westerly is a second march blended in by
+  weight, not a wind field: within a month each row still walks one
+  way in each march.
+- **Rain timing** has no lag: the months' rain follows the sun's
+  position exactly, and spring and autumn are alike.
 - **Currents** are schematic gyres from basin geometry, not an ocean
   model. There is no circumpolar current beyond what open rows imply,
   and no sea ice.

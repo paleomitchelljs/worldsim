@@ -695,7 +695,7 @@ def derive(gpkg, previews_dir, climate=False):
     })
     if clim is not None:
         for k in ("temp_c", "temp_range_c", "gdd", "precip_m_yr", "pet_m_yr",
-                  "aet_m_yr", "aridity"):
+                  "aet_m_yr", "aridity", "aridity_season", "warm_rain_share"):
             new[f"syn_{k}"] = clim[k][r, c]
         new["syn_runoff_climate_m_yr"] = clim["runoff_m_yr"][r, c]
         new["syn_biome"] = np.where(land[r, c], biome[r, c], None)
@@ -831,8 +831,10 @@ def derive(gpkg, previews_dir, climate=False):
              "rained out by band, uplift and distance"),
             ("syn_pet_m_yr", "syn", src, "m/yr", "potential evaporation, FAO-56 Penman-Monteith by month: insolation, "
              "sunshine from cloud, dew-point humidity"),
-            ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form)"),
+            ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form) x the rain-timing factor of a monthly bucket"),
             ("syn_aridity", "syn", src, "ratio", "precipitation / potential evaporation (UNEP index)"),
+            ("syn_aridity_season", "syn", src, "ratio", "aridity x the rain's timing: a monthly soil-water bucket's evaporation with the real timing over that with rain spread evenly (biomes and yields use it)"),
+            ("syn_warm_rain_share", "syn", src, "share", "share of the year's rain falling in the warm half-year"),
             ("syn_runoff_climate_m_yr", "syn", src, "m/yr", "precipitation - actual evaporation"),
             ("syn_biome", "syn", src, "class",
              "biome the climate fields imply (climate_world.BIOME_RULE); replaces fic_biome "

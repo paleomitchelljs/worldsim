@@ -22,7 +22,9 @@ from Earth's map (all forms and numbers C):
   precipitation   prevailing winds by circulation band (trade easterlies,
                   westerlies, polar easterlies), month by month: the
                   ITCZ follows the sun, further over longitudes with much
-                  land (the monsoon), the trades blow toward it, and the
+                  land (the monsoon), the trades blow toward it, between
+                  the equator and a displaced ITCZ the wind turns
+                  westerly (the monsoon westerly), and the
                   storm tracks and band edges shift with it; air takes up
                   water over
                   the sea toward a saturation level that rises 7%/degC
@@ -37,8 +39,14 @@ from Earth's map (all forms and numbers C):
                   raining air), and humidity from the dew point (FAO-56's
                   rule: the night minimum, a few degrees lower in dry
                   climates; the day-night range widens under clear sky);
-                  actual evaporation by Budyko's curve (Fu's form);
-                  runoff = P - AET; aridity = P / PET (the UNEP index)
+                  actual evaporation by Budyko's curve (Fu's form), times
+                  the rain's timing: a monthly soil-water bucket's
+                  evaporation with the real monthly rain over that with
+                  the same rain spread evenly (rain in a short wet season
+                  or in winter runs off unused); runoff = P - AET;
+                  aridity = P / PET (the UNEP index), and the same times
+                  the timing factor, which the biome rule and the sim's
+                  yields read
 
 The parameters take physically motivated values (PARAMS), not values
 fitted to the drawn biome map: a first version was fitted to it, and the
@@ -122,6 +130,14 @@ PARAMS = dict(
     U2=2.0,            # m/s wind at 2 m (FAO-56 default)
     ALBEDO=0.23,       # FAO-56 reference surface
     FU_W=2.6,          # Fu's Budyko parameter
+    # monsoon wind (C, 2026-11-20, U: "monsoons having their own wind"):
+    # between the equator and a displaced summer ITCZ the low-level flow
+    # turns westerly (the south-west monsoon); weight of the westerly
+    # there (1: wholly westerly; 0: off)
+    MONSOON_W=1.0,
+    # rain seasonality (C, 2026-11-20, U): plant-available soil water a
+    # monthly bucket carries between months (typical 100-200 mm)
+    S_MAX=0.15,        # m
 )
 P_GLOBAL = 1.0        # m/yr, mean precipitation over the whole globe
 
@@ -162,14 +178,15 @@ def penman_pet(T, A, P, LAT, p):
     night minimum (month mean - half the day-night range, which widens
     with sunshine), less up to DEW_ARID in clear air (FAO-56 Annex 6).
     Months below 0 degC and negative values add nothing.
-    Returns (PET m/yr, annual-mean relative humidity, sunshine)."""
+    Returns (PET m/yr, annual-mean relative humidity, sunshine, PET of
+    each month in m, (12, NY, NX), month k at local phase 2 pi k / 12)."""
     phi = np.radians(np.abs(LAT))
     clear = 1 - np.exp(-np.clip(P, 0, None) / p["P_CLOUD"])
     sun = p["S_CLEAR"] - (p["S_CLEAR"] - p["S_CLOUD"]) * clear
     c = (sun - p["S_CLOUD"]) / (p["S_CLEAR"] - p["S_CLOUD"])   # 0 cloudy .. 1 clear
     dtr = p["DTR_CLOUD"] + (p["DTR_CLEAR"] - p["DTR_CLOUD"]) * c
     u2, gam = p["U2"], 0.0665            # psychrometric constant at ~0.5 km
-    tot, rh_sum = np.zeros(T.shape), np.zeros(T.shape)
+    tot, rh_sum, mon = np.zeros(T.shape), np.zeros(T.shape), []
     for th in np.linspace(0, 2 * np.pi, 12, endpoint=False):
         dec = np.radians(23.44) * np.sin(th)
         ws = np.arccos(np.clip(-np.tan(phi) * np.tan(dec), -1, 1))
@@ -187,8 +204,25 @@ def penman_pet(T, A, P, LAT, p):
         Rn = (1 - p["ALBEDO"]) * Rs - Rnl
         et = (0.408 * D * Rn + gam * 900 / (Tm + 273) * u2 * (es - ea)) / \
             (D + gam * (1 + 0.34 * u2))                        # mm/day
-        tot += np.where(Tm > 0, np.clip(et, 0, None), 0.0) * 365.25 / 12
-    return tot / 1000.0, rh_sum / 12, sun
+        mon.append(np.where(Tm > 0, np.clip(et, 0, None), 0.0) * 365.25 / 12 / 1000.0)
+        tot += mon[-1]
+    return tot, rh_sum / 12, sun, np.array(mon)
+
+
+def bucket(Pmon, PETmon, smax):
+    """Actual evaporation (m/yr) from a monthly soil-water bucket: each
+    month's rain fills the store, evaporation takes up to that month's
+    PET from it, and water beyond smax runs off. Three laps from a full
+    store, the last one counted."""
+    S = np.full(Pmon.shape[1:], smax)
+    for lap in range(3):
+        aet = np.zeros(Pmon.shape[1:])
+        for k in range(12):
+            S = S + Pmon[k]
+            e = np.minimum(PETmon[k], S)
+            S = np.minimum(S - e, smax)
+            aet += e
+    return aet
 
 
 def march(q0_sea, land, dx, rate, west, south, mer, prev=None):
@@ -337,7 +371,7 @@ def fields(inp, p=PARAMS):
     lf_n = ndimage.gaussian_filter1d(land[(lat1 > 0) & (lat1 < 30)].mean(0), sig, mode="wrap")
     lf_s = ndimage.gaussian_filter1d(land[(lat1 < 0) & (lat1 > -30)].mean(0), sig, mode="wrap")
 
-    P, wsum = np.zeros((NY, NX)), 0.0
+    P, wsum, Pm = np.zeros((NY, NX)), 0.0, {}
     for sun, wt in SEASONS:
         lf = lf_n if sun > 0 else lf_s
         itcz = sun * (p["ITCZ_SEA"] + (p["ITCZ_LAND"] - p["ITCZ_SEA"]) * lf)   # (NX,)
@@ -357,11 +391,27 @@ def fields(inp, p=PARAMS):
             np.exp(-p["K_LEE"] * np.clip(-slope, 0, None))
         r_land = np.clip(z * oro * dx[:, None] / p["L_RAIN"], 0, 0.9)
         rate = (r_sea, r_land, keep)
-        q, dup = march(q_sat, land, dx, rate, west, south, mer)
-        q, dup = march(q_sat, land, dx, rate, west, south, mer, prev=q)
         # rain: the share of the air's potential falling here, as a depth
         # per year over the cell (rain-out per km x L_RAIN keeps it a rate)
-        P += wt * np.where(land, q * r_land * p["L_RAIN"] / dx[:, None], q * z)
+        rain = lambda q: np.where(land, q * r_land * p["L_RAIN"] / dx[:, None], q * z)  # noqa: E731
+        q, dup = march(q_sat, land, dx, rate, west, south, mer)
+        q, dup = march(q_sat, land, dx, rate, west, south, mer, prev=q)
+        Pmon = rain(q)
+        if sun != 0 and p["MONSOON_W"] > 0:
+            # the monsoon westerly: summer-side trade rows walked eastward.
+            # Air crossing the equator toward a displaced ITCZ is turned
+            # east by the Coriolis force, so between the equator and the
+            # ITCZ the wind is westerly, fading over W_ITCZ below the ITCZ
+            # (how far the ITCZ has moved already holds land and season)
+            summer = np.sign(lat1) == np.sign(sun)
+            west_m = west & ~(trade[:, 0] & summer)
+            qm, _ = march(q_sat, land, dx, rate, west_m, south, mer)
+            qm, _ = march(q_sat, land, dx, rate, west_m, south, mer, prev=qm)
+            ramp = np.clip((np.abs(itcz)[None, :] - phi) / p["W_ITCZ"], 0, 1) * summer[:, None]
+            m = p["MONSOON_W"] * ramp
+            Pmon = (1 - m) * Pmon + m * rain(qm)
+        Pm[sun] = ndimage.gaussian_filter(Pmon, 1.0, mode=("nearest", "wrap"))
+        P += wt * Pmon
         wsum += wt
         if sun == 0:
             dup0, west0 = dup, west
@@ -378,21 +428,41 @@ def fields(inp, p=PARAMS):
         p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
 
     gdd = degree_days(T, A, GDD_BASE)
-    pet, rh, sun = penman_pet(T, A, P, LAT, p)
+    pet, rh, sun, pet_mon = penman_pet(T, A, P, LAT, p)
     ratio = pet / np.maximum(P, 1e-6)
     w = p["FU_W"]
-    aet = P * (1 + ratio - (1 + ratio ** w) ** (1 / w))
+    aet_fu = P * (1 + ratio - (1 + ratio ** w) ** (1 / w))
+    # rain seasonality: Fu's curve stands for rain spread through the
+    # year; a monthly bucket with the real timing, against one with the
+    # same total spread evenly, gives the factor timing makes (rain in
+    # the warm season is used, rain in the cold season runs off)
+    sgn = np.where(LAT >= 0, 1, -1)
+    th = 2 * np.pi * np.arange(12) / 12
+    ph = np.round(np.sin(th), 3)
+    key = {round(k, 3): k for k in Pm}
+    Pmon = np.array([np.where(sgn > 0, Pm[key[s]], Pm[key[-s] if -s != 0 else key[0.0]])
+                     for s in ph]) / 12
+    Pmon = Pmon * (P / np.maximum(Pmon.sum(0), 1e-9))[None]   # same annual total as P
+    a_real = bucket(Pmon, pet_mon, p["S_MAX"])
+    a_even = bucket(np.broadcast_to(P / 12, Pmon.shape), pet_mon, p["S_MAX"])
+    season = np.where(a_even > 1e-3, a_real / np.maximum(a_even, 1e-3), 1.0)
+    aet = np.minimum(aet_fu * season, np.minimum(P, pet))
     runoff = np.clip(P - aet, 0, None)
     arid = P / np.maximum(pet, 1e-3)
+    # rain share of the warm half-year (local months with sin > 0)
+    warm = Pmon[ph > 0].sum(0) + 0.5 * Pmon[ph == 0].sum(0)
     return dict(temp_c=T, temp_range_c=2 * A, gdd=gdd, precip_m_yr=P,
                 pet_m_yr=pet, aet_m_yr=aet, runoff_m_yr=runoff, aridity=arid,
+                aridity_season=arid * season, season_factor=season,
+                warm_rain_share=warm / np.maximum(P, 1e-9),
+                precip_jul=Pm[1.0], precip_jan=Pm[-1.0],
                 rel_humidity=rh, sunshine=sun, sst_anomaly_c=T_anom,
                 continentality=cont)
 
 
 def biome_rule(f, rule=BIOME_RULE):
     """Biome index (BIOMES) a cell's climate implies."""
-    T, A, ai = f["temp_c"], f["temp_range_c"] / 2, f["aridity"]
+    T, A, ai = f["temp_c"], f["temp_range_c"] / 2, f["aridity_season"]
     out = np.full(T.shape, BIOMES.index("Temperate forest"))
     out[T - A >= rule["JUNGLE_COLD"]] = BIOMES.index("Jungle")
     out[ai < rule["GRASS_AI"]] = BIOMES.index("Grassland")
@@ -445,9 +515,15 @@ def qa_figures(f, drawn, pred, land, folder=QA_DIR):
             ("aridity", "aridity index P/PET", "BrBG", (0, 2)),
             ("rel_humidity", "relative humidity, annual mean", "BuGn", (0, 1)),
             ("sunshine", "sunshine fraction", "YlOrRd", (0, 1)),
-            ("sst_anomaly_c", "ocean-current temperature anomaly, sea and carried inland (degC)", "RdBu_r", (-4, 4))]
+            ("sst_anomaly_c", "ocean-current temperature anomaly, sea and carried inland (degC)", "RdBu_r", (-4, 4)),
+            ("aridity_season", "aridity with the rain's timing (biomes use it)", "BrBG", (0, 2)),
+            ("season_factor", "water use, real rain timing / even rain (monthly bucket)", "PiYG", (0.5, 1.5)),
+            ("warm_rain_share", "share of rain in the warm half-year", "RdBu", (0, 1)),
+            ("precip_jul", "precipitation rate in July, northern summer (m/yr)", "Blues", (0, 4)),
+            ("precip_jan", "precipitation rate in January, southern summer (m/yr)", "Blues", (0, 4))]
     for k, title, cmap, lim in spec:
-        v = f[k] if k == "sst_anomaly_c" else np.where(land, f[k], np.nan)
+        v = f[k] if k in ("sst_anomaly_c", "precip_jul", "precip_jan") \
+            else np.where(land, f[k], np.nan)
         fig, ax = plt.subplots(figsize=(12, 6))
         lo, hi = lim or (np.nanpercentile(v, 1), np.nanpercentile(v, 99))
         im = ax.imshow(v, extent=ext, cmap=cmap, vmin=lo, vmax=hi,

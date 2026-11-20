@@ -751,10 +751,16 @@ would tell whether this is real before anything is built on it.
   - Open: whether the monsoon's reach over land (ITCZ_LAND 18°) is right
     for these continents. It is Earth's value for an all-land column;
     the drawn map has far more desert. Not changed.
+  - The monsoon westerly and rain timing came the same day (U). Rain
+    timing turns seasonally wet jungle and winter-rain forest into
+    grassland (+4.6M km²). The westerly moves July rain −20% to +15%
+    within its zone but changes no biome area: monsoon rain here comes
+    mostly with the meridional flow. Open: whether that meridional
+    supply (V_MER 0.3) is too strong for the zonal wind to matter.
 - **Closed-basin lakes are sized** (U, 2026-11-19): a closed basin's lake
   covers only what its net evaporation needs to balance the inflow,
   lowest cells first; the rest of the basin is alluvial fill. Lake cells
-  on `world_v2`: 959 (2,249 before). `world.gpkg` on disk predates this.
+  on `world_v2`: 931 (2,249 before). `world.gpkg` on disk predates this.
 - **Ecotones** still use distance to the nearest other biome. Now that the
   biomes come from the climate, the aridity field could say directly
   which cells sit near a threshold. Not changed.

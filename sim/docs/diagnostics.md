@@ -112,6 +112,7 @@ computations, and the review measures of `docs/upgrade/BASELINE.md`:
 | Function | What |
 |---|---|
 | `population` | world population at each 1000 years, urban share, cities below URBAN_MIN, herding peak, minority share of heads |
+| `timeline` | first city; years of 1M, 10M, 100M people; first bronze, iron, steel (from WP9 B; as `wp6_growth.py`) |
 | `growth` | %/yr over each millennium |
 | `volatility` | sd of log world population around its 200-year mean after 3000; largest 100-year fall; worst 300-year fall and what cities did over it |
 | `landmass_volatility` | the first two per landmass group (`landmasses.py`), from `history.npz` (25-year snapshots from WP3 stage A; 100-year before, so coarser) |

@@ -71,7 +71,9 @@ CELL_COLS = ["row", "col", "lon", "lat", "area_km2", "fic_land",
 CELL_TEXT = {"fic_biome", "syn_surface_lith", "syn_biome"}
 # read when the world file has them (world_v2.gpkg, WP8); syn_biome, the
 # climate's biome, then replaces fic_biome (D10, U 2026-11-19)
-CELL_OPT = ["syn_aridity", "syn_gdd", "syn_biome"]
+# syn_aridity_season (the aridity with the rain's timing, 2026-11-20) is
+# read in place of syn_aridity when present
+CELL_OPT = ["syn_aridity", "syn_aridity_season", "syn_gdd", "syn_biome"]
 
 
 def load_cells(gpkg):
@@ -253,7 +255,9 @@ class World:
         self.steppe_cut = steppe
         self.dryness = np.clip(1 - self.runoff / 0.5, 0, 1)
         # climate fields (world_v2.gpkg), used under `climate_fields`
-        self.aridity = num("syn_aridity")[L] if "syn_aridity" in d else None
+        ai = next((k for k in ("syn_aridity_season", "syn_aridity")
+                   if k in d), None)
+        self.aridity = num(ai)[L] if ai else None
         self.gdd = num("syn_gdd")[L] if "syn_gdd" in d else None
         self.farm_clim = self.herd_clim = np.ones(N)
         self.herd_density()

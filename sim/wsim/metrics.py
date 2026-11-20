@@ -109,6 +109,26 @@ def _wobble(yr, lp, step):
     return (float(res.std()) if len(res) else np.nan, float(np.min(d)))
 
 
+def timeline(run):
+    """First city; years the world reaches 1M, 10M and 100M people; first
+    bronze, iron and steel anywhere (as docs/upgrade/tools/wp6_growth.py;
+    in metrics.json from WP9 stage B, 2026-11-20). NaN when never."""
+    c = run.cities
+    yr, pop = run.world_pop
+    m = {"first city (yr)": float(c.founded.min()) if len(c) else np.nan}
+    for x, nm in ((1e6, "1M"), (1e7, "10M"), (1e8, "100M")):
+        i = np.nonzero(pop >= x)[0]
+        m[f"year of {nm}"] = float(yr[i[0]]) if len(i) else np.nan
+    ev = run.events
+    t = ev[ev["kind"] == "tech"]
+    for metal, pat in (("bronze", "cast bronze"), ("iron", "work iron"),
+                       ("steel", "steel")):
+        k = t[t["text"].str.contains(pat) &
+              ~t["text"].str.contains("out of use|no longer")]
+        m[f"first {metal} (yr)"] = float(k.year.min()) if len(k) else np.nan
+    return m
+
+
 def volatility(run):
     """World population after year 3000: sd of log population around its
     200-year mean, the largest 100-year fall (log), and the largest fall
@@ -762,7 +782,7 @@ def lineage_cities(run):
     return m
 
 
-SINGLE = [population, growth, volatility, landmass_volatility,
+SINGLE = [population, timeline, growth, volatility, landmass_volatility,
           city_hierarchy, city_lives, states, lifespans, contiguity, wars,
           sieges, war_time, food, food_ledger, deaths, growth_account,
           settlement, turnover,
