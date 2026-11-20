@@ -2044,7 +2044,7 @@ band-edge seams, ocean currents.
 ### WP9 stage A: patterns frozen (2026-11-20, 90e91c0)
 
 **Done.**
-- `docs/patterns.md` lists 31 patterns. Each has its definition (a
+- `docs/patterns.md` lists 30 patterns. Each has its definition (a
   function in `wsim/metrics.py`), reference and source, how rough it is,
   scale, status and the `wp8h` range.
 - **Spent** (a value or form was chosen on it):
