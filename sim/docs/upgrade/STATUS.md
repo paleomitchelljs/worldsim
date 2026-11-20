@@ -52,7 +52,7 @@ what an entry holds.
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | running on `wp8j` code (U: SALib, launch, summaries only) | 2026-11-20 | 6a63c34 |
-| 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | HASH |
+| 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
 
 ## Entries
 
@@ -2197,7 +2197,7 @@ The screen restarted on the `wp8j` code by `runs/wp8j_then_screen.sh`,
 after the baseline. The design is the same 249 points. Seed noise comes
 from `wp8j` plus `base_seed105` (`wp9_analyze.py` defaults to `wp8j`).
 
-### WP9 stage C: Earth test scoped (2026-11-20, HASH)
+### WP9 stage C: Earth test scoped (2026-11-20, 785fb84)
 
 **Done.** `docs/earth-test-plan.md` covers:
 - **Inputs.** Datasets with licences to confirm and rough sizes, and a
