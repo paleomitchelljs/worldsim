@@ -41,8 +41,9 @@ what an entry holds.
 | 7 | C competition and settlement | done (`shared_cells` on by default) | 2026-11-18 | a7dc06b |
 | 7 | D displacement | done (`displacement` on by default; cascades not measured) | 2026-11-18 | a7dc06b |
 | 8 | A climate fields | done (D10, U: report first; agreement 0.56, findings for U) | 2026-11-19 | e293026 |
-| 8 | B yields and runoff | done (`climate_fields` on, inert on `world.gpkg`; v2 not default, needs U) | 2026-11-19 | ad5305c |
-| 8 | C floodplain area | done (`floodplain` off by default, needs U) | 2026-11-19 | ad5305c |
+| 8 | B yields and runoff | done (`climate_fields` on) | 2026-11-19 | ad5305c |
+| 8 | C floodplain area | done (`floodplain` on by default, U) | 2026-11-19 | ad5305c |
+| 8 | D10, defaults, baseline (U) | done (`world_v2` default, climate biomes; baseline `wp8d_`) | 2026-11-19 | see entry |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1865,3 +1866,45 @@ added. All forms and numbers are C.
 - Lakes in closed basins are not sized by their water balance.
 - Plotting tools other than the run loader still build the old world.
 - One seed only.
+
+### WP8: D10, new defaults and baseline (2026-11-19)
+
+**Decisions (U, 2026-11-19).**
+- The drawn southern jungle belt is "probably an old error".
+- The climate's biome replaces the drawn one wherever they disagree (U
+  chose "everywhere" over the frozen belt only, or south of 40°).
+- `world_v2` is the default world, and `floodplain` is a default switch.
+
+**Done.**
+- `world_v2` has `syn_biome`, the climate rule's biome. The build
+  (runoff, soils) and the simulator read it in place of `fic_biome`.
+  `fic_biome` and `world.gpkg` are untouched.
+- Runoff and lake rain are the climate's own; the within-biome
+  normalisation of runoff is gone. The farming and herding terms keep
+  theirs (C: the biome factors stay the base).
+- `params.GPKG` is `world_v2.gpkg`, and `GPKG_V1` / `--world v1` the old
+  world. `floodplain` moved to FEATURES; OPTIONAL is empty again.
+- Runs without `world` in `run.json` load `world.gpkg`.
+- Docs: world-data, model-description, rules/population,
+  switch-inventory, running, open-questions, README (D10), BASELINE.
+
+**Runs.** New baseline `wp8d_seed101`-`104` and `106`, 8,000 years:
+
+- population 35-50M;
+- 82-89% of people within 30° of the equator;
+- rivers hold 35-37% of people on 5.4% of land;
+- Dwarves 2-18%, largest people (Elves) 35-47%.
+
+The full table is in BASELINE.md, and run-log.md has the entry.
+
+**For the next session / U.**
+- The climate's parameters were fitted against the drawn map, errors
+  included. With the map no longer the truth, the fit's target is open.
+  The fit wanted no equatorial rain belt and dry interiors, and desert
+  now covers 30% of land. A refit against a physical prior (an ITCZ,
+  Earth-like rain-out lengths) instead of the drawn map would be the
+  next step, if U wants one.
+- `sites_v2.json` (resource sites) was placed on the old world's biomes
+  and not regenerated (U's world file; ask first).
+- Lakes in closed basins are not sized by their water balance: 2,249
+  lake cells.

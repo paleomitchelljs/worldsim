@@ -68,9 +68,10 @@ CELL_COLS = ["row", "col", "lon", "lat", "area_km2", "fic_land",
              "syn_alluvial_fill", "syn_runoff_m_yr", "fid",
              "syn_flow_to", "syn_basin_id", "syn_wetness",
              "fic_dist_coast_km"]
-CELL_TEXT = {"fic_biome", "syn_surface_lith"}
-# read when the world file has them (world_v2.gpkg, WP8)
-CELL_OPT = ["syn_aridity", "syn_gdd"]
+CELL_TEXT = {"fic_biome", "syn_surface_lith", "syn_biome"}
+# read when the world file has them (world_v2.gpkg, WP8); syn_biome, the
+# climate's biome, then replaces fic_biome (D10, U 2026-11-19)
+CELL_OPT = ["syn_aridity", "syn_gdd", "syn_biome"]
 
 
 def load_cells(gpkg):
@@ -159,7 +160,8 @@ class World:
         self.d_sn = num("syn_dist_tin_km", 9e9)[L]
         self.d_fe = num("syn_dist_iron_km", 9e9)[L]
         soil = num("fic_soil_bar_value", np.nan)[L]
-        biome = np.array(d["fic_biome"], object)[L]
+        biome = np.array(d["syn_biome" if "syn_biome" in d else "fic_biome"],
+                         object)[L]
         lith = np.array(d["syn_surface_lith"], object)[L]
         self.biome = np.array([BIOMES.index(b) if b in BIOMES else 4
                                for b in biome])

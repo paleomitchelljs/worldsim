@@ -726,7 +726,10 @@ would tell whether this is real before anything is built on it.
 
 ## WP8: climate fields and the drawn biome map (2026-11-19)
 
-- **D10 is open (U: "report first").** The climate the build derives
+- **D10, decided (U, 2026-11-19).** The climate's biome replaces the
+  drawn one everywhere in `world_v2` (`syn_biome`), which is the default
+  world. The southern belt was "probably an old error". The report that
+  led to it, for the record: the climate the build derives
   reproduces only 56% of the drawn biome map on average over biomes; by
   area, 47% of land agrees. The main conflict is coherent:
   - the southern supercontinent has jungle and temperate forest at
@@ -734,24 +737,21 @@ would tell whether this is real before anything is built on it.
   - 16.6M km² of temperate forest lies at 0–30°N.
 
   [world-data.md](world-data.md) has the table, and the map is
-  `../gis/qa/climate_biome_disagreement.png`. The decision needed: keep
-  the drawn map as truth, as now; or let the climate redraw biomes; or
-  read "jungle" at high southern latitudes as temperate rainforest.
-  - Meanwhile every climate use keeps each drawn biome's totals. Within a
-    biome, the gradient follows the climate.
-  - So drawn jungle at 65°S has the lowest growing-degree days in the
-    jungle class, and under `climate_fields` it loses farming to tropical
-    jungle.
+  `../gis/qa/climate_biome_disagreement.png`.
+  - Still open: the climate parameters were fitted against the drawn map,
+    errors included (no equatorial rain belt, dry interiors). With
+    the map no longer the truth, the fit's target is in question, and
+    desert now covers 30% of land.
 - **Closed basins become lakes wholesale.** On `world_v2` the dry
   interiors drain to closed basins: endorheic cells rise from 1,024 to
-  5,800 and lake cells from 508 to 1,594. `derive_world.drainage` marks a
+  8,443 and lake cells from 508 to 2,249. `derive_world.drainage` marks a
   whole closed depression as lake. A lake sized to balance inflow against
   evaporation would be smaller, but it is not built.
-- **Ecotones** still use distance to the nearest other biome. The aridity
-  field could say directly which cells sit near a threshold. Not changed,
-  because the biome map stays the truth until D10.
+- **Ecotones** still use distance to the nearest other biome. Now that the
+  biomes come from the climate, the aridity field could say directly
+  which cells sit near a threshold. Not changed.
 - **Tools that build a World** (`figures.py`, `timeline.py`,
-  `landmasses.py`, `landmass_report.py`, `make_sites.py`) always load
+  `landmasses.py`, `landmass_report.py`, `make_sites.py`) load the
+  default world, now `world_v2.gpkg`. `sites_v2.json` was made on
   `world.gpkg`. The run loader (`wsim/runio.Run.W`) uses each run's world
-  since WP8, but these tools draw a v2 run's rivers and alluvium from the
-  old world.
+  since WP8, but these tools draw an older run on the new world.

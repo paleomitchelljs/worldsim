@@ -142,7 +142,7 @@ after some year can share the run up to it (WP1 stage E, 2026-11-17, C).
 | `--city-cap` | off | turn on the city cap = city-pop x (CAP0 + CAP1 x admin^2); runs before `nocap_*` used 3 40 |
 | `--dragon-shun` | 0 | dragons do not settle near cells holding this share of their ward size (0 = off) |
 | `--dragon-penalty` | 0.036 | cut in the yearly growth rate per unit of dragon hazard at the worst group size ([structural.md](structural.md#dragons-dragons)); replaced `--dragon-kill` |
-| `--world` | `../gis/world.gpkg` | world file; `v2` is `../gis/world_v2.gpkg`, with climate fields and rivers rerouted on them (WP8, [world-data.md](world-data.md)) |
+| `--world` | `../gis/world_v2.gpkg` | world file; `v1` is `../gis/world.gpkg`, the drawn biomes and runoff by biome (default until WP8; [world-data.md](world-data.md)) |
 | `--off` | none | structural mechanics to switch off, comma-separated, or `all` ([structural.md](structural.md)) |
 | `--on` | none | mechanics to switch on: an optional one (`params.OPTIONAL`, empty since WP4 D), or on a branch a default the saved state predates, such as `trade_debit` ([switch-inventory.md](switch-inventory.md#optional-switches-off-unless-named-in---on)) |
 | `--out` | `seed<N>` | output folder; a bare name goes in the runs root |

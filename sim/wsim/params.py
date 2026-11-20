@@ -5,7 +5,11 @@ import sys
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 
-GPKG = os.path.join(HERE, "..", "gis", "world.gpkg")
+# the default world is world_v2.gpkg, with climate fields (WP8, U
+# 2026-11-19); world.gpkg, the drawn biomes and biome-assumed runoff, is
+# `--world v1`
+GPKG = os.path.join(HERE, "..", "gis", "world_v2.gpkg")
+GPKG_V1 = os.path.join(HERE, "..", "gis", "world.gpkg")
 NY, NX = 360, 720
 R_EARTH = 6371.0
 BIOMES = ["Jungle", "Desert", "Grassland", "Temperate forest", "Tundra"]
@@ -108,11 +112,12 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
-            "displacement", "climate_fields"]
+            "displacement", "climate_fields", "floodplain"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
-# since `trade_debit` became a default (WP4 D, U 2026-11-18).
-OPTIONAL = ["floodplain"]
+# since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
+# since `floodplain` did (WP8, U 2026-11-19).
+OPTIONAL = []
 # Trait costs. Cohesion slows borrowing from outsiders; statecraft's
 # extraction raises unrest when the state is underfed; violence raises the
 # chance of a succession crisis; expansion leaves thin frontier cells more

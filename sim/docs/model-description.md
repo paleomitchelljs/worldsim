@@ -103,9 +103,11 @@ Below, a rule tagged `[x]` applies only when switch x is on; a rule tagged
 
 - 0.5° grid, 360 rows × 720 columns; longitude wraps. Land cells only
   (66,895).
-- Read from `../gis/world.gpkg` (read-only; `--world v2` reads
-  `world_v2.gpkg`, which adds climate fields and rivers rerouted on them,
-  see [world-data.md](world-data.md)): position, area, elevation,
+- Read from `../gis/world_v2.gpkg` (read-only; the default since WP8, U
+  2026-11-19). It is `world.gpkg` plus climate fields, with the biome
+  the climate implies (`syn_biome`) in place of the drawn one and rivers
+  routed on the climate's runoff ([world-data.md](world-data.md)).
+  `--world v1` reads `world.gpkg`. Columns: position, area, elevation,
   biome, soil, relief, discharge, river flag, lake flag, coastal-sea
   productivity, distances to copper, tin and iron, surface lithology,
   alluvial fill, runoff, flow direction, basin id, wetness (0–1),
@@ -160,8 +162,8 @@ Below, a rule tagged `[x]` applies only when switch x is on; a rule tagged
 - Dryness = clip(1 − runoff (m/yr) / 0.5, 0, 1).
 - City locus = 1 + 0.6 river + 0.4 coastal + 0.3 (copper and tin both
   within 150 km) + 0.2 (iron within 100 km).
-- `[climate_fields]` (WP8 stage B, C; on by default, no effect on a world
-  file without climate fields, i.e. anything but `world_v2.gpkg`):
+- `[climate_fields]` (WP8 stage B, C; on by default; no effect on a world
+  file without climate fields, i.e. `world.gpkg`):
   - Steppe = clip((0.65 − aridity) / 0.45, 0, 1) on grassland and
     desert. Aridity is P/PET from the world file; 0.65 and 0.2 are the
     UNEP dry-subhumid and arid bounds.
@@ -170,13 +172,12 @@ Below, a rule tagged `[x]` applies only when switch x is on; a rule tagged
   - Dryness = clip(1 − aridity, 0, 1).
   - Rain-fed × farm term. The term is clip(GDD / 2000, 0, 1) ×
     clip(aridity / 0.65, 0, 1), divided by its area-weighted mean in the
-    cell's drawn biome, capped at 3 × that mean, and renormalised to a
-    mean of 1. The normalisation is a choice (C): it keeps each biome's
-    total as before and adds only the gradient within it, because the
-    drawn biome map stays the truth (D10 open).
+    cell's biome, capped at 3 × that mean, and renormalised to a mean of
+    1. The normalisation is a choice (C): the biome factors (FARM, HERD)
+    stay the base and the term adds only the gradient within a biome.
   - Herd density × herd term: the same with clip(GDD / 800, 0, 1) ×
     clip(aridity / 0.2, 0, 1).
-- `[floodplain]` (WP8 stage C, C; off by default, `--on floodplain`):
+- `[floodplain]` (WP8 stage C, C; on by default since U 2026-11-19):
   - Irrigation = 20 × irrigable area / cell area × IRRIG[biome]. That
     replaces 9 × sqrt(Q/3000) × IRRIG over the whole cell.
   - Irrigable area = valley length in the cell × floodplain width,

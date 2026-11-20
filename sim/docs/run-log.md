@@ -2299,3 +2299,41 @@ Findings:
   (`docs/upgrade/tools/wp8_maps.py`): population density, river cells
   and city sites for the four runs. Largest cities' sites:
   `docs/upgrade/tools/wp8_cities.py`.
+
+### 2026-11-19 WP8: new defaults and baseline (`wp8d_seed101`-`104`, `106`)
+
+U decided D10 after the report: the drawn southern jungle belt is
+"probably an old error". The climate's biome now replaces the drawn
+biome everywhere in `world_v2`. `world_v2` is the default world, and
+`floodplain` is on by default.
+
+`world_v2` was rebuilt with the climate's biome (`syn_biome`) and the
+climate's own runoff. The within-biome normalisation of runoff was
+dropped, because the drawn biomes are no longer the truth.
+
+- **Biomes:** desert 36.7M km² (drawn 12.3), tundra 27.0 (16.4),
+  temperate forest 26.8 (38.1), grassland 16.4 (29.0), jungle 15.1
+  (26.3).
+- **Rivers:** river cells 6,243 → 2,779 (5.4% of land). Endorheic cells
+  8,443 and lake cells 2,249.
+
+The batch used the standard settings and the new defaults. The full
+table is in `docs/upgrade/BASELINE.md`, last section. Main points:
+
+- **Population at 8,000 is 35-50M.** The old world with the same
+  mechanics gave 51.7M (`wp8_v1_seed101`); the WP6 B baseline gave
+  56-97M. 10M people arrive at years 3,285-3,700, against 2,260-2,795.
+- **People live in the tropics and subtropics:** 82-89% within 30° of
+  the equator (56% of land). Only 1.4-2.5% live beyond 45°, on 28% of
+  land.
+- **Rivers carry 35-37% of people on 5.4% of land.**
+- **Cities sit higher in the hierarchy.** The rank-size slope is -0.93
+  to -0.64, against -0.56 to -0.46, and the largest city is 0.16-0.21% of
+  the world.
+- **States and wars are fewer**, in line with fewer people:
+  - 1,039-1,795 polities;
+  - 409-1,808 wars;
+  - largest state 1.7-3.3% of land.
+- **No people floods the map, and the Dwarves survive (2-18%).** Their
+  homeland is now tundra rather than frozen "jungle". Elves are
+  35-47%.

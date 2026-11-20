@@ -59,8 +59,11 @@ Other layers there have not yet been checked for the same problem.
 
 ## Climate fields and `world_v2.gpkg` (WP8, 2026-11-19)
 
-`world_v2.gpkg` is `world.gpkg` with climate fields added; `world.gpkg`
-itself is never changed. Build both from the source maps:
+`world_v2.gpkg` is `world.gpkg` with climate fields added, the biome the
+climate implies in place of the drawn one, and rivers routed on the
+climate's runoff. It is the simulator's default world since 2026-11-19
+(U); `world.gpkg` itself is never changed and is `--world v1`. Build both
+from the source maps:
 
     ~/.venvs/worldsim/bin/python ../build_world_gis.py      # world.gpkg
     ~/.venvs/worldsim/bin/python ../derive_world.py --v2     # world_v2.gpkg
@@ -68,8 +71,7 @@ itself is never changed. Build both from the source maps:
 The second command copies `world.gpkg`, runs every derivation again with
 `climate=True`, and writes `../gis/world_v2.gpkg` (previews in
 `../gis/previews_v2/`). It refits the climate each time (about 40 s).
-Run the simulator on it with `worldsim.py --world v2`; `run.json` records
-the world file as `world`.
+`run.json` records the world file a run used as `world`.
 
 **Rebuild check (2026-11-19).** `world.gpkg` was rebuilt from the scripts on
 a new machine. Every preview PNG and `qa/registration.json` came out
@@ -113,7 +115,7 @@ byte-identical to the committed copies, with 66,895 land cells.
   - Runoff = P − AET; aridity = P / PET (the UNEP index).
   - `syn_gdd` is degree-days above 5 °C.
 
-### Fit against the drawn biomes (D10: U, 2026-11-19, "report first")
+### Fit against the drawn biomes (D10: U, 2026-11-19)
 
 The climate-to-biome rule is fixed at standard thresholds:
 
@@ -168,9 +170,24 @@ noise** (map: `../gis/qa/climate_biome_disagreement.png`).
   rule. These are mostly continental interiors far from the windward
   ocean, which the rain-out march dries more than the drawn map does.
 
-The drawn biome class stays the truth (D10 not yet answered). The fields
-describe conditions within each biome; `syn_biome_climate` keeps the
-rule's answer for comparison.
+**Decision (D10, U, 2026-11-19).** The southern belt is "probably an old
+error" in the drawn map. The climate's biome replaces the drawn one
+wherever they disagree, in `world_v2` only: column `syn_biome`, which
+the simulator and the rest of the build read in place of `fic_biome`.
+`fic_biome` keeps the drawn map, and the fit above is still made against
+it.
+
+| Biome | Drawn (M km²) | `world_v2` (M km²) |
+|---|---|---|
+| Jungle | 26.3 | 15.1 |
+| Desert | 12.3 | 36.7 |
+| Grassland | 29.0 | 16.4 |
+| Temperate forest | 38.1 | 26.8 |
+| Tundra | 16.4 | 27.0 |
+
+Desert triples: the march dries continental interiors more than the
+drawn map did. The fitted parameters were chosen to match the drawn map,
+errors included.
 
 ### Columns added in `world_v2.gpkg`
 
@@ -183,26 +200,31 @@ rule's answer for comparison.
 | `syn_pet_m_yr` | m/yr | potential evaporation |
 | `syn_aet_m_yr` | m/yr | actual evaporation |
 | `syn_aridity` | ratio | P / PET |
-| `syn_runoff_climate_m_yr` | m/yr | P − AET as derived; `syn_runoff_m_yr` takes its gradient within each biome (below) |
-| `syn_biome_climate` | class | the biome the rule gives |
+| `syn_runoff_climate_m_yr` | m/yr | P − AET (the same as `syn_runoff_m_yr` in this world) |
+| `syn_biome` | class | the biome the rule gives; replaces `fic_biome` in this world |
 
-Sea cells carry the fields too, except `syn_biome_climate`.
+Sea cells carry the fields too, except `syn_biome`.
 
 QA maps, one per field: `../gis/qa/climate_<field>.png`.
 
 ### Rivers on `world_v2` (WP8 stage B)
 
-`syn_runoff_m_yr` on `world_v2` is the old runoff by biome × the
-climate runoff's gradient within the drawn biome
-(`climate_world.within_biome`). The gradient is capped at 4 × the
-biome's mean and renormalised, so each biome keeps its mean runoff (C,
-while D10 is open). Rain on lakes is treated the same way. Discharge,
-rivers, basins, lakes, alluvial fill, wetness, soils and bedrock are then
-derived as before, with the same thresholds.
+`syn_runoff_m_yr` on `world_v2` is the climate's runoff, P − AET, and
+rain on lakes is the climate's precipitation. Discharge, rivers, basins,
+lakes, alluvial fill, wetness, soils and bedrock are then derived as
+before, with the same thresholds, from `syn_biome`.
 
-The result is fewer, more coastal rivers: 6,243 → 3,332 river cells, and
-endorheic cells 1,024 → 5,800. Figures:
-[run-log.md](run-log.md), "2026-11-19 WP8 stages B and C".
+The result is fewer, more coastal rivers:
+
+- river cells fall from 6,243 to 2,779 (10.7% → 5.4% of land);
+- endorheic cells rise from 1,024 to 8,443, and lake cells from 508 to
+  2,249;
+- the old largest river (152,000 m³/s, mouth at 10°E, 72°S) is gone. The
+  largest now reaches the sea at 114°E on the equator (87,000 m³/s).
+
+(Before D10 was decided, a version that kept each drawn biome's mean
+runoff gave 3,332 river cells; [run-log.md](run-log.md), "2026-11-19 WP8
+stages B and C".)
 
 ### Known limits
 

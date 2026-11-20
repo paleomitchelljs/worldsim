@@ -28,8 +28,8 @@ from Earth's map (all forms and numbers C):
 
 The free parameters are fitted so that a fixed climate-to-biome rule
 (Koppen and UNEP thresholds, BIOME_RULE) reproduces the drawn biome map
-(fic_biome) as well as it can. The drawn map stays the truth; the fields
-describe conditions within each biome (D10, U 2026-11-19: report first).
+(fic_biome) as well as it can. Where they still disagree the climate's
+biome is used in world_v2 (syn_biome; D10, U 2026-11-19).
 
 Run:  python derive_world.py --v2   (adds these fields to gis/world_v2.gpkg)
       python climate_world.py       (fit and QA figures only, no write)
@@ -330,7 +330,7 @@ def qa_figures(f, drawn, pred, land, folder=QA_DIR):
     axs[0].imshow(rgb(drawn), extent=ext)
     axs[0].set_title("drawn biomes (fic_biome)")
     axs[1].imshow(rgb(pred), extent=ext)
-    axs[1].set_title("biomes the derived climate implies (syn_biome_climate)")
+    axs[1].set_title("biomes the derived climate implies (syn_biome, used in world_v2)")
     dis = np.full((NY, NX, 3), 255, np.uint8)
     dis[~land] = (200, 215, 230)
     agree = land & (pred == drawn)

@@ -280,7 +280,7 @@ def run_info(sim):
                 city_cap=(CITY_CAP0, CITY_CAP1) if CITY_CAP else None,
                 dragon_penalty=DRAGON_PEN, dragon_shun=DRAGON_SHUN,
                 features=sorted(sim.on),
-                world=os.path.basename(getattr(sim.W, "gpkg", GPKG)),
+                world=os.path.basename(getattr(sim.W, "gpkg", GPKG_V1)),
                 constants=constants_used(),
                 branch=man.get("branch"))
 

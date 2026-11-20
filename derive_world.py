@@ -391,7 +391,7 @@ def soil_order_cells(df):
     permafrost, volcanic ash, waterlogging, aridity, slope, surface youth,
     then climate x vegetation on stable ground."""
     lat = np.abs(df.lat.values)
-    b = df.fic_biome.values
+    b = (df.syn_biome if "syn_biome" in df else df.fic_biome).values
     st = df.syn_setting.values
     relief = df.syn_relief_km.values
     land = df.fic_land.values == 1
@@ -603,12 +603,12 @@ def derive(gpkg, previews_dir, climate=False):
         print("derive: climate fields ...")
         import climate_world as cw
         clim, clim_biome, _, _ = cw.build(df)
-        # WP8 stage B: runoff and lake rain keep each drawn biome's value
-        # on average and take the climate's gradient within it (D10 not
-        # yet decided, so the drawn map keeps the totals)
-        drawn = np.vectorize(lambda b: cw.BIOMES.index(b) if b in cw.BIOMES else -1)(biome)
-        runoff = runoff * cw.within_biome(clim["runoff_m_yr"], drawn, area, land)
-        precip = precip * cw.within_biome(clim["precip_m_yr"], drawn, area, land)
+        # WP8, D10 (U 2026-11-19: the climate wins everywhere): the
+        # biome is the one the climate implies, and runoff and lake rain
+        # are the climate's own
+        biome = np.where(land, np.array(cw.BIOMES, object)[clim_biome], "Ocean")
+        runoff = np.where(land, clim["runoff_m_yr"], 0.0)
+        precip = np.where(land, clim["precip_m_yr"], 0.0)
 
     print("derive: tectonic setting ...")
     s, relief, trench, ridge, d_trench = tectonic_setting(E, land, emerged, LAT,
@@ -682,8 +682,7 @@ def derive(gpkg, previews_dir, climate=False):
                   "aet_m_yr", "aridity"):
             new[f"syn_{k}"] = clim[k][r, c]
         new["syn_runoff_climate_m_yr"] = clim["runoff_m_yr"][r, c]
-        new["syn_biome_climate"] = np.where(
-            land[r, c], np.array(cw.BIOMES, object)[clim_biome[r, c]], None)
+        new["syn_biome"] = np.where(land[r, c], biome[r, c], None)
     for k, v in new.items():
         df[k] = v
     # dist to derived river
@@ -757,8 +756,8 @@ def derive(gpkg, previews_dir, climate=False):
          "elevation range in a 7x7 window of the smoothed (sigma 1.5 cell) land surface"),
         ("syn_dist_trench_km", "syn", "derived", "km", "to nearest detected trench"),
         ("syn_runoff_m_yr", "syn", "derived", "m/yr",
-         "assumed runoff by biome" + (" x the climate runoff's gradient within the biome "
-                                      "(climate_world.within_biome)" if climate else "")),
+         "precipitation - actual evaporation (climate_world)" if climate
+         else "assumed runoff by biome"),
         ("syn_discharge_m3s", "syn", "derived", "m3/s", "accumulated runoff routed over fic_elev_km"),
         ("syn_drainage_area_km2", "syn", "derived", "km2", "upstream area"),
         ("syn_river", "syn", "derived", "0/1", f"discharge > {RIVER_MIN_Q} m3/s and area > {RIVER_MIN_AREA} km2"),
@@ -817,8 +816,9 @@ def derive(gpkg, previews_dir, climate=False):
             ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form)"),
             ("syn_aridity", "syn", src, "ratio", "precipitation / potential evaporation (UNEP index)"),
             ("syn_runoff_climate_m_yr", "syn", src, "m/yr", "precipitation - actual evaporation"),
-            ("syn_biome_climate", "syn", src, "class",
-             "biome the climate fields imply (climate_world.BIOME_RULE); fic_biome stays the truth"),
+            ("syn_biome", "syn", src, "class",
+             "biome the climate fields imply (climate_world.BIOME_RULE); replaces fic_biome "
+             "in this world (D10, U 2026-11-19)"),
         ]
     fd = pd.read_sql("select * from field_dictionary", con)
     fd = fd[~fd.field.isin([m[0] for m in meta])]

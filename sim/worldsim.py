@@ -175,8 +175,9 @@ def make_sim(argv=None):
                     help="site file (sites_v2.json: landmass quotas, more "
                     "kinds, precious metals)")
     ap.add_argument("--world", default=None, metavar="PATH",
-                    help="world file (default ../gis/world.gpkg); 'v2' is "
-                    "../gis/world_v2.gpkg, with climate fields (WP8)")
+                    help="world file (default ../gis/world_v2.gpkg, with "
+                    "climate fields, WP8); 'v1' is ../gis/world.gpkg, the "
+                    "drawn biomes")
     ap.add_argument("--out", default=None,
                     help="run folder; a bare name goes in the runs root "
                     "($WORLDSIM_RUNS or sim/runs); default seed<N>")
@@ -269,12 +270,12 @@ def make_sim(argv=None):
 
 
 def world_path(name):
-    """The world file a --world value names ('v2' is world_v2.gpkg beside
-    the default one); None is the default."""
-    if name is None:
+    """The world file a --world value names ('v1' is world.gpkg, 'v2'
+    world_v2.gpkg); None is the default (world_v2.gpkg)."""
+    if name in (None, "v2"):
         return params.GPKG
-    if name == "v2":
-        return os.path.join(os.path.dirname(params.GPKG), "world_v2.gpkg")
+    if name == "v1":
+        return params.GPKG_V1
     return os.path.abspath(name)
 
 

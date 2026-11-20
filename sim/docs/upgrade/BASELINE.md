@@ -24,6 +24,11 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 `wp6b_seed101`-`104` and `106` (last section), after WP4, WP5 and the
 adopted growth settings.
 
+**Update, 2026-11-19 (WP8).** The baseline is now `wp8d_seed101`-`104`
+and `106` (last section): the default world is `world_v2.gpkg`, with
+climate fields and the climate's biomes (D10). `floodplain` and
+`climate_fields` are on.
+
 **Update, 2026-11-17 (WP2 stage B).** Every measure below is now a
 function in `wsim/metrics.py`; each run writes them to `metrics.json`,
 and `realism.py` prints them (`--group`, `--cross`). Run on `al_seed103`,
@@ -145,7 +150,9 @@ Reproduce:
 400 constants in `wsim/params.py` (362 numeric scalars), 27 switches in
 `FEATURES`.
 
-## The current baseline batch (`wp6b_seed101`-`104`, `106`)
+## The baseline batch of WP6 B (`wp6b_seed101`-`104`, `106`)
+
+**Replaced 2026-11-19 (WP8)** by the next section.
 
 **Replaced 2026-11-18 (WP6 stage B).** The table below was the
 `wp1f_fullclim_` batch until WP6 B; that table is in git history
@@ -193,3 +200,64 @@ scale only: it differs from `wp6b` by three packages, not by growth alone.
 Not remeasured: contingency across seeds (`--cross`). The saved states
 for branching (`runs/wp1f_s10{1,3}_y{3000,5000}.pkl`) are from the old
 code and should not be used as a baseline any more.
+
+## The current baseline batch (`wp8d_seed101`-`104`, `106`, 2026-11-19)
+
+These runs use the code after WP8 on the new defaults:
+
+- world `world_v2.gpkg`: climate fields; the climate's biome in place of
+  the drawn one everywhere (D10, U); rivers routed on the climate's
+  runoff;
+- `climate_fields` and `floodplain` on;
+- the standard settings.
+
+Ranges are across the five seeds (`realism.py --group 'wp8d_seed10?'`).
+Timeline rows come from `docs/upgrade/tools/wp6_growth.py`.
+
+The `wp6b` column is for scale only. It differs from `wp8d` by WP6 C,
+WP7 and WP8, not by the world alone, and was run on another machine.
+A reference on the old world with the same mechanics is
+`wp8_v1_seed101`: one seed, run before `floodplain` became a default, so
+the same as `--world v1 --off floodplain` now. It reached 51.7M at 8,000.
+
+The world moved a lot:
+
+- desert covers 36.7M km² against 12.3M drawn;
+- river cells fall from 10.7% to 5.4% of land.
+
+| Measure | wp8d (current) | wp6b (previous) |
+|---|---|---|
+| First city (year) | 670-805 | 565-1,120 |
+| 10M people (year) | 3,285-3,700 | 2,260-2,795 |
+| First steel (year) | 6,005-7,420 | 4,995-7,345 |
+| World population at 8000 | 35-50M | 56-97M |
+| Growth by millennium, 2000-8000 (%/yr) | 0.015 to 0.059 | 0.010 to 0.065 |
+| Log population, sd around 200-yr mean after 3000 | 0.015-0.024 | 0.010-0.024 |
+| Largest 100-yr fall after 3000 (log) | -0.20 to -0.07 | -0.20 to -0.11 |
+| Plague recovery, years back to 90%, median | 75-95 | 65-90 |
+| Herding share, peak | 0.22-0.35, at years 2110-2990 | 0.21-0.34, at years 2550-3665 |
+| Urban share at the end | 0.045-0.062 | 0.046-0.063 |
+| Rank-size slope at the end | -0.93 to -0.64 | -0.56 to -0.46 |
+| Largest city, share of world | 0.16-0.21% | 0.06-0.13% |
+| Minority share of heads, end | 2.4-2.9% | 1.6-2.2% |
+| Polities | 1,039-1,795 | 2,329-4,286 |
+| Never above one city | 83-89%; median life 100 yr | 78-90%; median life 100 yr |
+| Ended 3+ city states, lifespan | median 266-345 yr; mean 483-644; CV 1.14-1.38; over 1,000 yr 13-20% | median 204-474 yr; mean 389-767; CV 1.07-1.32; over 1,000 yr 9-23% |
+| Largest state | 2.0-4.0M km² (1.7-3.3% of land) | 2.6-5.0M km² (2.1-4.1% of land) |
+| Top-10 states, median land pieces | 2-5.5 | 2.5-5.5 |
+| Wars | 409-1,808 | 1,264-6,006 |
+| Wars ending inside one tick / within 5 yr | 5-10% / 54-60% | 7-14% / 51-57% |
+| Peer wars | 0.1-0.5% | 0.2-0.9% |
+| Sieges taken | 46-54% | 50-53% |
+| Siege odds at launch, median (attacker) | 0.40-0.51 | 0.40-0.48 |
+| City food: trade / rent / provincial / capital | 0.04-0.07 / 0.38-0.44 / 0.16-0.20 / 0.33-0.35 | 0.08-0.11 / 0.44-0.46 / 0.15-0.19 / 0.27-0.33 |
+| Deaths: feud / raid / plague / hunger | 0.46-0.53 / 0.33-0.36 / 0.09-0.16 / 0.03-0.04 | 0.46-0.63 / 0.21-0.28 / 0.04-0.20 / 0.02-0.05 |
+| Pop share on river cells | 0.35-0.37 (land 0.054) | (not in the table) |
+| Pop share coast or river | 0.58-0.63 (land 0.13) | 0.63-0.67 (land 0.18) |
+| Pop share alluvial fill | 0.070-0.082 (land 0.024) | 0.089-0.116 (land 0.099) |
+| Pop share, \|lat\| 0-15 / 15-30 / beyond 45 | 0.35-0.47 / 0.41-0.48 / 0.014-0.025 (land 0.31 / 0.25 / 0.28) | (not in the table) |
+| Population in a state / land area / land cells | 0.68-0.80 / 0.10-0.16 / 0.06-0.10 | 0.65-0.82 / 0.19-0.33 / 0.12-0.20 |
+| Occupied land cells, end | 0.62-0.68 | 0.69-0.74 |
+| Elves' share of people, end | 35-47% (Dwarves 2-18%) | 29-56% |
+
+Not remeasured: contingency across seeds (`--cross`).
