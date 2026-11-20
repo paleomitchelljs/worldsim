@@ -164,6 +164,11 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.rows_pending = []            # rows queued for it (WP7 C)
         self.sh_on = "shared_cells" in self.on
         self.dp_on = "displacement" in self.on
+        if "climate_fields" in self.on:
+            W.use_climate()
+        if "floodplain" in self.on:
+            W.floodplain = True
+            W.derive_rivers()
         self.drought = np.ones(N)
         self.Kcell = np.ones(N)
         # structural state
@@ -441,6 +446,11 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.pver, self._ptab_key = 0, None
         if not hasattr(self.W, "Gf"):
             self.W.food_graph()
+        if not hasattr(self.W, "farm_clim"):
+            # before WP8 B: no climate terms (a state from world.gpkg)
+            W = self.W
+            W.steppe_cut, W.aridity, W.gdd = W.steppe, None, None
+            W.farm_clim = W.herd_clim = np.ones(W.N)
         if not hasattr(self, "dtp"):
             self.dtp = DT
         if not hasattr(self, "rh"):

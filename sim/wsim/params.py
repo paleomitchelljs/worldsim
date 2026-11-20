@@ -39,6 +39,17 @@ IRRIG = {"Jungle": 0.4, "Temperate forest": 0.6, "Grassland": 0.9,
          "Desert": 1.0, "Tundra": 0.05}
 FARM_MAX_DENS = 1.8         # people/km2 on the best rain-fed soil
 IRRIG_MAX_DENS = 9.0        # people/km2 added on a big floodplain
+# `floodplain` (WP8 stage C): irrigation on the floodplain's area, not the
+# whole cell. Floodplain width (km) = FP_W0 x sqrt(Q / 1000 m3/s), x FP_ALLUV
+# on alluvium (surface alluvium or alluvial fill), x exp(-relief /
+# FP_RELIEF); a delta (river cell at the coast on alluvium) at least
+# FP_DELTA_KM. Irrigable area = valley
+# length in the cell x width, capped at the cell's area.
+FP_W0 = 5.0                 # km at 1,000 m3/s
+FP_ALLUV = 3.0
+FP_RELIEF = 0.5             # km
+FP_DELTA_KM = 40.0
+IRRIG_FP_DENS = 20.0        # people/km2 on irrigated land (~10 x FARM_MAX_DENS)
 # Travel cost multiplier by biome (cost-km per km).
 MOVE = {"Jungle": 1.7, "Temperate forest": 1.25, "Grassland": 1.0,
         "Desert": 1.5, "Tundra": 1.8}
@@ -97,11 +108,11 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
-            "displacement"]
+            "displacement", "climate_fields"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18).
-OPTIONAL = []
+OPTIONAL = ["floodplain"]
 # Trait costs. Cohesion slows borrowing from outsiders; statecraft's
 # extraction raises unrest when the state is underfed; violence raises the
 # chance of a succession crisis; expansion leaves thin frontier cells more
@@ -144,6 +155,17 @@ MOUNT = 1.6
 # grassland and desert falls to STEPPE_MIN far inland.
 STEPPE_KM = (400.0, 1600.0)
 STEPPE_MIN = 0.35
+# `climate_fields` (WP8 stage B): on a world with climate fields
+# (world_v2.gpkg), dryness and the steppe come from the aridity index
+# (P/PET), and farming and herding get a gradient within each biome from
+# growing-degree days and aridity, normalised to an area-weighted mean of 1
+# in each biome so each biome's total is kept. The steppe's cut on rain-fed
+# farming is dropped there (the farming gradient carries aridity already).
+CLIM_STEPPE_AI = (0.65, 0.2)  # steppe 0 at this aridity, 1 at this (UNEP bounds)
+CLIM_DRY_AI = 1.0           # dryness = clip(1 - aridity / this)
+CLIM_FARM = (2000.0, 0.65)  # farming term full at these GDD and aridity
+CLIM_HERD = (800.0, 0.2)    # herding term full at these
+CLIM_RATIO_MAX = 3.0        # cap on a cell's term relative to its biome's mean
 # Land condition (0.3-1) multiplies farm density. It falls with farming
 # intensity (irrigation x LAND_IRR faster: salinization) and recovers when
 # land is lightly used.

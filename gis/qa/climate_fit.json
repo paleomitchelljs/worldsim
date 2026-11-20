@@ -1,7 +1,7 @@
 {
  "params": {
-  "T_EQ": 26.7105,
-  "T_POLE": -10.8947,
+  "T_EQ": 26.71,
+  "T_POLE": -10.89,
   "LAPSE": 6.5,
   "A0": 1.0,
   "A1": 22.0,
@@ -9,10 +9,10 @@
   "C_COLD": 6.0,
   "L_CONT": 1000.0,
   "U_COOL": 4.0,
-  "PHI_HADLEY": 35.1343,
+  "PHI_HADLEY": 35.13,
   "PHI_POLAR": 60.0,
   "W_ITCZ": 5.0,
-  "PHI_FRONT": 50.8366,
+  "PHI_FRONT": 50.84,
   "W_FRONT": 12.0,
   "Z_ITCZ": 0.5,
   "Z_FRONT": 0.525,
@@ -20,13 +20,13 @@
   "P0": 6.0,
   "CC": 0.07,
   "L_OCEAN": 800.0,
-  "L_RAIN": 631.0346,
+  "L_RAIN": 631.0,
   "RECYCLE": 0.1829,
   "V_MER": 0.6,
   "K_EDDY": 0.0,
   "K_ORO": 0.4792,
   "K_LEE": 0.1,
-  "PET_K": 0.0002,
+  "PET_K": 0.000175,
   "FU_W": 2.6
  },
  "fitted": [

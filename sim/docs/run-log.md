@@ -2206,3 +2206,96 @@ cell is off → on.
 - Not measured: cascades (displacement followed by raids or further
   displacement in the receiving cells); refugees are not tracked by
   destination.
+
+### 2026-11-19 WP8 stages B and C: climate fields and floodplain (`wp8_v1_seed101`, `wp8b_off_seed101`, `wp8b_on_seed101`, `wp8c_fp_seed101`)
+
+All runs use the standard settings, seed 101, 8,000 years, on the code
+after WP8 C. The runs from earlier packages did not come across to this
+machine (their folders are empty), so `wp8_v1_seed101` is the reference
+on `world.gpkg`. One seed only: differences in wars and states may be
+partly the seed.
+
+The four runs:
+
+- `wp8_v1_seed101`: the old world.
+- `wp8b_off_seed101`: `world_v2` with `--off climate_fields`. Only the
+  rivers change, rerouted on the climate's runoff.
+- `wp8b_on_seed101`: `world_v2` with `climate_fields`.
+- `wp8c_fp_seed101`: `world_v2` with `climate_fields` and
+  `--on floodplain`.
+
+The river network on `world_v2` (`docs/upgrade/tools/wp8_rivers.py`):
+
+- **Fewer, more coastal rivers.** River cells fall from 6,243 to 3,332
+  (10.7% → 5.8% of land): 1,622 gained and 4,533 lost.
+  - Runoff keeps each drawn biome's mean but follows the climate within
+    it. Interiors far from the windward ocean dry out, so their
+    catchments no longer reach 300 m³/s.
+  - River cells by biome: jungle 1,712 → 573, grassland 967 → 341,
+    temperate forest 1,866 → 1,354, tundra 1,566 → 1,060, desert
+    132 → 4.
+- **The largest rivers move.** The old world's largest river (152,000
+  m³/s, mouth near 10°E, 72°S) carries 51,000. The new largest (105,000
+  m³/s) reaches the sea at 114°E on the equator.
+- **Closed basins.** Endorheic cells rise from 1,024 to 5,800, and lake
+  cells from 508 to 1,594 (open-questions).
+
+| Measure | v1 | v2 off | v2 on | v2 on + floodplain |
+|---|---|---|---|---|
+| population at 8,000 (M) | 51.7 | 39.7 | 79.7 | 69.9 |
+| pop share on river cells (land share) | 0.445 (0.108) | 0.392 (0.058) | 0.336 (0.058) | 0.329 (0.058) |
+| pop share on the coast (land 0.075) | 0.19 | 0.27 | 0.33 | 0.35 |
+| pop share, \|lat\| 0-15 / 15-30 / 30-45 / 45-60 / 60-90 | 0.43 / 0.36 / 0.11 / 0.07 / 0.03 | 0.44 / 0.37 / 0.13 / 0.04 / 0.02 | 0.51 / 0.36 / 0.12 / 0.013 / 0.006 | 0.55 / 0.30 / 0.13 / 0.015 / 0.004 |
+| pop share: jungle / grassland / temperate forest | 0.27 / 0.15 / 0.56 | 0.22 / 0.14 / 0.63 | 0.32 / 0.15 / 0.53 | 0.32 / 0.13 / 0.55 |
+| occupied land cells | 0.72 | 0.73 | 0.66 | 0.67 |
+| urban share, end | 0.038 | 0.043 | 0.071 | 0.074 |
+| rank-size slope, end | -0.60 | -0.96 | -0.51 | -0.53 |
+| largest city (k) | 76 | 66 | 95 | 121 |
+| states with 3+ cities | 84 | 64 | 313 | 216 |
+| wars | 631 | 570 | 3,661 | 2,988 |
+| peoples' shares, end (over 0.5%) | Elf 0.31, Dwf 0.20, Hum 0.16, Gob 0.16, Snk 0.13 | Elf 0.40, Hum 0.17, Dwf 0.15, Gob 0.12, Snk 0.09 | Snk 0.32, Elf 0.29, Hum 0.19, Liz 0.08, Gob 0.06, Dwf 0.05 | Snk 0.34, Elf 0.30, Hum 0.18, Gob 0.09, Liz 0.07; Dwf under 0.005 |
+| v1's city sites within 1 cell of this run's (chance) | - | 0.36 (0.03) | 0.49 (0.06) | 0.38 (0.05) |
+
+Findings:
+
+- **The rerouted rivers alone cost a quarter of the people.** In v2 off,
+  population falls 23% against v1. People move to the coasts, and the
+  river cells still hold 39% of people on 5.8% of land.
+- **The climate gradient within biomes raises population by half and
+  moves it toward the tropics.**
+  - In v2 on, population is +54% against v1, and the 0-15° band holds
+    51%.
+  - The cause is the normalisation. Each biome keeps its mean farm term,
+    but the best cells get up to 3 × that mean, and people concentrate
+    there. The steppe's cut on rain-fed farming is also gone.
+  - Land beyond 45° nearly empties: 1.9% of people, against 10% on v1.
+  - Denser coasts bring more states (313 with 3+ cities against 84) and
+    six times the wars.
+- **The Dwarves collapse.** Seed 101's Dwarves start near 68°S.
+  - On v1, 9,329 Dwarf cells at the end were drawn jungle, temperate
+    forest and tundra. On `world_v2` those cells have a median of 0
+    growing-degree days.
+  - Under `climate_fields`, the drawn jungle and forest there falls to
+    the bottom of its biome's farming gradient. The Dwarves go from 20%
+    of people to 5% (v2 on), and under 0.5% with floodplain on.
+  - This is the D10 conflict acting on a people. No people floods the
+    map (largest share 34%), but one nearly disappears. That is the
+    guide's stop condition, so it goes to U.
+- **Floodplain** moves irrigation from small rivers to great ones, as
+  expected. Statically, against the old irrigation rule on the same
+  world, irrigated capacity is:
+  - 0.29 × on rivers of 300-1,000 m³/s;
+  - 0.78 × at 3,000-10,000 m³/s;
+  - 1.76 × above 10,000 m³/s;
+  - 1.78 × on the 51 delta cells;
+  - 0.82 × in total.
+
+  In the run:
+  - population is 12% below v2 on;
+  - the largest city grows to 121k, against 95k;
+  - the river share of people barely moves (0.329 against 0.336);
+  - the rank-size slope moves little (-0.53 against -0.51).
+- Maps: `../gis/qa/climate_runs_seed101.png`
+  (`docs/upgrade/tools/wp8_maps.py`): population density, river cells
+  and city sites for the four runs. Largest cities' sites:
+  `docs/upgrade/tools/wp8_cities.py`.

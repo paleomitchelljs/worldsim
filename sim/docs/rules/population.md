@@ -25,8 +25,14 @@ A cell holds one people and one lineage, or nobody. One tick is 5 years.
     50 m³/s).
 - **Farm density** = 1.8 x soil fertility^1.3 x biome farm suitability x an
   elevation and relief penalty. Then:
+  - on `world_v2.gpkg` with `climate_fields` (WP8 B, C): x a farming
+    term from growing-degree days and aridity, scaled to a mean of 1 in
+    each drawn biome, so the biome keeps its total and gains a gradient
+    within it ([model-description.md](../model-description.md) 2.3);
   - plus irrigation on river cells: 9 x sqrt(discharge/3000), times the
-    biome's response;
+    biome's response. With `floodplain` (WP8 C, off by default):
+    20 x the share of the cell that is floodplain, times the biome's
+    response;
   - x 1.3 on alluvium and x 1.2 on lakes;
   - plus a coastal fishing term.
 

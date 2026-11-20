@@ -183,12 +183,26 @@ rule's answer for comparison.
 | `syn_pet_m_yr` | m/yr | potential evaporation |
 | `syn_aet_m_yr` | m/yr | actual evaporation |
 | `syn_aridity` | ratio | P / PET |
-| `syn_runoff_climate_m_yr` | m/yr | P − AET, before any use (see below) |
+| `syn_runoff_climate_m_yr` | m/yr | P − AET as derived; `syn_runoff_m_yr` takes its gradient within each biome (below) |
 | `syn_biome_climate` | class | the biome the rule gives |
 
 Sea cells carry the fields too, except `syn_biome_climate`.
 
 QA maps, one per field: `../gis/qa/climate_<field>.png`.
+
+### Rivers on `world_v2` (WP8 stage B)
+
+`syn_runoff_m_yr` on `world_v2` is the old runoff by biome × the
+climate runoff's gradient within the drawn biome
+(`climate_world.within_biome`). The gradient is capped at 4 × the
+biome's mean and renormalised, so each biome keeps its mean runoff (C,
+while D10 is open). Rain on lakes is treated the same way. Discharge,
+rivers, basins, lakes, alluvial fill, wetness, soils and bedrock are then
+derived as before, with the same thresholds.
+
+The result is fewer, more coastal rivers: 6,243 → 3,332 river cells, and
+endorheic cells 1,024 → 5,800. Figures:
+[run-log.md](run-log.md), "2026-11-19 WP8 stages B and C".
 
 ### Known limits
 

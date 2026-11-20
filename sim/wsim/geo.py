@@ -69,6 +69,8 @@ CELL_COLS = ["row", "col", "lon", "lat", "area_km2", "fic_land",
              "syn_flow_to", "syn_basin_id", "syn_wetness",
              "fic_dist_coast_km"]
 CELL_TEXT = {"fic_biome", "syn_surface_lith"}
+# read when the world file has them (world_v2.gpkg, WP8)
+CELL_OPT = ["syn_aridity", "syn_gdd"]
 
 
 def load_cells(gpkg):
@@ -80,22 +82,28 @@ def load_cells(gpkg):
     rebuilds the cache."""
     import runroot
     st = os.stat(gpkg)
+    con = sqlite3.connect(f"file:{os.path.abspath(gpkg)}?mode=ro", uri=True)
+    have = {r[1] for r in con.execute("pragma table_info(cells)")}
+    cols = CELL_COLS + [c for c in CELL_OPT if c in have]
     key = f"{os.path.abspath(gpkg)}|{st.st_size}|{st.st_mtime_ns}|" + \
-        ",".join(CELL_COLS)
-    path = os.path.join(runroot.root(), "_world_cache.npz")
+        ",".join(cols)
+    # one cache per world file, so runs on two worlds do not evict each other
+    stem = os.path.splitext(os.path.basename(gpkg))[0]
+    path = os.path.join(runroot.root(), "_world_cache.npz" if stem == "world"
+                        else f"_world_cache_{stem}.npz")
     try:
         with np.load(path) as z:
             if str(z["key"]) == key:
+                con.close()
                 return {c: (np.where(z[c] == "", None, z[c].astype(object))
-                            if c in CELL_TEXT else z[c]) for c in CELL_COLS}
+                            if c in CELL_TEXT else z[c]) for c in cols}
     except (OSError, KeyError, ValueError):
         pass
-    con = sqlite3.connect(f"file:{os.path.abspath(gpkg)}?mode=ro", uri=True)
-    rows = con.execute(f"select {','.join(CELL_COLS)} from cells").fetchall()
+    rows = con.execute(f"select {','.join(cols)} from cells").fetchall()
     con.close()
     d = {c: np.array([r[k] for r in rows], object) if c in CELL_TEXT else
          np.array([np.nan if r[k] is None else r[k] for r in rows], float)
-         for k, c in enumerate(CELL_COLS)}
+         for k, c in enumerate(cols)}
     # several runs may start at once: write under a unique name, then rename
     tmp = f"{path}.{os.getpid()}.tmp"
     with open(tmp, "wb") as fh:
@@ -231,6 +239,7 @@ class World:
         self.elevpen = np.clip(1 - (self.elev - 1.5) / 1.5, 0.2, 1) / \
             (1 + 0.5 * np.clip(self.relief, 0, 2))
         alluv = np.array([l == "alluvium" for l in lith])
+        self.alluvium = alluv               # alluvium at the surface
         self.wetf = np.where(alluv, 1.3, 1.0) * np.where(self.lake, 1.2, 1.0)
         # structural layers: steppe farming (rain-fed part cut far inland on
         # grassland and desert), herding density, dryness
@@ -239,10 +248,13 @@ class World:
                          (STEPPE_KM[1] - STEPPE_KM[0]), 0, 1) * \
             np.isin(b, [BIOMES.index("Grassland"), BIOMES.index("Desert")])
         self.steppe = steppe
-        self.herd = np.array([HERD[x] for x in BIOMES])[b] * \
-            np.clip(1 - (self.elev - 2.5) / 1.5, 0.2, 1) * \
-            (1 + 0.5 * steppe)
+        self.steppe_cut = steppe
         self.dryness = np.clip(1 - self.runoff / 0.5, 0, 1)
+        # climate fields (world_v2.gpkg), used under `climate_fields`
+        self.aridity = num("syn_aridity")[L] if "syn_aridity" in d else None
+        self.gdd = num("syn_gdd")[L] if "syn_gdd" in d else None
+        self.farm_clim = self.herd_clim = np.ones(N)
+        self.herd_density()
         self.ecotones(land2)
         self.derive_rivers()
 
@@ -260,6 +272,51 @@ class World:
         self.r0 = max(0, rows_land.min() - 8)
         self.r1 = min(NY, rows_land.max() + 4)
 
+
+    def herd_density(self):
+        """Herding density (people/km2) before people-specific terms."""
+        self.herd = np.array([HERD[x] for x in BIOMES])[self.biome] * \
+            np.clip(1 - (self.elev - 2.5) / 1.5, 0.2, 1) * \
+            (1 + 0.5 * self.steppe) * self.herd_clim
+
+    def within_biome(self, v):
+        """v relative to its biome's area-weighted mean, capped at
+        CLIM_RATIO_MAX and renormalised to a mean of 1 in each biome (1
+        where a biome's mean is 0)."""
+        out = np.ones(self.N)
+        for k in range(len(BIOMES)):
+            m = self.biome == k
+            a = self.area[m]
+            x = v[m]
+            for _ in range(3):
+                mu = (x * a).sum() / max(a.sum(), 1e-9)
+                if mu <= 0:
+                    break
+                x = np.minimum(x / mu, CLIM_RATIO_MAX)
+            else:
+                out[m] = x / ((x * a).sum() / a.sum())
+        return out
+
+    def use_climate(self):
+        """`climate_fields` (WP8 stage B): dryness and the steppe from the
+        aridity index instead of runoff by biome and distance to the
+        coast, and farming and herding gradients within each biome from
+        growing-degree days and aridity. Nothing changes on a world
+        without the fields."""
+        if self.aridity is None or self.gdd is None:
+            return
+        ai, gdd = self.aridity, self.gdd
+        lo, hi = CLIM_STEPPE_AI
+        self.steppe = np.clip((lo - ai) / (lo - hi), 0, 1) * np.isin(
+            self.biome, [BIOMES.index("Grassland"), BIOMES.index("Desert")])
+        self.steppe_cut = np.zeros(self.N)
+        self.dryness = np.clip(1 - ai / CLIM_DRY_AI, 0, 1)
+        self.farm_clim = self.within_biome(
+            np.clip(gdd / CLIM_FARM[0], 0, 1) * np.clip(ai / CLIM_FARM[1], 0, 1))
+        self.herd_clim = self.within_biome(
+            np.clip(gdd / CLIM_HERD[0], 0, 1) * np.clip(ai / CLIM_HERD[1], 0, 1))
+        self.herd_density()
+        self.derive_rivers()
 
     # ---- rivers
     def route(self):
@@ -308,14 +365,19 @@ class World:
         forage = np.array([FORAGE[x] for x in BIOMES])[b] * \
             (1 + 2.0 * coastal * pn) * (1 + 0.8 * near_river)
         farm = FARM_MAX_DENS * self.fert ** 1.3 * \
-            np.array([FARM[x] for x in BIOMES])[b] * self.elevpen
-        irr = IRRIG_MAX_DENS * np.sqrt(np.clip(self.Q / 3000, 0, 1)) * \
-            np.array([IRRIG[x] for x in BIOMES])[b] * self.river
+            np.array([FARM[x] for x in BIOMES])[b] * self.elevpen * \
+            self.farm_clim
+        if getattr(self, "floodplain", False):
+            irr = IRRIG_FP_DENS * self.floodplain_area() / self.area * \
+                np.array([IRRIG[x] for x in BIOMES])[b]
+        else:
+            irr = IRRIG_MAX_DENS * np.sqrt(np.clip(self.Q / 3000, 0, 1)) * \
+                np.array([IRRIG[x] for x in BIOMES])[b] * self.river
         wetf = self.wetf
         rain = farm
         farm = (rain + irr) * wetf + 1.0 * coastal * pn
         self.forage, self.farm = forage, farm
-        steppe = self.steppe
+        steppe = self.steppe_cut
         self.farm_steppe = (rain * (1 - (1 - STEPPE_MIN) * steppe) + irr) * \
             wetf + 1.0 * coastal * pn
         self.irr_share = np.clip(irr * wetf / np.maximum(farm, 1e-9), 0, 1)
@@ -332,6 +394,23 @@ class World:
                       0.3 * (np.minimum(self.d_cu, self.d_sn) < 150) +
                       0.2 * (self.d_fe < 100))
         self.travel()
+
+    def floodplain_area(self):
+        """`floodplain` (WP8 C): irrigable km2 in each river cell, the
+        valley's length in the cell (to the cell it drains to, or the
+        cell's width at an outlet) times the floodplain's width, which
+        grows with discharge, widens on alluvium (surface alluvium or
+        alluvial fill) and narrows in relief; deltas (coastal river cells
+        on alluvium) are wide. 0 off the rivers."""
+        al = self.alluvial | self.alluvium
+        w = FP_W0 * np.sqrt(np.clip(self.Q, 0, None) / 1000) * \
+            np.where(al, FP_ALLUV, 1.0) * \
+            np.exp(-np.clip(self.relief, 0, None) / FP_RELIEF)
+        w = np.where(self.coastal & al, np.maximum(w, FP_DELTA_KM), w)
+        k = np.argmax(self.nb == self.flow[:, None], 1)
+        length = np.where(self.flow >= 0, self.nd[np.arange(self.N), k],
+                          np.sqrt(self.area))
+        return np.minimum(length * w, self.area) * self.river
 
     def travel(self, road=None):
         """Travel cost per cell (biome, relief, rivers, and roads if

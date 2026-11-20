@@ -103,7 +103,9 @@ Below, a rule tagged `[x]` applies only when switch x is on; a rule tagged
 
 - 0.5° grid, 360 rows × 720 columns; longitude wraps. Land cells only
   (66,895).
-- Read from `../gis/world.gpkg` (read-only): position, area, elevation,
+- Read from `../gis/world.gpkg` (read-only; `--world v2` reads
+  `world_v2.gpkg`, which adds climate fields and rivers rerouted on them,
+  see [world-data.md](world-data.md)): position, area, elevation,
   biome, soil, relief, discharge, river flag, lake flag, coastal-sea
   productivity, distances to copper, tin and iron, surface lithology,
   alluvial fill, runoff, flow direction, basin id, wetness (0–1),
@@ -158,6 +160,43 @@ Below, a rule tagged `[x]` applies only when switch x is on; a rule tagged
 - Dryness = clip(1 − runoff (m/yr) / 0.5, 0, 1).
 - City locus = 1 + 0.6 river + 0.4 coastal + 0.3 (copper and tin both
   within 150 km) + 0.2 (iron within 100 km).
+- `[climate_fields]` (WP8 stage B, C; on by default, no effect on a world
+  file without climate fields, i.e. anything but `world_v2.gpkg`):
+  - Steppe = clip((0.65 − aridity) / 0.45, 0, 1) on grassland and
+    desert. Aridity is P/PET from the world file; 0.65 and 0.2 are the
+    UNEP dry-subhumid and arid bounds.
+  - The steppe no longer cuts rain-fed farming: the farming term below
+    carries aridity already. It still raises herding.
+  - Dryness = clip(1 − aridity, 0, 1).
+  - Rain-fed × farm term. The term is clip(GDD / 2000, 0, 1) ×
+    clip(aridity / 0.65, 0, 1), divided by its area-weighted mean in the
+    cell's drawn biome, capped at 3 × that mean, and renormalised to a
+    mean of 1. The normalisation is a choice (C): it keeps each biome's
+    total as before and adds only the gradient within it, because the
+    drawn biome map stays the truth (D10 open).
+  - Herd density × herd term: the same with clip(GDD / 800, 0, 1) ×
+    clip(aridity / 0.2, 0, 1).
+- `[floodplain]` (WP8 stage C, C; off by default, `--on floodplain`):
+  - Irrigation = 20 × irrigable area / cell area × IRRIG[biome]. That
+    replaces 9 × sqrt(Q/3000) × IRRIG over the whole cell.
+  - Irrigable area = valley length in the cell × floodplain width,
+    capped at the cell's area. Valley length is the step to the cell it
+    drains to, or √area at an outlet.
+  - Width (km) = 5 × √(Q / 1,000 m³/s) × 3 on alluvium (surface
+    alluvium or alluvial fill) × exp(−relief km / 0.5). A delta (a
+    coastal river cell on alluvium) is at least 40 km wide. Alluvial fill
+    alone marks filled inland depressions, never a coast, so it cannot
+    find deltas.
+  - Source of the form: floodplain and meander-belt width scale with
+    channel width, which scales with √Q (hydraulic geometry, Leopold and
+    Maddock 1953). 5 km at 1,000 m³/s and the ×3 on alluvium are C:
+    the Nile's valley is 10–20 km wide at ~2,800 m³/s, and a
+    Mesopotamian-type alluvial plain is far wider.
+  - 20 people/km² is a density on irrigated land: about 10 × the best
+    rain-fed density (1.8), the ratio of irrigated to rain-fed peasant
+    densities. It is not the brief's ~100/km², because the model's
+    densities run several times below real ones throughout.
+  - `irr_share` (salinisation, climate) follows.
 - Ecotones: for each cell, the biome a drier climate pushes toward
   (Jungle → Grassland, Temperate forest → Grassland, Grassland → Desert)
   and a wetter one (Desert → Grassland, Grassland → Temperate forest or

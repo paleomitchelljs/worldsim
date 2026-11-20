@@ -138,10 +138,18 @@ class Run:
 
     @property
     def W(self):
-        """The world grid (geo.World), built on first use (about 15 s)."""
+        """The world grid (geo.World) the run used (run.json's `world`,
+        beside the default world file; the default before WP8), built on
+        first use (about 15 s)."""
         if self._W is None:
             from .geo import World
-            self._W = World()
+            from .params import GPKG
+            try:
+                name = self.config.get("world")
+            except Missing:
+                name = None
+            self._W = World(os.path.join(os.path.dirname(GPKG), name)
+                            if name else GPKG)
         return self._W
 
     # ---- conveniences used by several measures

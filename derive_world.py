@@ -603,6 +603,12 @@ def derive(gpkg, previews_dir, climate=False):
         print("derive: climate fields ...")
         import climate_world as cw
         clim, clim_biome, _, _ = cw.build(df)
+        # WP8 stage B: runoff and lake rain keep each drawn biome's value
+        # on average and take the climate's gradient within it (D10 not
+        # yet decided, so the drawn map keeps the totals)
+        drawn = np.vectorize(lambda b: cw.BIOMES.index(b) if b in cw.BIOMES else -1)(biome)
+        runoff = runoff * cw.within_biome(clim["runoff_m_yr"], drawn, area, land)
+        precip = precip * cw.within_biome(clim["precip_m_yr"], drawn, area, land)
 
     print("derive: tectonic setting ...")
     s, relief, trench, ridge, d_trench = tectonic_setting(E, land, emerged, LAT,
@@ -750,7 +756,9 @@ def derive(gpkg, previews_dir, climate=False):
         ("syn_relief_km", "syn", "derived", "km",
          "elevation range in a 7x7 window of the smoothed (sigma 1.5 cell) land surface"),
         ("syn_dist_trench_km", "syn", "derived", "km", "to nearest detected trench"),
-        ("syn_runoff_m_yr", "syn", "derived", "m/yr", "assumed runoff by biome"),
+        ("syn_runoff_m_yr", "syn", "derived", "m/yr",
+         "assumed runoff by biome" + (" x the climate runoff's gradient within the biome "
+                                      "(climate_world.within_biome)" if climate else "")),
         ("syn_discharge_m3s", "syn", "derived", "m3/s", "accumulated runoff routed over fic_elev_km"),
         ("syn_drainage_area_km2", "syn", "derived", "km2", "upstream area"),
         ("syn_river", "syn", "derived", "0/1", f"discharge > {RIVER_MIN_Q} m3/s and area > {RIVER_MIN_AREA} km2"),
