@@ -743,7 +743,14 @@ would tell whether this is real before anything is built on it.
     drawn map is reported, not fitted.
   - PET is Penman–Monteith since 2026-11-20 (U), and the rain-out floor
     under sinking air (Z_BASE) was lowered from 0.25 to 0.1 the same day
-    (U). Desert is 22.8M km²; subtropical land gets 0.18 m/yr.
+    (U). That gave desert 22.8M km².
+  - The monthly circulation (ITCZ migration and land monsoon), gyre
+    currents and cross-edge exchange came the same day (U). With them
+    desert is back to 5.5M km²: the land monsoon wets the subtropics to
+    about 20° (world-data.md has the ablation).
+  - Open: whether the monsoon's reach over land (ITCZ_LAND 18°) is right
+    for these continents. It is Earth's value for an all-land column;
+    the drawn map has far more desert. Not changed.
 - **Closed-basin lakes are sized** (U, 2026-11-19): a closed basin's lake
   covers only what its net evaporation needs to balance the inflow,
   lowest cells first; the rest of the basin is alluvial fill. Lake cells

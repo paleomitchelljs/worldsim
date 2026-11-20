@@ -2420,3 +2420,40 @@ P0 recalibrates to 2.71.
   155-418.
 - No seed reaches steel.
 - Runs took about 1,500 s each, still in Low Power Mode.
+
+### 2026-11-20 WP8: monthly circulation, ocean currents, cross-edge exchange (`wp8h_seed101`-`104`, `106`)
+
+U asked for three expansions of the climate model (C forms and numbers;
+`climate_world.py`; [world-data.md](world-data.md)).
+
+- **Seasons.** Rain is computed for each of 12 months.
+  - The ITCZ follows the sun: 5° over open ocean, up to 18° over
+    longitudes all land.
+  - The trades blow toward it, and band edges and the polar front move
+    5°.
+  - The ITCZ half-width is now 5°, its width in one month; it was 10°,
+    the annual band.
+  - Three seasons left stripes at the ITCZ's three positions, so the
+    model uses twelve months.
+- **Ocean currents.** These are gyres from basin geometry, in basins
+  2,000 km or wider bounded by landmasses of 0.5M km² or more:
+  - subtropical: warm on the western side (+4 °C), cold on the eastern
+    (−3 °C);
+  - subpolar: the reverse.
+  - The anomaly is carried inland over 1,000 km on the wind.
+- **Seams.** A second pass exchanges moisture across band edges. With
+  the moving edges, the step in rain at ±30° falls to the typical step
+  between rows (0.04-0.05 against 0.08-0.09). The moving edges do most
+  of that.
+
+**The world.**
+- Desert 5.5M km² (was 22.8): the land monsoon wets the subtropics to
+  about 20°. An ablation is in world-data.md.
+- River cells 4,278 (8.7% of land); lake cells 1,000.
+- `sites_v3.json` was re-placed, 13 hearths.
+
+**The batch.** Full table in BASELINE.md, last section.
+- Population at 8,000 is 31-38M.
+- 10-36 states with 3+ cities; 147-368 wars.
+- Steel in one seed.
+- About 590 s per run.

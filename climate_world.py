@@ -14,8 +14,17 @@ from Earth's map (all forms and numbers C):
                   (the paleo ocean model's vertical velocity)
   seasons         a half-amplitude that grows with latitude, more over
                   land far from the windward ocean
+  ocean currents  wind-driven gyres from basin geometry: in each wide
+                  basin, warm poleward currents on its western side and
+                  cold equatorward ones on its eastern side in the
+                  subtropics, the reverse in the subpolar gyres; they warm
+                  or cool the sea, and the wind carries that inland
   precipitation   prevailing winds by circulation band (trade easterlies,
-                  westerlies, polar easterlies); air takes up water over
+                  westerlies, polar easterlies), month by month: the
+                  ITCZ follows the sun, further over longitudes with much
+                  land (the monsoon), the trades blow toward it, and the
+                  storm tracks and band edges shift with it; air takes up
+                  water over
                   the sea toward a saturation level that rises 7%/degC
                   (Clausius-Clapeyron) and rains it out over land at a
                   rate set by the band (rising air at the ITCZ and the
@@ -74,7 +83,7 @@ PARAMS = dict(
     U_COOL=4.0,        # degC cooling at full coastal upwelling
     PHI_HADLEY=30.0,   # deg, edge between trade easterlies and westerlies
     PHI_POLAR=60.0,    # deg, edge between westerlies and polar easterlies
-    W_ITCZ=10.0,       # deg, half-width of the equatorial rising belt
+    W_ITCZ=5.0,        # deg, half-width of the equatorial rising belt at one season (10 for the annual mean before the seasons, 2026-11-20)
     PHI_FRONT=50.0,    # deg, latitude of the polar-front rain belt
     W_FRONT=12.0,      # deg, its half-width
     Z_ITCZ=2.0,        # rain-out factor at the ITCZ
@@ -89,6 +98,21 @@ PARAMS = dict(
     K_EDDY=0.1,        # eddy mixing with each neighbouring row, per row-width travelled
     K_ORO=0.15,        # extra rain-out per (m of rise per km) of upwind slope
     K_LEE=0.1,         # rain suppression per (m of descent per km)
+    # seasons (C; Earth: the ITCZ moves about 5 deg over open ocean and
+    # 15-25 deg over the monsoon continents; storm tracks about 5 deg)
+    ITCZ_SEA=5.0,      # deg the ITCZ moves toward the summer pole over open ocean
+    ITCZ_LAND=18.0,    # over longitudes all land within 30 deg of the equator
+    LF_SMOOTH=10.0,    # deg of longitude the land fraction is averaged over
+    BAND_SHIFT=5.0,    # deg band edges and the polar front move with the season
+    # ocean currents (C; Earth's gyre-edge sea temperature anomalies are
+    # a few degC)
+    BASIN_MIN=2000.0,  # km of open sea along a row for a gyre to form
+    COAST_MIN=0.5e6,   # km2: smaller landmasses do not bound a gyre
+    L_WBC=400.0,       # km e-folding width of western boundary currents
+    L_EBC=800.0,       # km of eastern boundary currents
+    A_WBC=4.0,         # degC at a western boundary
+    A_EBC=3.0,         # degC at an eastern boundary
+    L_MARITIME=1000.0, # km inland over which the sea's temperature anomaly fades
     S_CLEAR=0.85,      # sunshine fraction under clear, sinking air
     S_CLOUD=0.35,      # under the most rain-bearing cloud
     P_CLOUD=1.0,       # m/yr of rain at which cloud is 1 - 1/e of its maximum
@@ -167,24 +191,33 @@ def penman_pet(T, A, P, LAT, p):
     return tot / 1000.0, rh_sum / 12, sun
 
 
-def march(q0_sea, land, dx, rate, west, south, mer):
+def march(q0_sea, land, dx, rate, west, south, mer, prev=None):
     """Carry the air's rain potential along each row with the wind. Over
     sea it relaxes toward q0_sea (rate[0] per cell); over land a share
     rate[1] of it falls as rain, and (1 - recycling) of that is lost.
     Rows in `west` are walked toward lower longitude. At each step the
-    air also takes a share mer[0] from the row upwind of it in latitude
-    (the wind's meridional part: `south` rows blow toward the south pole)
-    and mixes a share mer[1] with both neighbouring rows (eddies); both
-    only between rows walked the same way, so the columns line up. Two
-    laps round the globe, so a row's start does not matter. Returns rain
-    potential at each cell (before its own rain-out) and km of land
-    crossed since the last sea cell."""
+    air also takes a share mer[0] from the cell upwind of it in latitude
+    (the wind's meridional part: where `south`, a (NY, NX) grid, it
+    blows toward the south pole) and mixes a share mer[1] with both
+    neighbouring rows (eddies). A neighbour row walked the same way is at
+    the same longitude at each step; one walked the other way is not, so
+    its value is taken from `prev`, this march's result from a previous
+    pass (without `prev`, there is no exchange with it). Two laps round
+    the globe, so a row's start does not matter. Returns rain potential at
+    each cell (before its own rain-out) and km of land crossed since the
+    last sea cell."""
     flip = lambda a: np.where(west[:, None], a[:, ::-1], a)  # noqa: E731
     qs, ld, (rs, rl, keep) = flip(q0_sea), flip(land), (flip(r) for r in rate)
+    sth = flip(south)
     same_n = np.r_[False, west[1:] == west[:-1]]    # row r-1 walked the same way
     same_s = np.r_[west[:-1] == west[1:], False]    # row r+1
-    adv = mer[0] * np.where(south, same_n, same_s)
-    mix_n, mix_s = mer[1] * same_n, mer[1] * same_s
+    has_n, has_s = np.r_[False, np.ones(NY - 1, bool)], np.r_[np.ones(NY - 1, bool), False]
+    if prev is not None:
+        pn = flip(np.r_[prev[:1], prev[:-1]])       # row r-1, at row r's longitudes
+        ps = flip(np.r_[prev[1:], prev[-1:]])
+        ok_n, ok_s = has_n, has_s
+    else:
+        ok_n, ok_s = same_n, same_s
     q = qs[:, 0].copy()
     d = np.zeros(NY)
     Q = np.zeros((NY, NX))
@@ -198,9 +231,76 @@ def march(q0_sea, land, dx, rate, west, south, mer):
             q = np.where(sea, q + (qs[:, c] - q) * rs[:, c],
                          q * (1 - rl[:, c] * keep[:, c]))
             qn, qsth = np.r_[q[:1], q[:-1]], np.r_[q[1:], q[-1:]]
-            q = q + adv * (np.where(south, qn, qsth) - q) + \
-                mix_n * (qn - q) + mix_s * (qsth - q)
+            if prev is not None:
+                qn = np.where(same_n, qn, pn[:, c])
+                qsth = np.where(same_s, qsth, ps[:, c])
+            up = np.where(sth[:, c], qn, qsth)
+            ok_up = np.where(sth[:, c], ok_n, ok_s)
+            q = q + mer[0] * ok_up * (up - q) + \
+                mer[1] * ok_n * (qn - q) + mer[1] * ok_s * (qsth - q)
     return flip(Q), flip(D)
+
+
+def carry(a_sea, land, dx, L, west):
+    """A sea-surface quantity carried inland along each row with the wind,
+    fading by exp(-dx / L) per land cell (two laps, as in march)."""
+    flip = lambda a: np.where(west[:, None], a[:, ::-1], a)  # noqa: E731
+    av, ld = flip(a_sea), flip(land)
+    k = np.exp(-dx / L)
+    a = av[:, 0].copy()
+    out = np.zeros((NY, NX))
+    for lap in range(2):
+        for c in range(NX):
+            a = np.where(ld[:, c], a * k, av[:, c])
+            if lap:
+                out[:, c] = a
+    return flip(out)
+
+
+def coast_distance(land, dx):
+    """For each cell, km of open sea along its row to the nearest land to
+    its west and to its east (inf where the row has no land)."""
+    out = []
+    for west in (False, True):            # walking east measures from the west coast
+        w = np.full(NY, west)
+        flip = lambda a: np.where(w[:, None], a[:, ::-1], a)  # noqa: E731
+        ld = flip(land)
+        d = np.full(NY, np.inf)
+        D = np.zeros((NY, NX))
+        for lap in range(2):
+            for c in range(NX):
+                d = np.where(ld[:, c], 0.0, d + dx)
+                if lap:
+                    D[:, c] = d
+        out.append(flip(D))
+    return out[0], out[1]
+
+
+def current_anomaly(land, LAT, dx, p):
+    """Sea-surface temperature anomaly (degC) from wind-driven gyres. In a
+    basin at least BASIN_MIN wide along the row: subtropical gyres (about
+    8-48 deg) carry warm water poleward on the basin's western side and
+    cold water equatorward on its eastern side; subpolar gyres (about
+    45-70 deg) the reverse. Each fades from its coast with L_WBC or L_EBC.
+    Only landmasses of COAST_MIN or more bound a basin; currents pass
+    smaller islands."""
+    lab, n = ndimage.label(land, structure=np.ones((3, 3)))
+    cell_km2 = (dx * RES * 111.2)[:, None] * np.ones((1, NX))
+    big = np.r_[False, ndimage.sum(cell_km2, lab, np.arange(1, n + 1)) >= p["COAST_MIN"]]
+    d_w, d_e = coast_distance(big[lab], dx)
+    phi = np.abs(LAT)
+    st = np.clip(np.sin(np.pi * (phi - 8) / 40), 0, None) * ((phi > 8) & (phi < 48))
+    sp = np.clip(np.sin(np.pi * (phi - 45) / 25), 0, None) * ((phi > 45) & (phi < 70))
+    basin = (d_w + d_e) >= p["BASIN_MIN"]
+    a = p["A_WBC"] * np.exp(-d_w / p["L_WBC"]) * (st - sp) + \
+        p["A_EBC"] * np.exp(-d_e / p["L_EBC"]) * (sp - st)
+    a = np.where(~land & basin & np.isfinite(d_w + d_e), a, 0.0)
+    return ndimage.gaussian_filter(a, 1.0, mode=("nearest", "wrap"))
+
+
+# twelve months, as (the sun's side: sin of the month's phase, +1 at the
+# northern summer solstice; number of months with that value)
+SEASONS = ((1.0, 1), (0.866, 2), (0.5, 2), (0.0, 2), (-0.5, 2), (-0.866, 2), (-1.0, 1))
 
 
 def fields(inp, p=PARAMS):
@@ -208,50 +308,73 @@ def fields(inp, p=PARAMS):
     land, elev_km, dcoast_km, upwelling) and parameters p."""
     LAT = lat_grid()
     phi = np.abs(LAT)
+    lat1 = LAT[:, 0]
     land = inp["land"]
     s2 = np.sin(np.radians(LAT)) ** 2
     T0 = p["T_POLE"] + (p["T_EQ"] - p["T_POLE"]) * (1 - s2)
+    dx = np.maximum(RES * 111.2 * np.cos(np.radians(lat1)), 5.0)
     # upwelling: the ocean model's vertical velocity near the cell (m/s,
     # scaled so 1.5e-6 is full); cools the sea and the coast beside it
     up = np.clip(np.nan_to_num(inp["upwelling"]) / 1.5e-6, 0, 1)
-    T_sea = T0 - p["U_COOL"] * up
+    # gyre currents warm or cool the sea
+    sst_anom = current_anomaly(land, LAT, dx, p)
+    T_sea = T0 - p["U_COOL"] * up + sst_anom
 
-    # prevailing wind and rain-out factor by band
-    west = (phi[:, 0] < p["PHI_HADLEY"]) | (phi[:, 0] > p["PHI_POLAR"])
-    z = p["Z_ITCZ"] * np.exp(-(LAT / p["W_ITCZ"]) ** 2) + \
-        p["Z_FRONT"] * np.exp(-((phi - p["PHI_FRONT"]) / p["W_FRONT"]) ** 2) + \
-        p["Z_BASE"]
-    dx = np.maximum(RES * 111.2 * np.cos(np.radians(LAT[:, 0])), 5.0)
-    # slope along the wind on the smoothed land surface (m per km)
+    # slope on the smoothed land surface (m per km, toward higher longitude)
     Es = ndimage.gaussian_filter(np.where(land, inp["elev_km"], 0.0), 1.0,
                                  mode=("nearest", "wrap"))
     dE = (np.roll(Es, -1, 1) - np.roll(Es, 1, 1)) / 2 * 1000.0
-    slope = np.where(west[:, None], -dE, dE) / dx[:, None]
-    oro = (1 + p["K_ORO"] * np.clip(slope, 0, None)) * \
-        np.exp(-p["K_LEE"] * np.clip(-slope, 0, None))
-    r_land = np.clip(z * oro * dx[:, None] / p["L_RAIN"], 0, 0.9)
     q_sat = p["P0"] * np.exp(p["CC"] * (T_sea - 25.0))
     r_sea = np.broadcast_to(1 - np.exp(-dx / p["L_OCEAN"])[:, None], (NY, NX))
     keep = np.full((NY, NX), 1 - p["RECYCLE"])
-    # trades and polar easterlies blow toward the equator, westerlies
-    # toward the pole; shares of a row taken per step scale with the step
-    south = (LAT[:, 0] > 0) == west
     per_row = dx / (RES * 111.2)
     mer = (np.clip(p["V_MER"] * per_row, 0, 0.45),
            np.clip(p["K_EDDY"] * per_row, 0, 0.25))
-    q, dup = march(q_sat, land, dx, (r_sea, r_land, keep), west, south, mer)
-    # rain: the share of the air's potential falling here, as a depth per
-    # year over the cell (rain-out per km x L_RAIN keeps it a rate);
-    # smoothed a little for the wind's meridional part and for eddies
-    P = np.where(land, q * r_land * p["L_RAIN"] / dx[:, None], q * z)
-    P = ndimage.gaussian_filter(P, 1.0, mode=("nearest", "wrap"))
+
+    # land fraction within 30 deg of the equator in each hemisphere, by
+    # longitude (the summer continent's heat low draws the ITCZ)
+    sig = p["LF_SMOOTH"] / RES
+    lf_n = ndimage.gaussian_filter1d(land[(lat1 > 0) & (lat1 < 30)].mean(0), sig, mode="wrap")
+    lf_s = ndimage.gaussian_filter1d(land[(lat1 < 0) & (lat1 > -30)].mean(0), sig, mode="wrap")
+
+    P, wsum = np.zeros((NY, NX)), 0.0
+    for sun, wt in SEASONS:
+        lf = lf_n if sun > 0 else lf_s
+        itcz = sun * (p["ITCZ_SEA"] + (p["ITCZ_LAND"] - p["ITCZ_SEA"]) * lf)   # (NX,)
+        sh = p["BAND_SHIFT"] * sun * np.sign(lat1)          # poleward in the summer hemisphere
+        hadley = p["PHI_HADLEY"] + sh
+        west = (np.abs(lat1) < hadley) | (np.abs(lat1) > p["PHI_POLAR"] + sh)
+        front = (p["PHI_FRONT"] + sh)[:, None]
+        z = p["Z_ITCZ"] * np.exp(-((LAT - itcz[None, :]) / p["W_ITCZ"]) ** 2) + \
+            p["Z_FRONT"] * np.exp(-((phi - front) / p["W_FRONT"]) ** 2) + \
+            p["Z_BASE"]
+        # the trades blow toward the ITCZ, westerlies toward the pole,
+        # polar easterlies toward the equator
+        trade = (np.abs(lat1) < hadley)[:, None]
+        south = np.where(trade, LAT > itcz[None, :], ((LAT > 0) == west[:, None]))
+        slope = np.where(west[:, None], -dE, dE) / dx[:, None]
+        oro = (1 + p["K_ORO"] * np.clip(slope, 0, None)) * \
+            np.exp(-p["K_LEE"] * np.clip(-slope, 0, None))
+        r_land = np.clip(z * oro * dx[:, None] / p["L_RAIN"], 0, 0.9)
+        rate = (r_sea, r_land, keep)
+        q, dup = march(q_sat, land, dx, rate, west, south, mer)
+        q, dup = march(q_sat, land, dx, rate, west, south, mer, prev=q)
+        # rain: the share of the air's potential falling here, as a depth
+        # per year over the cell (rain-out per km x L_RAIN keeps it a rate)
+        P += wt * np.where(land, q * r_land * p["L_RAIN"] / dx[:, None], q * z)
+        wsum += wt
+        if sun == 0:
+            dup0, west0 = dup, west
+    P = ndimage.gaussian_filter(P / wsum, 1.0, mode=("nearest", "wrap"))
 
     # continentality: land crossed along the wind, and plain distance to
     # the sea, averaged
-    dland = 0.5 * (dup + np.clip(inp["dcoast_km"], 0, None))
+    dland = 0.5 * (dup0 + np.clip(inp["dcoast_km"], 0, None))
     cont = np.where(land, 1 - np.exp(-dland / p["L_CONT"]), 0.0)
     A = p["A0"] + p["A1"] * np.sqrt(s2) * (p["A_SEA"] + (1 - p["A_SEA"]) * cont)
-    T = T_sea - p["C_COLD"] * cont * s2 - \
+    # the sea's current anomaly, carried inland on the equinox wind
+    T_anom = np.where(land, carry(sst_anom, land, dx, p["L_MARITIME"], west0), sst_anom)
+    T = T0 - p["U_COOL"] * up + T_anom - p["C_COLD"] * cont * s2 - \
         p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
 
     gdd = degree_days(T, A, GDD_BASE)
@@ -263,7 +386,7 @@ def fields(inp, p=PARAMS):
     arid = P / np.maximum(pet, 1e-3)
     return dict(temp_c=T, temp_range_c=2 * A, gdd=gdd, precip_m_yr=P,
                 pet_m_yr=pet, aet_m_yr=aet, runoff_m_yr=runoff, aridity=arid,
-                rel_humidity=rh, sunshine=sun,
+                rel_humidity=rh, sunshine=sun, sst_anomaly_c=T_anom,
                 continentality=cont)
 
 
@@ -321,9 +444,10 @@ def qa_figures(f, drawn, pred, land, folder=QA_DIR):
             ("runoff_m_yr", "runoff, P - AET (m/yr)", "PuBu", (0, 1.5)),
             ("aridity", "aridity index P/PET", "BrBG", (0, 2)),
             ("rel_humidity", "relative humidity, annual mean", "BuGn", (0, 1)),
-            ("sunshine", "sunshine fraction", "YlOrRd", (0, 1))]
+            ("sunshine", "sunshine fraction", "YlOrRd", (0, 1)),
+            ("sst_anomaly_c", "ocean-current temperature anomaly, sea and carried inland (degC)", "RdBu_r", (-4, 4))]
     for k, title, cmap, lim in spec:
-        v = np.where(land, f[k], np.nan)
+        v = f[k] if k == "sst_anomaly_c" else np.where(land, f[k], np.nan)
         fig, ax = plt.subplots(figsize=(12, 6))
         lo, hi = lim or (np.nanpercentile(v, 1), np.nanpercentile(v, 99))
         im = ax.imshow(v, extent=ext, cmap=cmap, vmin=lo, vmax=hi,

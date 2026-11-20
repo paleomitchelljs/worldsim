@@ -822,12 +822,13 @@ def derive(gpkg, previews_dir, climate=False):
         src = "climate_world"
         meta += [
             ("syn_temp_c", "syn", src, "degC", "annual mean temperature: insolation profile, lapse "
-             "rate, continentality, coastal upwelling"),
+             "rate, continentality, coastal upwelling, gyre currents carried inland"),
             ("syn_temp_range_c", "syn", src, "degC", "warmest minus coldest month"),
             ("syn_gdd", "syn", src, "degC days", "growing-degree days above 5 degC"),
             ("syn_precip_m_yr", "syn", src, "m/yr",
              "precipitation: ocean moisture carried on the prevailing wind of each "
-             "circulation band, rained out by band, uplift and distance"),
+             "circulation band, month by month (ITCZ migration, land monsoon), "
+             "rained out by band, uplift and distance"),
             ("syn_pet_m_yr", "syn", src, "m/yr", "potential evaporation, FAO-56 Penman-Monteith by month: insolation, "
              "sunshine from cloud, dew-point humidity"),
             ("syn_aet_m_yr", "syn", src, "m/yr", "actual evaporation, Budyko curve (Fu form)"),

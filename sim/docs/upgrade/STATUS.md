@@ -47,6 +47,7 @@ what an entry holds.
 | 8 | Physical refit, lakes, sites v3 (U) | done (baseline `wp8e_`) | 2026-11-19 | 6d9eea2 |
 | 8 | Penman-Monteith PET (U) | done (baseline `wp8f_`) | 2026-11-20 | aa0f052 |
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
+| 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | see entry |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -2006,3 +2007,36 @@ world first, before any work on the peoples.
   - rows show seams at the band edges (30°, 60°);
   - no ocean currents beyond upwelling;
   - `world.gpkg` on disk predates the lake sizing.
+
+### WP8: monthly circulation, ocean currents, seams (2026-11-20)
+
+**Asked by U (2026-11-20).** The three expansions: seasons and monsoon,
+band-edge seams, ocean currents.
+
+**Done** (`climate_world.py`).
+- **Twelve-month circulation** (`SEASONS`, `fields`).
+  - The ITCZ is at s × (ITCZ_SEA 5° + 13° × land fraction).
+  - The trades blow toward it (per-cell meridional direction in
+    `march`).
+  - BAND_SHIFT 5°; W_ITCZ 10 → 5.
+- **Gyre currents** (`coast_distance`, `current_anomaly`), carried
+  inland by `carry`. QA map `climate_sst_anomaly_c.png`.
+- **Cross-edge exchange** (`march(prev=)`), a second pass per month.
+- `world_v2` and `sites_v3.json` were rebuilt.
+- Docs: world-data (model, ablation, limits), open-questions, run-log,
+  BASELINE.
+
+**Runs.** Baseline `wp8h_seed101`-`104` and `106`:
+
+- desert 5.5M km² (was 22.8);
+- population 31-38M;
+- 10-36 states with 3+ cities.
+
+**For the next session / U.**
+- **Desert is small again.** The land monsoon (ITCZ_LAND 18°, Earth's
+  value for an all-land column) wets the subtropics. Whether that
+  reach suits these continents is open. The drawn map had far more
+  desert.
+- **The zonal wind still blows one way per row all year**, so there is
+  no westerly summer monsoon.
+- **Biomes use annual totals**, not the rain's season.

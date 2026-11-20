@@ -24,8 +24,13 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 `wp6b_seed101`-`104` and `106` (last section), after WP4, WP5 and the
 adopted growth settings.
 
-**Update, 2026-11-20 (WP8, fourth).** The baseline is now
-`wp8g_seed101`-`104` and `106` (last section): the rain-out floor under
+**Update, 2026-11-20 (WP8, fifth).** The baseline is now
+`wp8h_seed101`-`104` and `106` (last section): monthly circulation (ITCZ
+migration, land monsoon), gyre ocean currents, and exchange across band
+edges.
+
+**Update, 2026-11-20 (WP8, fourth).** The baseline was
+`wp8g_seed101`-`104` and `106`: the rain-out floor under
 sinking air lowered from 0.25 to 0.1.
 
 **Update, 2026-11-20 (WP8, third).** The baseline was
@@ -443,7 +448,9 @@ machine was in Low Power Mode on a low battery, not a code change.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
 
-## The current baseline batch (`wp8g_seed101`-`104`, `106`, 2026-11-20)
+## The baseline batch of the lowered rain-out floor (`wp8g_seed101`-`104`, `106`, 2026-11-20)
+
+**Replaced the same day** by the next section.
 
 The code is that of `wp8f`, with the rain-out factor under sinking air
 (`climate_world` Z_BASE) lowered from 0.25 to 0.1 (U, 2026-11-20).
@@ -510,5 +517,78 @@ The code is that of `wp8f`, with the rain-out factor under sinking air
   - states that form last long (median 776-2,102 yr).
 - **War and technology.** Wars fall to 155-418, and no seed reaches
   steel.
+
+None is tuned. Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8h_seed101`-`104`, `106`, 2026-11-20)
+
+The code is that of `wp8g`, with three expansions of the climate model
+(U, 2026-11-20; [../world-data.md](../world-data.md)):
+
+- **Seasons.** The circulation runs month by month: the ITCZ follows
+  the sun, further over land (monsoon), with the trades blowing toward
+  it. The ITCZ's half-width is now 5°, its width in one month.
+- **Ocean currents.** Gyre currents from basin geometry warm or cool the
+  sea, and the wind carries the anomaly inland.
+- **Band edges.** Moisture is exchanged across them.
+
+`world_v2` and `sites_v3.json` were rebuilt; all 13 hearths are placed.
+
+| Biome | `wp8h` (M km²) | `wp8g` (M km²) |
+|---|---|---|
+| Jungle | 24.9 | 22.3 |
+| Desert | 5.5 | 22.8 |
+| Grassland | 29.3 | 23.4 |
+| Temperate forest | 30.8 | 22.0 |
+| Tundra | 31.5 | 31.5 |
+
+- **Rain:** subtropical land (20-30°) gets 0.31 m/yr, against 0.18; the
+  monsoon wets the subtropics to about 20°.
+- **Rivers and lakes:** river cells 8.7% of land; lake cells 1,000.
+
+| Measure | wp8h (current) | wp8g (previous) |
+|---|---|---|
+| First city (year) | 520-875 | 605-1,240 |
+| 10M people (year) | 2,710-3,105 | 2,915-3,365 |
+| First steel (year) | 7,460 in one seed; none in 4 | none in any seed |
+| World population at 8000 | 31-38M | 26-40M |
+| Population at 1000 / 4000 / 7000 (M) | 2.5-3.5 / 13.7-16.7 / 26.4-33.0 | 2.6-3.2 / 10.4-19.7 / 22.1-37.8 |
+| Growth by millennium, 2000-8000 (%/yr) | -0.010 to 0.048 | -0.014 to 0.066 |
+| Largest 100-yr fall after 3000 (log) | -0.20 to -0.07 | -0.23 to -0.08 |
+| Plague recovery, years back to 90%, median | 80-110 | 85-100 |
+| Herding share, peak | 0.27-0.42, at years 1710-2610 | 0.26-0.36, at years 2075-2750 |
+| Urban share at the end | 0.017-0.029 | 0.019-0.030 |
+| Rank-size slope at the end | -1.41 to -0.96 | -1.28 to -0.99 |
+| Largest city, share of world | 0.05-0.11% (17-43k) | 0.06-0.17% (16-60k) |
+| Minority share of heads, end | 2.2-3.5% | 2.3-3.0% |
+| Polities | 1,460-1,806 | 1,257-1,676 |
+| Never above one city | 95-98% | 94-97% |
+| States with 3+ cities | 10-36 | 17-46 |
+| Ended 3+ city states, lifespan | median 515-1,180 yr; mean 781-1,295; CV 0.45-0.92; over 1,000 yr 14-57% | median 776-2,102 yr; mean 1,123-2,391; CV 0.59-0.90; over 1,000 yr 41-64% |
+| Largest state | 0.3-1.4M km² (0.3-1.2% of land) | 0.5-1.4M km² (0.4-1.2% of land) |
+| Top-10 states, median land pieces | 1 | 1 |
+| Wars | 147-368 | 155-418 |
+| Wars ending inside one tick / within 5 yr | 2-5% / 50-59% | 3-5% / 52-68% |
+| Peer wars | 0 | 0-0.2% |
+| Sieges taken | 32-40% | 34-39% |
+| Siege odds at launch, median (attacker) | 0.27-0.33 | 0.27-0.33 |
+| City food: trade / rent / provincial / capital | 0.01-0.02 / 0.45-0.51 / 0.01-0.09 / 0.40-0.50 | 0.01-0.03 / 0.49-0.56 / 0.02-0.12 / 0.32-0.47 |
+| Deaths: feud / raid / plague / hunger | 0.57-0.63 / 0.32-0.35 / 0.03-0.05 / 0.01-0.02 | 0.55-0.63 / 0.32-0.34 / 0.03-0.09 / 0.02-0.03 |
+| Pop share on river cells | 0.35-0.41 (land 0.088) | 0.38-0.41 (land 0.071) |
+| Pop share coast or river | 0.48-0.53 (land 0.16) | 0.49-0.54 (land 0.14) |
+| Pop share alluvial fill | 0.093-0.108 (land 0.059) | 0.077-0.100 (land 0.055) |
+| Pop share, \|lat\| 0-15 / 15-30 / beyond 45 | 0.62-0.69 / 0.17-0.22 / 0.025-0.039 | 0.64-0.81 / 0.09-0.16 / 0.022-0.037 |
+| Pop share by biome: jungle / grassland / temperate forest / desert / tundra | 0.33-0.47 / 0.20-0.26 / 0.24-0.45 / 0.010-0.013 / 0.013-0.021 | 0.31-0.39 / 0.19-0.31 / 0.21-0.44 / 0.03-0.07 / 0.012-0.018 |
+| Population in a state / land area | 0.28-0.43 / 0.03-0.05 | 0.29-0.50 / 0.03-0.05 |
+| Occupied land cells, end | 0.63-0.65 | 0.62-0.66 |
+| Largest people at the end | Dwarves or Humans, 23-32% | Dwarves or Humans, 24-35% |
+
+**What moved.** Little in the society, though the world changed a lot:
+
+- seeds agree more closely (population 31-38M);
+- people spread a little further from the equator, into the monsoon
+  subtropics;
+- states stay few and small (10-36 with 3+ cities), and wars number
+  147-368.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
