@@ -40,9 +40,9 @@ what an entry holds.
 | 7 | B presence table | done (storage only; exact rerun) | 2026-11-18 | 1a17b6e |
 | 7 | C competition and settlement | done (`shared_cells` on by default) | 2026-11-18 | a7dc06b |
 | 7 | D displacement | done (`displacement` on by default; cascades not measured) | 2026-11-18 | a7dc06b |
-| 8 | A climate fields | not started | | |
-| 8 | B yields and runoff | not started | | |
-| 8 | C floodplain area | not started | | |
+| 8 | A climate fields | done (D10, U: report first; agreement 0.56, findings for U) | 2026-11-19 | e293026 |
+| 8 | B yields and runoff | done (`climate_fields` on, inert on `world.gpkg`; v2 not default, needs U) | 2026-11-19 | ad5305c |
+| 8 | C floodplain area | done (`floodplain` off by default, needs U) | 2026-11-19 | ad5305c |
 | 9 | A metrics freeze | not started | | |
 | 9 | B sensitivity screen | not started | | |
 | 9 | C Earth test scoping | not started | | |
@@ -1775,3 +1775,93 @@ and was discarded.
 - Cascades (stage D's measure) are not measured: refugees are not
   recorded by destination.
 - Some routines still ignore third and further peoples (structural.md).
+
+### WP8 stages A, B and C: climate fields, climate in the sim, floodplain (2026-11-19, e293026, ad5305c)
+
+U asked for all of WP8 in one session. D10 (U): report first. D4 (U):
+rebuild the world from the scripts on the new machine, so the build's
+own packages (opencv-python-headless, rasterio, scikit-image) were
+added. All forms and numbers are C.
+
+**Machine setup.** This is a new machine: no `~/.venvs/worldsim`, no
+`gis/world.gpkg`, and run folders without their contents.
+- Recreated the venv on Python 3.12 (Homebrew python@3.12) from
+  `requirements.txt` plus the three build packages, now pinned.
+- Rebuilt `world.gpkg` with `build_world_gis.py`. Every committed preview
+  and `registration.json` came out byte-identical.
+- No earlier run is available here, so new reference runs are needed.
+
+**Done.**
+- **A** (`climate_world.py`):
+  - The fields: temperature (insolation profile, lapse rate,
+    continentality, upwelling), seasonal range, GDD, precipitation
+    (moisture carried on each circulation band's prevailing wind, with
+    meridional transport and orographic lift), PET, Budyko AET, runoff
+    and aridity.
+  - Twelve parameters are fitted so a fixed Köppen/UNEP rule reproduces
+    `fic_biome`.
+  - `derive_world.py --v2` writes `gis/world_v2.gpkg`.
+  - `worldsim.py --world v2`; `run.json` records `world`, and the run
+    loader uses it.
+  - QA maps: `gis/qa/climate_*.png`.
+- **B:**
+  - `world_v2`'s runoff and lake rain keep each drawn biome's mean and
+    take the climate's gradient within it. Rivers, basins, lakes and
+    soils are rederived.
+  - Switch `climate_fields` (on, but it acts only on a world with the
+    fields): steppe and dryness from aridity, and farming and herding
+    terms from GDD × aridity, normalised within each biome. The
+    steppe's cut on rain-fed farming is dropped under it.
+- **C:** switch `floodplain` (OPTIONAL, off by default). Irrigation is
+  20/km² on valley length × width, where width = 5 km × √(Q/1000), × 3
+  on alluvium, × exp(−relief/0.5), and at least 40 km at deltas.
+- Docs: world-data, model-description 2.3, rules/population,
+  switch-inventory, running, run-log, open-questions; README D4 and D10.
+
+**Runs:** `wp8_v1_seed101` (old world), `wp8b_off_seed101`,
+`wp8b_on_seed101` and `wp8c_fp_seed101`, all seed 101, 8,000 years.
+
+**Results** (run-log.md, maps in `gis/qa/climate_runs_seed101.png`):
+- **Climate against the drawn biomes: mean agreement 0.56.** By biome:
+  tundra 0.99, desert 0.89, temperate forest 0.41, grassland 0.26,
+  jungle 0.25. The conflict is coherent:
+  - the drawn map has jungle and forest at 40-75°S beside the ice cap;
+  - and temperate forest across 0-30°N.
+
+  The fit's parameters at their bounds say the drawn map wants no
+  equatorial rain belt. `gis/qa/climate_biome_disagreement.png` maps
+  it.
+- **Rivers:** 6,243 → 3,332 cells (10.7% → 5.8% of land). They become
+  coastal, and the southern supercontinent's interior network is mostly
+  gone. Endorheic cells rise 1,024 → 5,800 and lakes 508 → 1,594.
+- **Population at 8,000:** 52M (v1), 40M (v2 off), 80M (v2 on), 70M
+  (v2 on + floodplain).
+  - Under `climate_fields`, people move toward the tropics: 51-55% at
+    |lat| < 15°, and under 2% beyond 45°, against 10% on v1.
+  - With denser coasts come 3-4 × the states with 3+ cities and 5-6 ×
+    the wars.
+- **The Dwarves collapse under `climate_fields`.** Their homeland near
+  68°S is drawn jungle and forest, but it has 0 GDD. Their share goes
+  20% → 5%, and under 0.5% with floodplain on. That is the guide's
+  stop condition (diversity), so it is reported, not tuned.
+- **Floodplain**, statically: irrigation × 0.29 on small rivers, × 1.76
+  on great rivers, × 1.78 on 51 delta cells. In the run, the largest
+  city is 121k against 95k, and the river share of people is about the
+  same.
+
+**For U (decisions):**
+1. D10: what the drawn southern jungle belt is. If it is cool temperate
+   rainforest, the jungle class there could use a different rule. If
+   the drawn map stays the truth even against GDD, the farming term
+   could use aridity only. Either change would stop the Dwarves'
+   collapse.
+2. Whether `world_v2` becomes the default. If it does, rerun the
+   baseline and update BASELINE.md (the brief's last step, not done).
+3. Whether `floodplain` becomes a default.
+
+**Not done.**
+- Ecotones unchanged; the aridity field could replace them (open
+  questions).
+- Lakes in closed basins are not sized by their water balance.
+- Plotting tools other than the run loader still build the old world.
+- One seed only.
