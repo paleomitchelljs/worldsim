@@ -25,6 +25,9 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 adopted growth settings.
 
 **Update, 2026-11-20 (WP8, fifth).** The baseline is now
+`wp8j_seed101`-`104` and `106` (last section): land clearing.
+
+**Update, 2026-11-20 (WP8, sixth).** The baseline was
 `wp8i_seed101`-`104` and `106` (last section): the monsoon westerly and
 rain timing.
 
@@ -597,7 +600,7 @@ The code is that of `wp8g`, with three expansions of the climate model
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
 
-## The current baseline batch (`wp8i_seed101`-`104`, `106`, 2026-11-20)
+## The baseline batch of the monsoon westerly and rain timing (`wp8i_seed101`-`104`, `106`, 2026-11-20)
 
 The code is that of `wp8h`, with two more climate changes (U,
 2026-11-20; [../world-data.md](../world-data.md)):
@@ -661,5 +664,64 @@ land:
 The likely path (not traced): rain timing turned seasonal jungle into
 grassland, which farms at FARM 1.0 against jungle's 0.45. The world
 gained farmland where most people already live.
+
+None is tuned. Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8j_seed101`-`104`, `106`, 2026-11-20)
+
+The code is that of `wp8i` with `clearing` on (U, 2026-11-20;
+[../structural.md](../structural.md#land-clearing-clearing)):
+
+- farmers clear the forest they work, and herders burn for pasture;
+- the cleared share farms, forages and herds at grassland's values;
+- unused clearings grow back.
+
+The world file is unchanged. Forest cleared at year 8,000 is
+12.9-15.0M km², 25-29% of jungle and temperate forest together.
+
+| Measure | wp8j (current) | wp8i (previous) |
+|---|---|---|
+| First city (year) | 535-1,035 | 490-810 |
+| 10M people (year) | 2,555-2,940 | 2,790-2,990 |
+| First bronze / iron (year) | 4,150-6,715 / 4,820-7,405 | 4,550-5,800 / 5,385-7,420 |
+| First steel (year) | 5,370-7,000 in three seeds; none in 2 | 6,140 and 6,765 in two |
+| World population at 8000 (M) | 40-46 | 35-57 |
+| Population at 1000 / 4000 / 7000 (M) | 2.5-4.1 / 17.3-19.3 / 27.0-41.4 | 2.7-3.4 / 16.6-18.2 / 29.8-42.4 |
+| Largest 100-yr fall after 3000 (log) | -0.23 to -0.06 | -0.19 to -0.06 |
+| Herding share, peak | 0.23-0.31, at years 1835-2530 | 0.26-0.35 |
+| Urban share at the end | 0.027-0.043 | 0.026-0.042 |
+| Rank-size slope at the end | -1.30 to -0.88 | -1.27 to -0.77 |
+| Largest city, share of world | 0.09-0.13% | 0.08-0.16% |
+| Polities | 2,118-2,441 | 1,865-2,676 |
+| Never above one city | 89-94% | 93-96% |
+| States with 3+ cities | 46-117 | 18-64 |
+| Ended 3+ city states, lifespan | median 367-967 yr; CV 0.75-1.29; over 1,000 yr 19-44% | median 642-1,626 yr; CV 0.63-0.95; over 1,000 yr 36-91% |
+| Largest state | 0.7-1.6M km² (0.6-1.3% of land) | 0.8-2.4M km² (0.7-2.0%) |
+| Wars | 697-1,306 | 289-1,225 |
+| Wars ending inside one tick / within 5 yr | 4-9% / 50-52% | 3-6% / 51-59% |
+| Peer wars (ended, held-out definition) | 3-28 | 1-12 |
+| Sieges taken | 41-45% | 38-45% |
+| City food: trade / rent / provincial / capital | 0.02-0.04 / 0.43-0.47 / 0.04-0.12 / 0.41-0.48 | 0.01-0.03 / 0.43-0.52 / 0.05-0.11 / 0.38-0.50 |
+| Deaths: feud / raid / plague / hunger | 0.58-0.62 / 0.28-0.33 / 0.04-0.10 / 0.01-0.02 | 0.56-0.62 / 0.28-0.33 / 0.04-0.09 / 0.01-0.03 |
+| Pop share on river cells | 0.37-0.44 | 0.41-0.43 |
+| Pop share, \|lat\| 0-15 / 15-30 | 0.63-0.73 / 0.13-0.19 | 0.66-0.69 / 0.14-0.19 |
+| Pop share by biome: jungle / grassland / temperate forest | 0.43-0.55 / 0.22-0.32 / 0.21-0.30 | 0.35-0.47 / 0.22-0.31 / 0.24-0.37 |
+| Population in a state / land area | 0.41-0.57 / 0.06-0.10 | 0.41-0.60 / 0.05-0.12 |
+| Held out: spacing vs density (rho) | -0.56 to -0.40 | -0.62 to -0.48 |
+| Held out: state slope, ranks 11-100 (peak / end) | -0.63 to -0.46 / -1.13 to -0.82 | -0.70 to -0.47 / -1.07 to -0.95 |
+| Held out: rule spells, p90 / over 500 yr | 425-500 yr / 8-10% | 400-500 yr / 7-10% |
+| Held out: traits between a lineage's cities (sd) | 0.010-0.014 | 0.009-0.012 |
+| Largest people at the end | Snake folk in every seed, 18-41% | Snake folk in 3 seeds |
+
+**What moved.**
+- **Seeds agree more on population** (40-46M) and less on the timeline
+  (first city 535-1,035).
+- **States and wars.** Many more states (46-117 with 3+ cities) and
+  wars, and states live shorter: their lifespan CV is now 0.75-1.29,
+  closer to the exponential reference (Arbesman: CV ~1). S1 is "seen",
+  not evidence.
+- **Jungle holds more people** (0.43-0.55), since cleared jungle farms at
+  2.2x.
+- **Steel** in three seeds.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).

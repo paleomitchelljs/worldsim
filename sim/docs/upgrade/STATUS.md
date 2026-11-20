@@ -49,8 +49,9 @@ what an entry holds.
 | 8 | Rain-out under sinking air lowered (U) | done (baseline `wp8g_`) | 2026-11-20 | e08aeda |
 | 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
 | 8 | Monsoon westerly, rain timing (U) | done (baseline `wp8i_`) | 2026-11-20 | 23e3c6e |
+| 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
-| 9 | B sensitivity screen | running (U: SALib, launch, summaries only) | 2026-11-20 | 23e3c6e |
+| 9 | B sensitivity screen | running on `wp8j` code (U: SALib, launch, summaries only) | 2026-11-20 | 6a63c34 |
 | 9 | C Earth test scoping | not started | | |
 
 ## Entries
@@ -2155,3 +2156,43 @@ please do use rain seasonality, and a westerly wind is good."
   already done.
 - **When done:** write `docs/sensitivity.md` from `wp9_analyze.py --md`,
   with the brief's conclusions. Do not use the screen to pick values.
+
+### WP8: land clearing (2026-11-20, 53610b9)
+
+**Asked by U (2026-11-20).**
+- "Can humans clear forest to make grass/farm land?"
+- Then: "cancel the screen for the moment, build this, and then rerun the
+  screen after." The screen had no finished point; its eight partial
+  run folders were removed.
+
+**Done.**
+- **Switch `clearing`, on.** `Sim.clear` is the cleared share of jungle
+  and temperate-forest cells.
+- **Clearing.** Farmers clear toward the land in use and herders burn
+  toward 0.5 × use, at CLEAR_RATE 0.01/yr of the gap.
+- **Regrowth** at CLEAR_REGROW 1/150 per year.
+- **Effect.** In K2 the cleared share farms, forages and herds at
+  grassland's values (the ecotone blend).
+- **Improvements** now stand for field works only.
+- **Records:** `cleared_km2` (timeseries) and `clear` (final_state).
+- Docs: structural, model-description 7.1, switch-inventory, rules/
+  population, running, diagnostics.
+
+**Runs.** Baseline `wp8j_seed101`-`104` and `106` (run-log, BASELINE).
+- 13-15M km² cleared.
+- Population 40-46M.
+- 46-117 states with 3+ cities.
+- Steel in three seeds.
+- Snake folk lead everywhere (reported only).
+
+**Not modelled:**
+- clearing's effect on movement and defence (fixed edge costs);
+- its effect on climate and erosion;
+- burning by foragers;
+- clearing in wars.
+
+### WP9 stage B relaunched (2026-11-20, 6a63c34)
+
+The screen restarted on the `wp8j` code by `runs/wp8j_then_screen.sh`,
+after the baseline. The design is the same 249 points. Seed noise comes
+from `wp8j` plus `base_seed105` (`wp9_analyze.py` defaults to `wp8j`).

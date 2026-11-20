@@ -2499,3 +2499,20 @@ What it tested: `wp8h` plus the monsoon westerly and rain timing (U,
 - Likely path: savanna farms better than jungle in the model (FARM 1.0
   against 0.45). Not traced.
 - About 700-760 s per run, five at once.
+
+### 2026-11-20 WP8: land clearing (`wp8j_seed101`-`104`, `106`)
+
+What it tested: `wp8i` with `clearing` on (U, 2026-11-20;
+structural.md, "Land clearing").
+
+- **Checks.** `--off clearing` reproduces `wp8i_seed101` exactly (1,000
+  years). A 3,000-year sanity run of seed 101 cleared 5.6M km², 11% of
+  the forest, in the settled cores.
+
+**The batch.** Full table in BASELINE.md, last section.
+- 12.9-15.0M km² cleared at year 8,000.
+- Population at 8,000 is 40-46M (was 35-57M).
+- 46-117 states with 3+ cities (18-64); 697-1,306 wars (289-1,225).
+- Steel in three seeds.
+- Snake folk are the largest people in every seed.
+- About 900 s per run, five at once.
