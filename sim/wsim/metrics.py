@@ -782,13 +782,85 @@ def lineage_cities(run):
     return m
 
 
+# counters (timeseries n_*) through which heads or cells change people
+MEMBERSHIP = ["flip_to_ruler", "flip_other", "lineage_absorb",
+              "lineage_absorb_whole", "lineage_fuse", "fusion",
+              "settler_heads", "infiltrate_heads", "colony_displace",
+              "refugees"]
+
+
+def peoples(run):
+    """Who lives where, and how it changes (WP10 stage A, records only):
+    the largest people and its share of heads by millennium and every
+    people's share at the end (timeseries pop_*); heads outside their
+    cell's plurality people (minority_pop) by millennium; land whose
+    plurality people changed from 2000 to the end, of land occupied at
+    both (history.npz, by area); the membership counters summed by
+    millennium; refugees (refugees.csv, `displacement`): the share that
+    reached empty land, and cascades, the share of refugee heads whose
+    destination itself sends refugees within 50 years."""
+    ts = run.timeseries
+    yr = ts["year"].to_numpy()
+    keys = run.keys
+    P = ts[[f"pop_{k}" for k in keys]].to_numpy()
+    tot = np.maximum(P.sum(1), 1)
+    end = _end(yr)
+    m = {}
+    for y in list(range(1000, end, 1000)) + [end]:
+        i = min(int(np.searchsorted(yr, y - 5)), len(yr) - 1)
+        j = int(np.argmax(P[i]))
+        tag = "end" if y == end else f"yr {y}"
+        m[f"largest people, {tag}"] = keys[j]
+        m[f"largest share, {tag}"] = float(P[i, j] / tot[i])
+        if "minority_pop" in ts:
+            m[f"outside plurality, heads share, {tag}"] = float(
+                ts["minority_pop"].iloc[i] / tot[i])
+    for k, v in zip(keys, P[-1] / tot[-1]):
+        m[f"{k} share, end"] = float(v)
+    try:
+        H = run.history
+        hy, hpe = H["year"], H["people"]
+        a, b = hpe[np.searchsorted(hy, 2000)], hpe[-1]
+        occ = (a >= 0) & (b >= 0)
+        area = run.W.area
+        m["plurality changed 2000-end, land share"] = float(
+            area[occ & (a != b)].sum() / max(area[occ].sum(), 1))
+    except Missing:
+        pass
+    mil = (yr // 1000).astype(int)
+    for c in MEMBERSHIP:
+        if f"n_{c}" in ts:
+            v = ts[f"n_{c}"].to_numpy()
+            m[f"{c}, total"] = float(v.sum())
+            for k in range(int(mil.max()) + 1):
+                m[f"{c}, {k}000-{k + 1}000"] = float(v[mil == k].sum())
+    try:
+        R = run.refugees
+    except Missing:
+        return m
+    if len(R):
+        h = R["heads"].to_numpy()
+        m["refugee heads, total"] = float(h.sum())
+        m["refugees to empty land, share"] = float(
+            h[R["dst_empty"].to_numpy() > 0].sum() / max(h.sum(), 1))
+        src = R.groupby("src")["year"].apply(np.sort).to_dict()
+        hit = np.array([s is not None and np.any((s > y) & (s <= y + 50))
+                        for s, y in ((src.get(d), y) for d, y in
+                                     zip(R["dst"], R["year"]))])
+        m["refugee cascades (50 yr), heads share"] = float(
+            h[hit].sum() / max(h.sum(), 1))
+        for c, g in R.groupby("cause")["heads"]:
+            m[f"refugees by {c}, share"] = float(g.sum() / max(h.sum(), 1))
+    return m
+
+
 SINGLE = [population, timeline, growth, volatility, landmass_volatility,
           city_hierarchy, city_lives, states, lifespans, contiguity, wars,
           sieges, war_time, food, food_ledger, deaths, growth_account,
           settlement, turnover,
           price,
           spacing, minor_states, peer_wars, waterside, rule_spells,
-          lineage_cities]
+          lineage_cities, peoples]
 
 
 def measure(run, only=None):

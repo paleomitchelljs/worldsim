@@ -262,6 +262,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.war_log = []           # wars.csv (records only)
         self.siege_log = []         # sieges.csv
         self.revolt_log = []        # revolts.csv
+        self.flee_rows = []         # refugees.csv (records only)
         self._sim = {}
         self.start_sites()
 
@@ -418,6 +419,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v3()
         if not hasattr(self, "growth_rows"):
             self.new_state_v4()
+        if not hasattr(self, "flee_rows"):
+            self.flee_rows = []
         if not hasattr(self, "site_def"):
             self.new_state_v5()
         if not hasattr(self, "td_on"):

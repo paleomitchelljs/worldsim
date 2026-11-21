@@ -57,6 +57,7 @@ what an entry holds.
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
+| 10 | A measures; B design note | done (B needs U: four decisions in `WP10-design.md`) | 2026-11-21 | HASH |
 
 ## Entries
 
@@ -2407,3 +2408,37 @@ good."
 
 **For the next session / U.** The physical model is settled (U). Phase 2
 (society model, WP10-WP15) starts from `wp8n`; see README.md.
+
+### WP10 stages A and B: measures and design note (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** "Please start in on it."
+
+**Done.**
+- `refugees.csv` (records only): year, source and destination cell,
+  people, heads, whether the destination was empty, and cause, from
+  `flee` (`wsim/shared.py`). Registered in `output.APPEND` and
+  `runio.FILES`; `upgrade()` adds `flee_rows` to old saved states.
+- `metrics.peoples`: largest people by millennium, every people's share
+  at the end, heads outside their cell's plurality people, land whose
+  plurality changed 2000-end, membership counters by millennium,
+  refugees to empty land, and cascades. Added as K6 (reported) in
+  patterns.md.
+- Design note `WP10-design.md`.
+
+**Checks.** `wp10a_seed101` (8,000 years) has `timeseries.csv` and
+`wars.csv` byte-identical to `wp8n_seed101`.
+
+**Results** (`wp8n`, five seeds).
+- The lead passes from Frogfolk or Goblins to Snake folk at about 5000
+  (Humans in seed 102). Snake folk rise by jungle density (1.2-1.6
+  people per km² at 8000), not by conquest. Goblins hold over a third of
+  land at 0.15 people per km².
+- 2.3-2.8% of heads are outside their cell's plurality; the plurality
+  changed on 9-15% of land from 2000 to the end.
+- 47-154 cities are taken from another people per run.
+- A rule war aim, and state backing for the ruling people's movers,
+  already exist. ACC moves traits, not membership.
+
+**For U** (`WP10-design.md`): build A (conquest that settles)? C
+(assimilation under long rule)? Leave B (deportation) out? WP11 stage A
+before WP10 stage C?

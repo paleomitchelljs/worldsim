@@ -77,6 +77,7 @@ across seeds. Ranges in the last column are the current baseline,
 | K3 | Spread between the cities of one lineage | `lineage_cities` | none; judge on spread | lineage | **held out** (new); the 2026-11-02 records read the spread by people and by state, not by lineage | 0.009-0.036 (between lineages of a people: 0.073-0.102) |
 | K4 | Turnover of peoples in cells | `turnover` | none | cell | held out | 1.4-2.2% of cells per 500 yr after 3,500 |
 | K5 | Contingency across seeds | `metrics.cross` | none; the question `BASELINE.md` raises | world | held out | not remeasured on wp8h |
+| K6 | Movement and mixing of peoples: largest people by millennium, heads outside their cell's plurality, land whose plurality changed 2000-end, membership counters, refugee cascades | `peoples` (WP10 A) | none | people, cell | **reported** (not frozen; added 2026-11-21) | wp8n: lead passes Frogfolk/Goblins → Snake folk about 5000 (Humans in one seed); outside plurality 2.3-2.8% at the end; plurality changed on 9-15% of land |
 
 ## Notes
 

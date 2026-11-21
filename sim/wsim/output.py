@@ -115,6 +115,8 @@ APPEND = [
      ["year", "war", "side", "city", "city_fe", "capital", "besieger",
       "holder", "P_besieger", "P_holder", "odds", "taken", "terms",
       "cities_besieger", "cities_holder", "siege_years"]),
+    ("flee_rows", "refugees.csv",
+     ["year", "src", "dst", "people", "heads", "dst_empty", "cause"]),
     ("revolt_log", "revolts.csv",
      ["year", "state", "new_state", "people_ruler", "people_rebels", "kind",
       "cities_taken", "cities_left", "landmass", "lon", "lat"]),

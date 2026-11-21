@@ -493,6 +493,12 @@ class SharedMixin:
         left = self.rows_put(tgt[g], P[g], L[g], mv[g])
         out[i[g]] = mv[g] - left
         self.count("refugees", float(out.sum()))
+        # refugees.csv (WP10 stage A, records only): where each group went
+        self.flee_rows.extend(zip(
+            [self.year] * int(g.sum()), src[g].tolist(), tgt[g].tolist(),
+            P[g].tolist(), np.round(out[i[g]], 1).tolist(),
+            empty[np.arange(len(i)), b][g].astype(int).tolist(),
+            [cause] * int(g.sum())))
         return out
 
     def lost_rows(self, rows, lost, viol, cause):

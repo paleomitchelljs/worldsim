@@ -31,6 +31,7 @@ FILES = {
     "wars": "wars.csv",
     "sieges": "sieges.csv",
     "revolts": "revolts.csv",
+    "refugees": "refugees.csv",
     "city_sizes": "city_sizes.csv",
     "cityfood": "cityfood.csv",
     "citytraits": "citytraits.csv",
