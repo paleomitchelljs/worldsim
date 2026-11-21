@@ -57,7 +57,7 @@ what an entry holds.
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
-| 10 | A measures; B design note | done (B needs U: four decisions in `WP10-design.md`) | 2026-11-21 | HASH |
+| 10 | A measures; B design note | done (B needs U: four decisions in `WP10-design.md`) | 2026-11-21 | 0576866 |
 
 ## Entries
 
@@ -2409,7 +2409,7 @@ good."
 **For the next session / U.** The physical model is settled (U). Phase 2
 (society model, WP10-WP15) starts from `wp8n`; see README.md.
 
-### WP10 stages A and B: measures and design note (2026-11-21, HASH)
+### WP10 stages A and B: measures and design note (2026-11-21, 0576866)
 
 **Asked by U (2026-11-21).** "Please start in on it."
 
