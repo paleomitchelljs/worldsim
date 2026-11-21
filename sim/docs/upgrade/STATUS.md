@@ -52,7 +52,7 @@ what an entry holds.
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 8 | Clearing extensions (U) | done (`clear_terrain`, `fire` on; baseline `wp8k_`) | 2026-11-21 | 0970306 |
 | 8 | Earth-check climate fixes (U) | done (baseline `wp8l_`) | 2026-11-21 | 26931af |
-| 8 | ITCZ by moist static energy (U) | done (baseline `wp8m_`; India still fails) | 2026-11-21 | HASH |
+| 8 | ITCZ by moist static energy (U) | done (baseline `wp8m_`; India still fails) | 2026-11-21 | c348ea2 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
@@ -2354,7 +2354,7 @@ changes": fixes (a)-(d) of docs/earth-climate-check.md.
 - **The screen** (docs/sensitivity.md) ran on `wp8j`; two world changes
   have come since.
 
-### WP8: ITCZ by moist static energy; baseline `wp8m` (2026-11-21, HASH)
+### WP8: ITCZ by moist static energy; baseline `wp8m` (2026-11-21, c348ea2)
 
 **Asked by U (2026-11-21).** "Let's do the bigger fix."
 
