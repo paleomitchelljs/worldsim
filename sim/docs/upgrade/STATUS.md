@@ -2528,7 +2528,7 @@ runs need about 400 MB; free space before the next batch.
 **Next.** Rebuild `wp10c` with `--keep full` (about 750 MB) as the one
 full baseline; asked U first.
 
-### WP11 stage B part 1: the half-fill; `wp10c` rebuilt full (2026-11-21, HASH)
+### WP11 stage B part 1: the half-fill; `wp10c` rebuilt full (2026-11-21, 632c804)
 
 **Asked by U (2026-11-21).** Rebuild `wp10c` full if missing; then
 trace the half-fill (records only) on seeds 101 and 103.
