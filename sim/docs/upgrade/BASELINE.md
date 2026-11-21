@@ -899,3 +899,24 @@ Reported only (U: refine the world first; don't tune peoples).
 87-88% of land by year 6000 and stops; the 12% never settled is mostly
 tundra. Settled land is thin: median 0.1 people per km² on grassland,
 0.12-0.14 in temperate forest. Taken up as WP11.
+
+## `wp10c`: peoples that move (2026-11-21)
+
+**Asked by U (2026-11-21, D13):** build conquest that settles,
+deportation and assimilation (WP10-design.md). World as `wp8n`.
+
+| Measure | wp10c (current) | wp8n (previous) |
+|---|---|---|
+| World population at 8000 (M) | 52-86 | 52-81 |
+| First bronze / iron / steel (year) | 4,170-6,310 / 4,620-7,105 / 5,130-7,685 | 4,675-6,260 / 4,905-7,325 / 5,130-7,010 |
+| Urban share at the end | 0.046-0.067 | 0.047-0.059 |
+| States with 3+ cities | 89-189 | 73-174 |
+| Largest state (M km²) | 1.1-3.1 | 1.6-1.9 |
+| Wars | 1,205-4,906 | 1,004-3,607 |
+| Sieges taken | 43-51% | 41-45% |
+| Population in a state | 0.60-0.81 | 0.62-0.72 |
+| Largest people at the end | Snake folk 3 (27-41%), Humans 1, Lizardfolk 1 | Snake folk 4 (27-33%), Humans 1 |
+
+**What moved.** Little: the new mechanisms move under 1% of people
+over a run (WP10-design.md, "Built"). Most measures overlap `wp8n`;
+wars and the largest state reach higher. Reported only.

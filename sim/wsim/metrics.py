@@ -786,7 +786,7 @@ def lineage_cities(run):
 MEMBERSHIP = ["flip_to_ruler", "flip_other", "lineage_absorb",
               "lineage_absorb_whole", "lineage_fuse", "fusion",
               "settler_heads", "infiltrate_heads", "colony_displace",
-              "refugees"]
+              "refugees", "cq_settlers", "deported", "assimilated"]
 
 
 def peoples(run):

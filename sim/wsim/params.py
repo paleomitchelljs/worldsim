@@ -113,7 +113,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
             "displacement", "climate_fields", "floodplain", "clearing",
-            "clear_terrain", "fire"]
+            "clear_terrain", "fire", "conquest_settle", "deport",
+            "assimilate"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -1304,3 +1305,23 @@ BURN_MAX = 0.3
 BURN_GAIN = 0.25
 BURN_RATE = 0.1
 BURN_REGROW = 1 / 20
+
+# Peoples that move (WP10 C, U 2026-11-21, D13; numbers C).
+# `conquest_settle`: after a city of another people is taken, the
+# conqueror's people settle in it and its land, up to CQ_MAX of the hosts'
+# food x expansion x establishment (admin x (0.5 + statecraft)), from the
+# state's own cells crowded above SET_PRESS; they push out hosts of equal
+# food (at most half), of whom 1 - violence flee. CQ_MAX matches MIN_CAP.
+CQ_MAX = 0.2
+# `deport`: a state of DEP_MIN+ cities moves DEP_FRAC of a subject
+# people's city and land to its own people's cells around its capital (as
+# room allows), and settles its own people in their place. Chance per
+# foreign city per year DEP_RATE x hierarchy x statecraft x (1 -
+# tolerance) of the state.
+DEP_RATE, DEP_FRAC, DEP_MIN = 0.001, 0.3, 3
+# `assimilate`: under rule by another people, ASSIM_RATE per year of a
+# cell's people join the ruler's, x the clock of `acc_cross` (ACC_RULE0
+# rising to 1 after ACC_GENS generations) x the subjects' tolerance x
+# (0.5 + the ruler's proselytism); at tolerance and proselytism 0.5 and a
+# full clock, about 10% a century.
+ASSIM_RATE = 0.002

@@ -117,3 +117,35 @@ read against density effects that WP11 may change.
 4. Do WP11 stage A before WP10 stage C, or after?
 
 Whatever is built, peoples' shares are reported and not tuned.
+
+## Decided (U, 2026-11-21; D13)
+
+Build A (conquest that settles), B (deportation) and C (assimilation
+under long rule), each its own switch. WP11 stage A comes after WP10's
+build.
+
+## Built (stage C, 2026-11-21)
+
+`wsim/movement.py`; switches `conquest_settle`, `deport`, `assimilate`
+(all default); numbers C in `params.py` (CQ_MAX 0.2; DEP_RATE 0.001,
+DEP_FRAC 0.3, DEP_MIN 3; ASSIM_RATE 0.002). Batch `wp10c` (five seeds):
+
+| Measure | wp10c | wp8n |
+|---|---|---|
+| Largest people at the end | Snake folk 3 (27-41%), Humans 1 (39%), Lizardfolk 1 (27%) | Snake folk 4 (27-34%), Humans 1 (36%) |
+| Heads outside their cell's plurality, end | 1.8-2.5% | 2.3-2.8% |
+| Plurality changed 2000-end | 11-15% of land | 9-15% |
+| Conquerors' settlers (heads, run) | 42k-425k | - |
+| Deported (heads, run) | 0-64k | - |
+| Assimilated (heads, run) | 65k-394k | - |
+
+**The mechanisms work but act on little.** Population 52-86M; these
+move under 1% of it over a run. In seed 101, 2.6% of people lived
+under another people's rule at the end in `wp8n`, 0.9% in `wp10c`
+(assimilation absorbs them). Cities taken from another people: 113 in
+seed 101, all but one after 6000.
+
+**What limits mixing now** is not what conquest does but how seldom
+peoples conquer each other, and that only late: states are made of
+one people. That is WP13's ground (wars between peoples), not these
+numbers. Not tuned.

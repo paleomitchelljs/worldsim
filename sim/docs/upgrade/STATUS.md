@@ -57,7 +57,8 @@ what an entry holds.
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
-| 10 | A measures; B design note | done (B needs U: four decisions in `WP10-design.md`) | 2026-11-21 | 0576866 |
+| 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
+| 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | HASH |
 
 ## Entries
 
@@ -2442,3 +2443,37 @@ good."
 **For U** (`WP10-design.md`): build A (conquest that settles)? C
 (assimilation under long rule)? Leave B (deportation) out? WP11 stage A
 before WP10 stage C?
+
+### WP10 stage C: peoples that move; baseline `wp10c` (2026-11-21, HASH)
+
+**Decisions (U, 2026-11-21, D13).** Build A (conquest that settles), B
+(deportation) and C (assimilation under long rule); WP11's trace after.
+
+**Done** (`wsim/movement.py`, MovementMixin; numbers C in `params.py`).
+- `conquest_settle`: after `capture` of another people's city, settlers
+  from the conqueror's cells crowded above SET_PRESS, up to CQ_MAX (0.2)
+  of the hosts' food x expansion x establishment; hosts of equal food
+  (at most half) pushed out through `lost_rows` (flee 1 - violence).
+  The 4% garrison stays.
+- `deport`: per tick, chance per foreign city DT x DEP_RATE x hierarchy
+  x statecraft x (1 - tolerance), states of DEP_MIN+ cities; DEP_FRAC
+  of the city and its land moved to the capital's own-people cells as
+  room allows, and the state's own people settle the land left.
+- `assimilate`: its own rule clock (`asm_key`, `asm_since`; the
+  `acc_cross` clock is never set under `city_culture`), ASSIM_RATE x
+  clock x subjects' tolerance x (0.5 + ruler's proselytism), food kept.
+- Counters `cq_settlers`, `deported`, `assimilated` (timeseries,
+  `metrics.peoples`). `upgrade()` adds the clock to old states.
+
+**Checks.** `--off conquest_settle,deport,assimilate`: a 3,000-year run
+matches `wp8n_seed101`'s timeseries exactly.
+
+**Results** (`wp10c`, five seeds). Under 1% of people moved by the new
+mechanisms over a run; heads outside their plurality 1.8-2.5% (2.3-2.8);
+Snake folk lead three seeds, Humans one, Lizardfolk one. Few people
+live under another people's rule (2.6% at the end of `wp8n_seed101`),
+and cross-people captures come late (all but one of 113 after 6000).
+
+**For the next session / U.** The limit on mixing is how seldom peoples
+conquer each other (WP13), not what conquest does. Next by D13: WP11
+stage A (density trace).

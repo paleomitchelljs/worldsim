@@ -2592,3 +2592,17 @@ highland change") in `climate_world.py`, with `world_v2` and
 **The batch** (BASELINE.md, last section): population 52-81M; 73-174
 states with 3+ cities; 1,004-3,607 wars; Snake folk lead four seeds at
 27-33%, Humans one at 36%.
+
+### 2026-11-21 WP10 C: peoples that move (`wp10c_seed101`-`104`, `106`)
+
+What it tested: `conquest_settle`, `deport` and `assimilate` (U, D13),
+on by default; world as `wp8n`.
+
+**Checks.** With the three off, a 3,000-year run of seed 101 matches
+`wp8n_seed101`'s timeseries exactly.
+
+**The batch** (WP10-design.md, "Built"; BASELINE.md, last section):
+settlers 42k-425k, deported 0-64k and assimilated 65k-394k heads per
+run, under 1% of people. Heads outside their cell's plurality 1.8-2.5%
+(2.3-2.8% in `wp8n`). Snake folk lead three seeds, Humans one,
+Lizardfolk one. Few peoples rule others, and only late.

@@ -1027,6 +1027,8 @@ class WarMixin:
             # a garrison and settlers of the conqueror's people stay on
             self.add_minority([t], ca, La, MIN_GARRISON * self.pop[t] *
                               self.peat[rec["culture"]] / self.peat[ca])
+            if "conquest_settle" in self.on:
+                self.conquest_settle(A, t, rec["culture"])
         if was_cap:
             B["cohesion"] *= 0.6
             self.spike(dfn)

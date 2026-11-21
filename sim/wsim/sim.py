@@ -17,10 +17,11 @@ from .technology import TechnologyMixin
 from .diagnostics import DiagnosticsMixin
 from .cities import CitiesMixin
 from .shared import SharedMixin
+from .movement import MovementMixin
 from .render import *  # noqa: F401,F403
 
 
-class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, CultureMixin, StatesMixin, WarMixin, TechnologyMixin, DiagnosticsMixin, SharedMixin):
+class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, CultureMixin, StatesMixin, WarMixin, TechnologyMixin, DiagnosticsMixin, SharedMixin, MovementMixin):
     def __init__(self, world, seed=1, years=6000, frame_every=10, out=None,
                  homelands="continents", peoples=None, start_pool=0.0,
                  starts=3, start_vary=0.05, drift=0.06, cluster_km=0.0,
@@ -263,6 +264,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.siege_log = []         # sieges.csv
         self.revolt_log = []        # revolts.csv
         self.flee_rows = []         # refugees.csv (records only)
+        self.asm_key = -np.ones(N, int)   # `assimilate`: ruler x 1000 + subject
+        self.asm_since = np.zeros(N)      # and since when
         self._sim = {}
         self.start_sites()
 
@@ -421,6 +424,9 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.new_state_v4()
         if not hasattr(self, "flee_rows"):
             self.flee_rows = []
+        if not hasattr(self, "asm_key"):
+            self.asm_key = -np.ones(self.W.N, int)
+            self.asm_since = np.zeros(self.W.N)
         if not hasattr(self, "site_def"):
             self.new_state_v5()
         if not hasattr(self, "td_on"):
@@ -630,6 +636,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.pref_spread()
         self.acct_mark("states")
         self.minorities()
+        if "assimilate" in self.on:
+            self.assimilate()
+        if "deport" in self.on:
+            self.deport()
         self.acct_mark("minorities")
         self.politics()
         if self.rt:
