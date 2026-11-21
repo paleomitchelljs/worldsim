@@ -199,6 +199,7 @@ class World:
         self.defence = np.array([TERRAIN_DEF[b] for b in BIOMES])[self.biome] \
             * (1 + DEF_RELIEF * np.clip(self.relief, 0, 1.5)) * \
             (1 + DEF_WET * self.wet)
+        self.defence0 = self.defence.copy()
         self.colonize = np.exp(-np.clip(self.relief, 0, None) / COL_RELIEF) \
             * (1 - COL_WET * self.wet)
 
@@ -427,6 +428,10 @@ class World:
         tc = (1 + 1.5 * np.clip(self.relief, 0, 2)) * \
             np.array([MOVE[b] for b in BIOMES])[self.biome]
         tc = np.where(self.river, 0.7 * tc, tc)
+        mx = getattr(self, "move_x", None)
+        if mx is not None:
+            # `clear_terrain`: cleared forest crossed as open country
+            tc = tc * mx
         if road is not None:
             tc = tc * road
         old = getattr(self, "edgecost", None)

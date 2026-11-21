@@ -195,6 +195,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.roadq = np.ones(N)           # road quality (`road_tech`)
         self.imp = np.zeros(N)            # improvements 0-1
         self.clear = np.zeros(N)          # cleared share of forest (`clearing`)
+        self.clear_at = np.zeros(N)       # the share last applied to terrain (`clear_terrain`)
+        self.burn = np.zeros(N)           # burnt-open share, by foragers (`fire`)
         self.salt = np.zeros(N)           # salt on irrigated land 0-1
         self.hard = np.zeros(N)           # hardship this tick (0/1)
         self.raided = np.zeros(N)         # raided or raiding this tick
@@ -471,6 +473,12 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.pmem = self.pop.copy()
         if not hasattr(self, "clear"):
             self.clear = np.zeros(self.W.N)
+        if not hasattr(self, "clear_at"):
+            self.clear_at = np.zeros(self.W.N)
+        if not hasattr(self, "burn"):
+            self.burn = np.zeros(self.W.N)
+        if not hasattr(self.W, "defence0"):
+            self.W.defence0 = self.W.defence.copy()
         if not hasattr(self, "army_x"):
             self.army_x = np.zeros(self.W.N)
         if hasattr(self, "fl_acc") and len(self.fl_acc["world"]) != \
@@ -608,6 +616,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.territory()
         if self.year % ROAD_EVERY == 0:
             self.name_seats()
+        if self.year % ROAD_EVERY == 0 and "clear_terrain" in self.on:
+            self.clear_terrain()
         if self.year % ROAD_EVERY == 0:
             self.roads()
         self.polity_stats()

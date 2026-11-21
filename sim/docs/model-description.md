@@ -563,6 +563,16 @@ K. Growth, migration pressure and room use K × pref.
   at 0.01 × gap per year and falls at (1/150) × gap. In capacity (5.3),
   rain-fed farming, forage and herd are each × (1 + clear × (grassland's
   FARM, FORAGE or HERD / the cell's biome's − 1)).
+- `[fire]` (2026-11-20, U; **C**) on temperate-forest cells, burn (0–1)
+  moves toward 0.3 × (1 − agri) × clip(pop / farming K, 0, 1) on
+  non-herding cells (0 elsewhere). It rises at 0.1 × gap per year and
+  falls at (1/20) × gap. In capacity, forage is × (1 + 0.25 × burn ×
+  (1 − clear)). Before clearing moves, clear = max(clear, min(burn,
+  target)).
+- `[clear_terrain]` (2026-11-20, U; **C**) every 50 years, in cells where
+  |clear − clear_at| ≥ 0.05, clear_at = clear. Travel cost (2.2, MOVE) and
+  terrain defence (TERRAIN_DEF) are each × (1 + clear_at × (grassland's
+  value / the biome's − 1)) on jungle and temperate forest.
 
 ---
 
