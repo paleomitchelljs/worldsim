@@ -59,7 +59,7 @@ what an entry holds.
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
 | 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
-| 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | HASH |
+| 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
 
 ## Entries
 
@@ -2479,7 +2479,7 @@ and cross-people captures come late (all but one of 113 after 6000).
 conquer each other (WP13), not what conquest does. Next by D13: WP11
 stage A (density trace).
 
-### WP11 stage A: density trace (2026-11-21, HASH)
+### WP11 stage A: density trace (2026-11-21, 478292a)
 
 **Asked by U (2026-11-21).** "Let's do that" (after WP10, D13).
 
