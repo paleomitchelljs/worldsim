@@ -2224,7 +2224,7 @@ from `wp8j` plus `base_seed105` (`wp9_analyze.py` defaults to `wp8j`).
 
 Recommended: 1 now; decide on 2 after the screen.
 
-### WP9 stage C: Earth climate check (2026-11-20, HASH)
+### WP9 stage C: Earth climate check (2026-11-20, a7c8606)
 
 **Asked by U (2026-11-20):** "Please do the climate check."
 
