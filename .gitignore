@@ -27,3 +27,7 @@ gis/qa/*
 
 # Local Claude Code settings
 .claude/
+
+# Earth climate check inputs (WorldClim 2.1; not redistributable)
+gis/earth/
+!gis/qa/earth_climate_*

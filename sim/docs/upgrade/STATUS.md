@@ -2223,3 +2223,27 @@ from `wp8j` plus `base_seed105` (`wp9_analyze.py` defaults to `wp8j`).
 3. Neither?
 
 Recommended: 1 now; decide on 2 after the screen.
+
+### WP9 stage C: Earth climate check (2026-11-20, HASH)
+
+**Asked by U (2026-11-20):** "Please do the climate check."
+
+**Done.** `earth_climate.py` runs `climate_world.py`, unchanged, on
+Earth's land and elevation, and compares it with WorldClim 2.1 put
+through the same definitions and the same biome rule. Write-up in
+`docs/earth-climate-check.md`.
+
+**Downloads.** WorldClim 10-minute monthly normals, 191 MB in
+`gis/earth/` (not in git).
+
+**Findings.**
+- Biomes agree on 46% of land.
+- Temperature is 5°C too cold over land on average, and up to 9°C in
+  places. That doubles the tundra and cuts the hot deserts.
+- No summer continental rain outside the ITCZ.
+- India's monsoon is missing.
+- The subtropical deserts are too wet.
+
+**Not changed.** Possible fixes (a-d) are listed for U. They would
+rebuild world_v2, so they wait for the screen, and they would spend the
+check as a test.

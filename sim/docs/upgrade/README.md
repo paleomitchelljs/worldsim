@@ -82,7 +82,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D8 | Cityless polities (tribes, confederations, herder states) | build, as "camp" seats | |
 | D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | 2026-11-18 (U): `WP7-design.md` confirmed with a presence table (not slots), niche overlap, raids inside a cell, flight share = 1 − attacker violence |
 | D10 | When derived climate disagrees with the hand-drawn biome map | the drawn map wins; climate fields vary conditions within a biome | 2026-11-19 (U): report first; then, on the report (the southern jungle belt "probably an old error"), the climate's biome replaces the drawn one everywhere in `world_v2` (`syn_biome`; `fic_biome` and `world.gpkg` untouched). `world_v2` is the default world and `floodplain` a default switch |
-| D11 | Earth test (needs public datasets downloaded) | scope it in WP9 stage C; decide after the sensitivity screen | 2026-11-20: scoped (`docs/earth-test-plan.md`); open for U: climate check alone, the whole test, or neither |
+| D11 | Earth test (needs public datasets downloaded) | scope it in WP9 stage C; decide after the sensitivity screen | 2026-11-20: scoped (`docs/earth-test-plan.md`); U chose the climate check alone, done (`docs/earth-climate-check.md`); the society test is still open |
 | D12 | Break seed-for-seed continuity with old runs when the RNG is split into named streams | yes, at the end of WP1, followed by a fresh baseline run or two | 2026-11-17 (U): yes, no problem; also yes to a fresh seed for a branch (`--branch-seed`) and to drawing the climate's local field at reduced resolution |
 
 ## Files here

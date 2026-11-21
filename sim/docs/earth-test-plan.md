@@ -145,6 +145,17 @@ and part of B) is a self-contained check of the climate model.
   should be judged on the fantasy-world patterns (docs/patterns.md)
   first.
 
+## Step C done (2026-11-20)
+
+U chose the climate check alone (option 1). Results are in
+[earth-climate-check.md](earth-climate-check.md).
+- Biomes agree on 46% of land.
+- The model is about 5°C too cold away from the tropics.
+- It has no summer rain over continents outside the ITCZ.
+- The South Asian monsoon fails.
+
+Possible fixes are listed there, for U.
+
 ## Decision for U (D11)
 
 1. Do the climate check alone (A, part of B, C)?
