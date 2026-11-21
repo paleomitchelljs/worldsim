@@ -2559,3 +2559,20 @@ world: desert 5.5 → 10.2M km², tundra 31.5 → 20.5.
 - the 15-30° belt holds 22-29% of people (was 11-15%);
 - 59-257 states with 3+ cities; 1,019-3,690 wars;
 - Snake folk lead in four seeds, Lizardfolk in one.
+
+### 2026-11-21 WP8: ITCZ by moist static energy (`wp8m_seed101`-`104`, `106`)
+
+What it tested: the "bigger fix" for India's monsoon (U, 2026-11-21)
+in `climate_world.py`, with `world_v2` and `sites_v3.json` rebuilt;
+society code as `wp8k`.
+
+**Checks.** ITCZ_ITER 0 reproduces the `wp8l` climate exactly on Earth.
+
+**Climate** (earth-climate-check.md, last section): India still fails
+(July ITCZ 12-16°N); Africa's rain belt moved to 13-14°N and the Congo
+is jungle again; the Sahel is drier. A 5 °C/km lapse rate was tried and
+not adopted.
+
+**The batch** (BASELINE.md, last section): population 47-70M; 95-275
+states with 3+ cities; 871-2,781 wars; Snake folk lead every seed with
+30-56%.

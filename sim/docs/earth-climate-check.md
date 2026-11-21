@@ -235,3 +235,37 @@ agreement rose from 0.35 to 0.44.
 - **Siberia is too dry for forest** and Central Asia too wet: the older
   fault 5 above.
 - **The Horn of Africa and the Red Sea coast** come out jungle.
+
+## The ITCZ by moist static energy (U, 2026-11-21: "the bigger fix")
+
+Made as proposed above (world-data.md has the rule and what was tried):
+each summer month, the ITCZ moves to where near-surface moist static
+energy peaks, and the month is run again. Rerun: `earth_climate.py
+--tag fix2`.
+
+**It did not fix India.** India's July ITCZ is at 12-16°N, against
+Earth's 25°N. India gets 0.41 m/yr of rain, against 1.10 observed and
+0.49 with (a)-(d) alone. On these fields the equatorial ocean's moist
+static energy beats northern India's, for two reasons:
+- **High land is too cold.** Tibet is 9.5 °C below observed, the
+  Colorado Plateau 6 °C and Iran 4 °C: the lapse rate from sea level
+  misses a large plateau's own heating. A 5 °C/km near-surface lapse
+  rate barely moved India's ITCZ, so it was not adopted.
+- **The Arabian Sea is as warm as the open tropics.** On Earth it is
+  cooled by upwelling under the monsoon's own jet, which this check has
+  no input for.
+
+**What it did fix:**
+- Africa's July rain belt sits at 13-14°N (it was 18; Earth's is about
+  10-12).
+- The Congo is jungle again: 80% of the box, against 60% with (a)-(d)
+  alone.
+- East Asia's rain belt reaches 18-22°N in July. East China gets 0.66
+  m/yr (0.60 before; observed 1.00).
+
+**What it made worse:**
+- The Sahel is drier: 0.29 m/yr against 0.43 with (a)-(d) alone, and
+  0.52 observed.
+- India got 0.41 m/yr, against 0.49 with (a)-(d) alone.
+
+**Overall:** agreement 0.54, mean recall 0.58, desert 19.7M km².

@@ -52,6 +52,7 @@ what an entry holds.
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 8 | Clearing extensions (U) | done (`clear_terrain`, `fire` on; baseline `wp8k_`) | 2026-11-21 | 0970306 |
 | 8 | Earth-check climate fixes (U) | done (baseline `wp8l_`) | 2026-11-21 | 26931af |
+| 8 | ITCZ by moist static energy (U) | done (baseline `wp8m_`; India still fails) | 2026-11-21 | HASH |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
@@ -2352,3 +2353,34 @@ changes": fixes (a)-(d) of docs/earth-climate-check.md.
   the Congo is drier; Siberia is too dry for forest.
 - **The screen** (docs/sensitivity.md) ran on `wp8j`; two world changes
   have come since.
+
+### WP8: ITCZ by moist static energy; baseline `wp8m` (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** "Let's do the bigger fix."
+
+**Done** (`climate_world.py`; world-data.md, "ITCZ by moist static
+energy").
+- Each summer month: a first pass with the land-fraction ITCZ, then the
+  ITCZ moves to the soft maximum of near-surface moist static energy,
+  and the month is run again (ITCZ_ITER 1).
+- Land humidity comes from the PET rule's dew point, and sea humidity is
+  RH 0.8. The march's rain potential was tried first and failed: over
+  dry land it is near zero.
+- A 5 °C/km lapse rate was tried and not adopted.
+- `earth_climate.py --tag fix2`. `world_v2` and `sites_v3.json` rebuilt.
+
+**Checks.** ITCZ_ITER 0 is identical to before.
+
+**Results.**
+- **India still fails** (0.41 m/yr; July ITCZ 12-16°N against Earth's
+  25).
+- Africa's rain belt is at 13-14°N, and the Congo is 80% jungle.
+- The Sahel is drier (0.29 against 0.52 observed).
+- Baseline `wp8m`: population 47-70M; Snake folk lead every seed with
+  30-56%.
+
+**For the next session / U.**
+- **What India needs:** high land is too cold (Tibet by 9.5 °C), and the
+  Arabian Sea's monsoon upwelling has no input. Both are outside this
+  rule.
+- **Snake folk's share is the largest yet.** Reported only.

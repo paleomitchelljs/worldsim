@@ -827,3 +827,38 @@ grassland 33.9 → 38.0, temperate forest 27.3 → 24.4, tundra 31.5 →
   Reported only.
 
 None is tuned.
+
+## `wp8m`: ITCZ by moist static energy (2026-11-21)
+
+**Asked by U (2026-11-21):** "Let's do the bigger fix." Each summer
+month the ITCZ moves to the maximum of near-surface moist static energy
+(world-data.md, "ITCZ by moist static energy"); `world_v2` and
+`sites_v3.json` rebuilt. Society code as `wp8k`.
+
+**The world** (M km²): jungle 28.9 → 28.1, desert 10.2 → 9.5, grassland
+38.0 → 37.8, temperate forest 24.4 → 26.1, tundra 20.5 (unchanged).
+
+| Measure | wp8m (current) | wp8l (previous) |
+|---|---|---|
+| World population at 8000 (M) | 47-70 | 48-87 |
+| Population at 1000 / 4000 (M) | 2.6-3.4 / 16.1-19.5 | 3.1-3.6 / 13.4-20.1 |
+| First city / 10M (year) | 520-985 / 2,310-2,845 | 475-830 / 2,420-3,015 |
+| First bronze / iron / steel (year) | 4,015-5,870 / 4,735-6,945 / 5,215-7,840 | 4,615-6,240 / 5,170-7,445 / 5,645-7,390 |
+| Urban share at the end | 0.055-0.066 | 0.043-0.071 |
+| Rank-size slope at the end | -0.80 to -0.56 | -1.14 to -0.55 |
+| States with 3+ cities | 95-275 | 59-257 |
+| Largest state (M km²) | 1.2-2.7 | 1.2-2.7 |
+| Wars | 871-2,781 | 1,019-3,690 |
+| Sieges taken | 43-48% | 39-47% |
+| City food from trade | 0.036-0.060 | 0.026-0.055 |
+| Pop share: \|lat\| 0-15 / 15-30 / 30-45 | 0.56-0.58 / 0.25-0.30 / 0.09-0.11 | 0.54-0.61 / 0.22-0.29 / 0.09-0.16 |
+| Population in a state | 0.61-0.77 | 0.53-0.80 |
+| Largest people at the end | Snake folk in every seed, 30-56% | Snake folk in 4 seeds (22-37%), Lizardfolk in one |
+
+**What moved.** Small changes to the world, and the batch stays within
+`wp8l`'s range on most measures, with a narrower spread. Bronze and iron
+come 400-600 years earlier at the low end. **Snake folk lead again in
+every seed, at 30-56%**, their largest share yet. Reported only (U:
+peoples later).
+
+None is tuned.

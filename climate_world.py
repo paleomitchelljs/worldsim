@@ -27,7 +27,10 @@ from Earth's map (all forms and numbers C):
                   westerlies, polar easterlies), month by month: the
                   ITCZ follows the sun, further over longitudes with much
                   land and with high plateaus (the monsoon; a plateau
-                  heats air above the boundary layer), its rain belt
+                  heats air above the boundary layer); that first guess
+                  is then moved to where the month's near-surface moist
+                  static energy peaks (Prive and Plumb 2007) and the
+                  month run again; its rain belt is
                   wider over land, the trades blow toward it, between
                   the equator and a displaced ITCZ the wind turns
                   westerly (the monsoon westerly), and the
@@ -150,6 +153,19 @@ PARAMS = dict(
     # rain seasonality (C, 2026-11-20, U): plant-available soil water a
     # monthly bucket carries between months (typical 100-200 mm)
     S_MAX=0.15,        # m
+    # the ITCZ by moist static energy (C, 2026-11-21, U: "the bigger
+    # fix"; Prive and Plumb 2007, Emanuel 1995: a monsoon's convergence
+    # zone sits at the maximum of near-surface moist static energy).
+    # Each summer month, the ITCZ from the land-fraction rule gives a
+    # first march; the ITCZ then moves to where that march's air has the
+    # most moist static energy, and the month is run again (ITCZ_ITER
+    # times; 0 keeps the land-fraction rule)
+    ITCZ_ITER=1,
+    G_CP=9.8,          # degC per km: g / cp, height's share (dry adiabat)
+    LV_CP=2490.0,      # degC per (kg/kg): latent heat / cp
+    RH_BL=0.8,         # relative humidity of the marine boundary layer
+    TAU_MSE=2.0,       # degC, softness of the maximum
+    MSE_LAT=40.0,      # deg, furthest the ITCZ may sit from the equator
     # Earth climate check fixes (C, 2026-11-21, U: "implement those
     # climate model changes"; docs/earth-climate-check.md (a)-(d))
     # (a) heat carried poleward flattens the tropics: the profile's
@@ -457,9 +473,33 @@ def fields(inp, p=PARAMS):
         p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
 
     P, wsum, Pm = np.zeros((NY, NX)), 0.0, {}
-    for sun, wt in SEASONS:
-        lf = lf_n if sun > 0 else lf_s
-        itcz = sun * (p["ITCZ_SEA"] + (p["ITCZ_LAND"] - p["ITCZ_SEA"]) * lf)   # (NX,)
+    def mse_itcz(Pmon, sun):
+        """Latitude (by longitude) where this month's near-surface moist
+        static energy peaks in the summer hemisphere, within MSE_LAT of
+        the equator: h = T + (g/cp) height + (L/cp) specific humidity (K).
+        Humidity: RH_BL over sea; over land the dew point of penman_pet's
+        rule (the night minimum, lower in clear dry air), with cloud
+        from this month's rain Pmon; pressure falls with height. A soft
+        maximum (TAU_MSE), smoothed over LF_SMOOTH of longitude."""
+        Tm = T + A * sun * np.sign(LAT)
+        z_km = np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
+        c = np.exp(-np.clip(Pmon, 0, None) / p["P_CLOUD"])        # 0 cloudy .. 1 clear
+        dtr = p["DTR_CLOUD"] + (p["DTR_CLEAR"] - p["DTR_CLOUD"]) * c
+        ea = np.where(land, esat(Tm - dtr / 2 - p["DEW_ARID"] * c),
+                      p["RH_BL"] * esat(Tm))
+        pres = 101.3 * ((293 - 6.5 * z_km) / 293) ** 5.26          # kPa (FAO-56 eq. 7)
+        h = Tm + p["G_CP"] * z_km + p["LV_CP"] * 0.622 * ea / pres
+        side = LAT * np.sign(sun)
+        ok = (side > 0) & (side < p["MSE_LAT"])
+        h = np.where(ok, h, -np.inf)
+        wgt = np.exp((h - h.max(0)[None, :]) / p["TAU_MSE"])
+        lat_c = (wgt * LAT).sum(0) / wgt.sum(0)
+        return ndimage.gaussian_filter1d(lat_c, sig, mode="wrap")
+
+
+    def month(sun, lf, itcz):
+        """One month's rain (and the air's rain potential) with the ITCZ at
+        `itcz` (deg, by longitude)."""
         w_itcz = p["W_ITCZ"] + (p["W_ITCZ_LAND"] - p["W_ITCZ"]) * np.clip(lf, 0, 1)
         sh = p["BAND_SHIFT"] * sun * np.sign(lat1)          # poleward in the summer hemisphere
         hadley = p["PHI_HADLEY"] + sh
@@ -511,6 +551,16 @@ def fields(inp, p=PARAMS):
             ramp = np.clip((np.abs(itcz)[None, :] - phi) / w_itcz[None, :], 0, 1) * summer[:, None]
             m = p["MONSOON_W"] * ramp
             Pmon = (1 - m) * Pmon + m * rain(qm)
+        return Pmon, q
+
+    for sun, wt in SEASONS:
+        lf = lf_n if sun > 0 else lf_s
+        itcz = sun * (p["ITCZ_SEA"] + (p["ITCZ_LAND"] - p["ITCZ_SEA"]) * lf)   # (NX,)
+        Pmon, q = month(sun, lf, itcz)
+        for it in range(p["ITCZ_ITER"] if sun != 0 else 0):
+            # the ITCZ where near-surface moist static energy peaks
+            itcz = mse_itcz(Pmon, sun)
+            Pmon, q = month(sun, lf, itcz)
         Pm[sun] = ndimage.gaussian_filter(Pmon, 1.0, mode=("nearest", "wrap"))
         P += wt * Pmon
         wsum += wt

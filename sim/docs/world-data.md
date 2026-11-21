@@ -271,6 +271,45 @@ to before.
   from 0.35 to 0.44, though nothing was fitted to it. Land rain 0.89 →
   1.02 m/yr; P0 3.29.
 
+### ITCZ by moist static energy (U, 2026-11-21: "the bigger fix")
+
+The fix earth-climate-check.md proposed for India's monsoon. Every form
+and number is C; ITCZ_ITER 0 gives fields identical to the version
+before.
+
+- **The rule.** A monsoon's convergence zone sits at the maximum of
+  near-surface moist static energy (Privé and Plumb 2007; Emanuel 1995).
+  In each month off the equinox:
+  - the land-fraction rule (with plateaus) places a first ITCZ, and the
+    month is run;
+  - at each longitude, h = T_month + 9.8 °C/km × height + (L/cp) ×
+    specific humidity is computed in the summer hemisphere within 40° of
+    the equator;
+  - the ITCZ moves to its soft maximum (TAU_MSE 2 °C), smoothed over 10°
+    of longitude, and the month is run again (ITCZ_ITER 1; a second
+    pass changes almost nothing).
+- **Humidity.** Over sea, relative humidity 0.8 (the marine boundary
+  layer). Over land, the dew point of the PET rule (FAO-56: the night
+  minimum, lower in clear dry air), with cloud from the first pass's
+  rain; pressure falls with height.
+- **Tried first:** humidity from the march's rain potential. Over dry
+  land that potential is nearly nil (northern India 0.6 g/kg, against
+  real desert air's 5-10), so the ocean always won and the ITCZ stayed
+  at 5°N over India.
+- **Also tried, not adopted:** a near-surface lapse rate of 5 °C/km
+  instead of 6.5. High land is too cold on Earth (Tibet by 9.5 °C,
+  the Colorado Plateau by 6), but the change barely moved India's ITCZ
+  and warmed land by 1.5 °C overall.
+- **Where the July ITCZ sits now** (by longitude): Africa 13-14°N (was
+  18), East Asia 18-22°N (was 11-16), India 12-16°N (was 15-17; Earth's
+  trough is near 25°N).
+- **On Earth** (`earth_climate.py --tag fix2`): agreement 0.54 (0.54 with
+  fixes (a)-(d) alone); the Congo is 80% jungle (60%); East China 0.66
+  m/yr (0.60); India 0.41 (0.49); the Sahel 0.29 (0.43; observed 0.52).
+  **India's monsoon still fails.**
+- **On this world:** jungle 28.1, desert 9.5, grassland 37.8, temperate
+  forest 26.1, tundra 20.5M km²; agreement with the drawn map 0.44.
+
 ### Parameters and biomes (refit on physical grounds, U 2026-11-19)
 
 The climate-to-biome rule is fixed at standard thresholds:
