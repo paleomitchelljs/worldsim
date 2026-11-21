@@ -2297,3 +2297,18 @@ point: metrics, run.json, final_maps.png and the log tail, in
 - **Master dials:** R_SCALE (17 of 28 patterns) and ADM_INV (15).
 
 **No values chosen**, per the brief.
+
+### WP8: clearing extensions merged; baseline `wp8k` (2026-11-21, 0970306)
+
+**Checks.** Identity with the new switches off (exact). Sanity run
+sensible.
+
+**Merged** to main. Baseline `wp8k_seed101`-`104` and `106`:
+- states are larger (1.2-3.4M km²) and more numerous (71-174 with 3+
+  cities);
+- wars 1,110-2,076;
+- urban share 0.047-0.062;
+- rank-size slope -0.77 to -0.56.
+
+**Attribution:** `clear_terrain` carries the shift; `fire` is minor.
+Reported, not tuned.

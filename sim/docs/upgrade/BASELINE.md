@@ -25,6 +25,10 @@ are from the same settings (runs `wp1g_states_seed101`, `103`).
 adopted growth settings.
 
 **Update, 2026-11-20 (WP8, fifth).** The baseline is now
+`wp8k_seed101`-`104` and `106` (last section): cleared land as terrain
+and foragers' burning.
+
+**Update, 2026-11-21 (WP8, seventh).** The baseline was
 `wp8j_seed101`-`104` and `106` (last section): land clearing.
 
 **Update, 2026-11-20 (WP8, sixth).** The baseline was
@@ -667,7 +671,7 @@ gained farmland where most people already live.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
 
-## The current baseline batch (`wp8j_seed101`-`104`, `106`, 2026-11-20)
+## The baseline batch of land clearing (`wp8j_seed101`-`104`, `106`, 2026-11-20)
 
 The code is that of `wp8i` with `clearing` on (U, 2026-11-20;
 [../structural.md](../structural.md#land-clearing-clearing)):
@@ -725,3 +729,55 @@ The world file is unchanged. Forest cleared at year 8,000 is
 - **Steel** in three seeds.
 
 None is tuned. Not remeasured: contingency across seeds (`--cross`).
+
+## The current baseline batch (`wp8k_seed101`-`104`, `106`, 2026-11-21)
+
+The code is that of `wp8j` with two new switches on (U, 2026-11-20:
+"prepare the extensions"; [../structural.md](../structural.md)):
+- **`clear_terrain`:** cleared forest is crossed and defended as open
+  country.
+- **`fire`:** foragers burn temperate forest open.
+
+The world file is unchanged. Cleared forest at 8,000 is 14.8-17.4M km²;
+the burnt forest peaks at 0.55-1.15M km² and ends at 0.31-0.39M km².
+
+| Measure | wp8k (current) | wp8j (previous) |
+|---|---|---|
+| World population at 8000 (M) | 44-73 | 40-46 |
+| Population at 1000 / 4000 / 7000 (M) | 2.3-3.2 / 18.1-21.2 / 37.8-45.1 | 2.5-4.1 / 17.3-19.3 / 27.0-41.4 |
+| First city / 10M (year) | 550-1,400 / 2,655-3,015 | 535-1,035 / 2,555-2,940 |
+| First bronze / iron (year) | 4,330-6,505 / 5,035-7,675 | 4,150-6,715 / 4,820-7,405 |
+| First steel | 5,720-7,995 in four seeds | 5,370-7,000 in three |
+| Urban share at the end | 0.047-0.062 | 0.027-0.043 |
+| Rank-size slope at the end | -0.77 to -0.56 | -1.30 to -0.88 |
+| Largest city, share of world | 0.10-0.18% | 0.09-0.13% |
+| Never above one city | 84-91% | 89-94% |
+| States with 3+ cities | 71-174 | 46-117 |
+| Ended 3+ city states, lifespan median / CV | 230-752 yr / 1.00-1.43 | 367-967 yr / 0.75-1.29 |
+| Largest state (M km²) | 1.2-3.4 | 0.7-1.6 |
+| Wars | 1,110-2,076 | 697-1,306 |
+| Sieges taken | 38-48% | 41-45% |
+| City food from trade | 0.022-0.046 | 0.021-0.038 |
+| Deaths: feud / raid | 0.48-0.58 / 0.29-0.32 | 0.58-0.62 / 0.28-0.33 |
+| Pop share: river / jungle / grassland / temperate forest | 0.39-0.43 / 0.51-0.60 / 0.19-0.27 / 0.17-0.26 | 0.37-0.44 / 0.43-0.55 / 0.22-0.32 / 0.21-0.30 |
+| Population in a state | 0.59-0.75 | 0.41-0.57 |
+| Largest people at the end | Snake folk in every seed, 25-45% | the same, 18-41% |
+
+**Which switch** (seed 101; both on / `clear_terrain` only / `fire` only
+/ `wp8j`):
+- urban share 0.057 / 0.064 / 0.044 / 0.043;
+- largest state 1.6 / 2.6 / 1.2 / 1.1M km²;
+- states with 3+ cities 144 / 170 / 88 / 117;
+- wars 2,076 / 2,442 / 1,489 / 1,306;
+- rank-size slope -0.76 / -0.58 / -1.06 / -0.88.
+
+**`clear_terrain` carries the shift.** Cleared farmland is cheaper to
+cross and easier to take:
+- states reach further and grow larger;
+- food carries further, so cities grow and the slope flattens;
+- more wars are fought.
+
+`fire` alone stays near `wp8j`.
+
+None is tuned. The sensitivity screen (docs/sensitivity.md) ran on
+`wp8j` code; its rankings predate this shift.

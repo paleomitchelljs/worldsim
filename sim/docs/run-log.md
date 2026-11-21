@@ -2516,3 +2516,25 @@ structural.md, "Land clearing").
 - Steel in three seeds.
 - Snake folk are the largest people in every seed.
 - About 900 s per run, five at once.
+
+### 2026-11-21 WP8: cleared land as terrain, foragers' burning (`wp8k_seed101`-`104`, `106`)
+
+What it tested: `wp8j` with `clear_terrain` and `fire` on (U,
+2026-11-20, "prepare the extensions"; structural.md).
+
+**Checks.**
+- `--off clear_terrain,fire` reproduces `wp8j_seed101` exactly (1,000
+  years).
+- A 3,000-year sanity run burnt up to 0.8M km² of forest, which farmers
+  then took over.
+
+**The batch.** Full table in BASELINE.md, last section.
+- Population at 8,000 is 44-73M.
+- Urban share 0.047-0.062.
+- Largest state 1.2-3.4M km².
+- 71-174 states with 3+ cities.
+- 1,110-2,076 wars.
+
+**Attribution** (seed 101, each switch off in turn): `clear_terrain`
+carries the shift; `fire` alone stays near `wp8j`. Runs
+`wp8k_no_fire_seed101` and `wp8k_no_clear_terrain_seed101`.
