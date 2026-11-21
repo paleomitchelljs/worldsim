@@ -2247,3 +2247,27 @@ through the same definitions and the same biome rule. Write-up in
 **Not changed.** Possible fixes (a-d) are listed for U. They would
 rebuild world_v2, so they wait for the screen, and they would spend the
 check as a test.
+
+### WP8: clearing extensions prepared (2026-11-20, branch `clearing-ext`)
+
+**Asked by U (2026-11-20):** "prepare the extensions".
+
+**Built on branch `clearing-ext`** (worktree `../world-ext`), not on
+main, because the screen imports `wsim` at the start of each run:
+- **`clear_terrain`:** cleared forest's travel cost and terrain defence
+  blend toward grassland's. Applied every 50 years where the share has
+  moved by 0.05 or more.
+- **`fire`:** foragers keep up to 0.3 of temperate forest burnt open.
+  The burnt share forages × 1.25, and farmers start clearing from it.
+
+**Not built: war damage to clearing.** Raids and ravaging already wreck
+field works, and depopulated land already grows back. The war-relevant
+effect, forest's defence, is in `clear_terrain`.
+
+**Runs.** None yet. `sim/runs_after_screen.sh` (on the branch), started
+in the background, waits for the screen to end. It then runs:
+- the `--off clear_terrain,fire` identity check against `wp8j_seed101`
+  (1,000 years);
+- a 3,000-year sanity run.
+
+Merge and the new baseline come after that.
