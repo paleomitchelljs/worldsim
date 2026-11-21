@@ -114,3 +114,67 @@ Proposals for U before any change:
    or whether Goblins without metal is intended.
 3. **Herding density** (HERD grassland 0.45) only matters while farming
    is held back by sod. Leave it until 2 is settled.
+
+## Stage B part 1 results: the half-fill (2026-11-21)
+
+Tool: `tools/wp11_trace.py` (extended, records only). At year 8000 it
+splits each occupied cell's land capacity (raw K with no drought and no
+devastation) into the steps `grow` takes down to its own k, and over
+the last 1,000 years it keeps a per-biome account of heads by phase and
+deaths by cause, plus fill every 500 years. Tables:
+`baseline/wp11b_halffill_seed101.md`, `baseline/wp11b_halffill_seed103.md`;
+chart `baseline/wp11b_halffill.png`. Seeds 101 and 103 reproduce
+`wp10c` (63.1M, 72.8M main rows).
+
+Shares of land capacity at year 8000 (range over seeds 101 and 103):
+
+| Biome | Fill | Below own k | Separation | States, gross take | States, sent back | Other rows eat | Devastation, drought |
+|---|---|---|---|---|---|---|---|
+| Jungle | 0.53-0.57 | 0.37-0.43 | 0.02 | 0.07-0.10 | 0.05-0.06 | 0.01 | 0 |
+| Temperate forest | 0.39-0.52 | 0.45-0.56 | 0.03 | 0.04 | 0.02-0.04 | 0.01 | 0 |
+| Grassland | 0.39-0.42 | 0.49-0.51 | 0.07 | 0.03 | 0.02 | 0.01 | 0 |
+| Desert | 0.48-0.58 | 0.34-0.45 | 0.05 | 0.06-0.07 | 0.05-0.06 | 0.01-0.02 | 0 |
+| All occupied | 0.50-0.51 | 0.43-0.44 | 0.03 | 0.06-0.07 | 0.04-0.05 | 0.01 | 0 |
+
+**What holds every biome at half:**
+
+1. **Population sits below its own capacity**: 0.34-0.56 of land
+   capacity, nearly the whole gap. The other steps are small:
+   - states take 3-10% gross, but most comes back to capitals and
+     cities in the same biome (net 0-2%);
+   - other peoples' rows eat 1-2%;
+   - separation 2-8% (most on grassland);
+   - devastation and drought are 0 at year 8000.
+2. **It is a steady state, not a catch-up.** Over 7000-8000, natural
+   increase per century is 0.31-0.83 of heads. Recorded deaths take
+   most of it back: 0.29-0.66 per century, in this order:
+   - feud 0.09-0.33 (the largest cause in seven of the eight
+     biome-seeds);
+   - raids 0.07-0.21;
+   - plague 0.03-0.12;
+   - hunger 0.01-0.04;
+   - war deaths (sack, siege, ravage, expelled) under 0.02.
+
+   With a steady death rate m, logistic growth settles at
+   p/k = 1 - m/r. Here m is about 0.3-0.6% a year, and r is about
+   0.8-1% a year (back-calculated from grow's net and fill). That
+   gives about half. Dragons lower r further: growth forgone was
+   0.05-0.34 per century, most on grassland and forest (0.26-0.34).
+3. **Fill creeps up over time** (0.15-0.25 at 1000, 0.3-0.45 at 5000,
+   0.39-0.58 at 8000). Jungle and desert gained most in the last
+   millennium, which fits states spreading: feud stops where an
+   ordered state keeps the peace (`feud`: DT x FEUD_K x f x (1 -
+   order)).
+
+**So the half-fill is mostly how much violence there is outside
+ordered states** (feud, then raids), with plague and dragons on top.
+What states take, shared cells and devastation are not the cause. It
+is not specific to open land. Proposals for U (C): none needed for
+WP11. If it should change, the place is FEUD_K, or how far state order
+reaches (WP13). Feud's form is U (2026-11-02, violence carries an
+internal cost) and its numbers are C. Its comment in `params.py`
+assumes growth of 1.2-2% a year, giving 0.65-0.8 of capacity at
+violence 0.99. That was before D7 (2026-11-18) halved growth
+(R_SCALE 0.5). At today's 0.8-1%, the same FEUD_K costs about twice as
+much of the equilibrium. So feud is out of line with its own grounds,
+not with a density target.

@@ -2527,3 +2527,39 @@ runs need about 400 MB; free space before the next batch.
 
 **Next.** Rebuild `wp10c` with `--keep full` (about 750 MB) as the one
 full baseline; asked U first.
+
+### WP11 stage B part 1: the half-fill; `wp10c` rebuilt full (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** Rebuild `wp10c` full if missing; then
+trace the half-fill (records only) on seeds 101 and 103.
+
+**Baseline.** `wp10c_seed101`-`104`, `106` rebuilt with `--keep full`:
+about 80 MB each, 400 MB in all. `realism.py --group` matches
+BASELINE's `wp10c` section on every row listed there: population
+52.4-86.3M, bronze, iron and steel years, urban share, states 3+,
+largest state, wars, sieges taken, population in a state.
+
+**Done.** `tools/wp11_trace.py`, records only:
+- the capacity chain at year 8000: land K, drought, devastation, the
+  state's take by kind, what it sends back, other rows, separation,
+  and people below their own k;
+- a per-biome flow account over the last 1,000 years (instance hooks
+  on `acct_mark`, `dead`, `forgone` and `step`);
+- fill every 500 years.
+
+Results are in the brief ("Stage B part 1 results"), with the chart
+`baseline/wp11b_halffill.png`.
+
+**Results.**
+- People sit at 0.34-0.56 of land capacity below their own k. States
+  net 0-2%, overlap 1-2%, separation 2-8%, devastation and drought 0.
+- It is a logistic steady state. Deaths take 0.29-0.66 of heads per
+  century against natural increase of 0.31-0.83: feud 0.09-0.33,
+  raids 0.07-0.21, plague 0.03-0.12. Dragons cut growth, most on
+  grassland and forest.
+- FEUD_K's grounds (params.py) assume growth of 1.2-2% a year. Since
+  D7 growth is about 0.8-1%, so feud costs about twice the share of
+  capacity it was designed to.
+
+**Not done.** Stage B part 2 (metal by contact; overlaps WP14) waits
+for U.
