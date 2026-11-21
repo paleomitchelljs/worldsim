@@ -51,7 +51,7 @@ what an entry holds.
 | 8 | Monsoon westerly, rain timing (U) | done (baseline `wp8i_`) | 2026-11-20 | 23e3c6e |
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
-| 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | HASH |
+| 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
 
 ## Entries
@@ -2272,7 +2272,7 @@ in the background, waits for the screen to end. It then runs:
 
 Merge and the new baseline come after that.
 
-### WP9 stage B: sensitivity screen done (2026-11-21, HASH)
+### WP9 stage B: sensitivity screen done (2026-11-21, f61a47f)
 
 **Runs.** All 249 points ended normally (12.0 h, 8 at a time). Kept per
 point: metrics, run.json, final_maps.png and the log tail, in
