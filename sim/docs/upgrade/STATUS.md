@@ -53,7 +53,7 @@ what an entry holds.
 | 8 | Clearing extensions (U) | done (`clear_terrain`, `fire` on; baseline `wp8k_`) | 2026-11-21 | 0970306 |
 | 8 | Earth-check climate fixes (U) | done (baseline `wp8l_`) | 2026-11-21 | 26931af |
 | 8 | ITCZ by moist static energy (U) | done (baseline `wp8m_`; India still fails) | 2026-11-21 | c348ea2 |
-| 8 | Plateau warming (U) | done (baseline `wp8n_`) | 2026-11-21 | HASH |
+| 8 | Plateau warming (U) | done (baseline `wp8n_`) | 2026-11-21 | 4fab1c6 |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
@@ -2386,7 +2386,7 @@ energy").
   rule.
 - **Snake folk's share is the largest yet.** Reported only.
 
-### WP8: plateau warming; baseline `wp8n` (2026-11-21, HASH)
+### WP8: plateau warming; baseline `wp8n` (2026-11-21, 4fab1c6)
 
 **Asked by U (2026-11-21).** "A small cold highland change would be
 good."
