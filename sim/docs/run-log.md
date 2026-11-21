@@ -2538,3 +2538,24 @@ What it tested: `wp8j` with `clear_terrain` and `fire` on (U,
 **Attribution** (seed 101, each switch off in turn): `clear_terrain`
 carries the shift; `fire` alone stays near `wp8j`. Runs
 `wp8k_no_fire_seed101` and `wp8k_no_clear_terrain_seed101`.
+
+### 2026-11-21 WP8: Earth-check climate fixes (`wp8l_seed101`-`104`, `106`)
+
+What it tested: fixes (a)-(d) of earth-climate-check.md (U, 2026-11-21:
+"Please implement those climate model changes"), with `world_v2` and
+`sites_v3.json` rebuilt; society code as `wp8k`.
+
+**Checks.**
+- With the fixes off (T_MID 0, T_DRY 0, Z_CONV 0, H_BL and L_SUB very
+  large, W_ITCZ_LAND = W_ITCZ) the Earth fields are identical to before.
+- The world cache was rebuilt from the new `world_v2` before the runs.
+
+**Climate.** On Earth, agreement 0.46 → 0.54, temperature bias −5.0 →
++0.3 °C; India's monsoon still fails (earth-climate-check.md). On this
+world: desert 5.5 → 10.2M km², tundra 31.5 → 20.5.
+
+**The batch** (BASELINE.md, last section):
+- population at 8,000 is 48-87M;
+- the 15-30° belt holds 22-29% of people (was 11-15%);
+- 59-257 states with 3+ cities; 1,019-3,690 wars;
+- Snake folk lead in four seeds, Lizardfolk in one.

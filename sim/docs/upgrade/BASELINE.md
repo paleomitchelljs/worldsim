@@ -781,3 +781,49 @@ cross and easier to take:
 
 None is tuned. The sensitivity screen (docs/sensitivity.md) ran on
 `wp8j` code; its rankings predate this shift.
+
+## `wp8l`: Earth-check climate fixes (2026-11-21)
+
+**Asked by U (2026-11-21):** "Please implement those climate model
+changes." Fixes (a)-(d) of earth-climate-check.md in `climate_world.py`
+(world-data.md, "Earth-check fixes"); `world_v2` and `sites_v3.json`
+rebuilt. The society code is that of `wp8k`.
+
+**The world changed** (M km²): jungle 23.8 → 28.9, desert 5.5 → 10.2,
+grassland 33.9 → 38.0, temperate forest 27.3 → 24.4, tundra 31.5 →
+20.5. Land is about 5 °C warmer away from the tropics; land rain 0.89 →
+1.02 m/yr.
+
+| Measure | wp8l (current) | wp8k (previous) |
+|---|---|---|
+| World population at 8000 (M) | 48-87 | 44-73 |
+| Population at 1000 / 4000 (M) | 3.1-3.6 / 13.4-20.1 | 2.3-3.2 / 18.1-21.2 |
+| First city / 10M (year) | 475-830 / 2,420-3,015 | 550-1,400 / 2,655-3,015 |
+| First bronze / iron / steel (year) | 4,615-6,240 / 5,170-7,445 / 5,645-7,390 | 4,330-6,505 / 5,035-7,675 / 5,720-7,995 |
+| Urban share at the end | 0.043-0.071 | 0.047-0.062 |
+| Rank-size slope at the end | -1.14 to -0.55 | -0.77 to -0.56 |
+| Largest city, share of world | 0.14-0.19% | 0.10-0.18% |
+| States with 3+ cities | 59-257 | 71-174 |
+| Largest state (M km²) | 1.2-2.7 | 1.2-3.4 |
+| Wars | 1,019-3,690 | 1,110-2,076 |
+| Sieges taken | 39-47% | 38-48% |
+| City food from trade | 0.026-0.055 | 0.022-0.046 |
+| Pop share: river | 0.36-0.39 | 0.39-0.43 |
+| Pop share: \|lat\| 0-15 / 15-30 / 30-45 | 0.54-0.61 / 0.22-0.29 / 0.09-0.16 | 0.71-0.80 / 0.11-0.15 / 0.07-0.13 |
+| Pop share: jungle / grassland / temperate forest | 0.53-0.64 / 0.12-0.27 / 0.18-0.24 | 0.51-0.60 / 0.19-0.27 / 0.17-0.26 |
+| Population in a state | 0.53-0.80 | 0.59-0.75 |
+| Largest people at the end | Snake folk in 4 seeds (22-37%), Lizardfolk in one (33%) | Snake folk in every seed, 25-45% |
+
+**What moved.**
+- **Population left the equator**: the 15-30° belt holds 22-29% of
+  people, against 11-15%. The jungle spread there, and the warmer
+  subtropics farm.
+- **Larger totals and a wider spread** between seeds: population 48-87M,
+  wars 1,019-3,690, states 59-257. Seed 103 is the high one in each.
+- **L2 (population at |lat| 0-15), which no dial moved in the screen,
+  moved here** (0.71-0.80 → 0.54-0.61): it is set by the map, as the
+  screen said.
+- **Snake folk lead less** (22-37%); Lizardfolk lead in seed 102.
+  Reported only.
+
+None is tuned.

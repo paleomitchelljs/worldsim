@@ -50,6 +50,8 @@ what an entry holds.
 | 8 | Monthly circulation, currents, seams (U) | done (baseline `wp8h_`) | 2026-11-20 | 5d07290 |
 | 8 | Monsoon westerly, rain timing (U) | done (baseline `wp8i_`) | 2026-11-20 | 23e3c6e |
 | 8 | Land clearing (U) | done (`clearing` on; baseline `wp8j_`) | 2026-11-20 | 53610b9 |
+| 8 | Clearing extensions (U) | done (`clear_terrain`, `fire` on; baseline `wp8k_`) | 2026-11-21 | 0970306 |
+| 8 | Earth-check climate fixes (U) | done (baseline `wp8l_`) | 2026-11-21 | 26931af |
 | 9 | A metrics freeze | done (`docs/patterns.md`; six held-out measures) | 2026-11-20 | 90e91c0 |
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
@@ -2312,3 +2314,41 @@ sensible.
 
 **Attribution:** `clear_terrain` carries the shift; `fire` is minor.
 Reported, not tuned.
+
+### WP8: Earth-check climate fixes; baseline `wp8l` (2026-11-21, 26931af)
+
+**Asked by U (2026-11-21).** "Please implement those climate model
+changes": fixes (a)-(d) of docs/earth-climate-check.md.
+
+**Done** (`climate_world.py`; world-data.md, "Earth-check fixes").
+- (a) The profile's P4 term (T_MID 6 °C at 45°); dry land warmer by
+  T_DRY 5 °C × (1 − AET/PET).
+- (b) Summer convection over warm land (Z_CONV 1, 18-26 °C); on the
+  subtropical highs' western flanks in summer, poleward flow and no
+  sinking.
+- (c) Plateaus above H_BL 1.5 km add to the ITCZ's pull.
+- (d) ITCZ half-width 8° over land; the Hadley branch dries air over
+  land (L_SUB 2,000 km).
+- `earth_climate.py --tag fix1` keeps the first check's outputs.
+- `world_v2` and `sites_v3.json` rebuilt. Docs: world-data,
+  earth-climate-check, README rows, run-log, BASELINE.
+
+**Checks.** Off, the fields are identical to before.
+
+**Results.**
+- Earth: agreement 0.46 → 0.54; temperature bias −5.0 → +0.3 °C;
+  desert 12 → 18M km² (31 observed).
+- This world: desert 5.5 → 10.2M km², tundra 31.5 → 20.5; agreement
+  with the drawn map 0.35 → 0.44.
+- Baseline `wp8l`: population 48-87M; the 15-30° belt's share doubles;
+  Snake folk lead in four seeds.
+
+**For the next session / U.**
+- **The Earth check is spent for the climate model**: forms were
+  revised after seeing Earth's response.
+- **India's monsoon still fails**; a fix would place the ITCZ by moist
+  static energy.
+- **Wrong on Earth after the fixes:** interior Australia is wetter;
+  the Congo is drier; Siberia is too dry for forest.
+- **The screen** (docs/sensitivity.md) ran on `wp8j`; two world changes
+  have come since.
