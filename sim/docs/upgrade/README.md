@@ -54,6 +54,36 @@ Why this order:
   rebaselines everything. Do it once, after the mechanics settle.
 - **3 any time after 2.** It touches no mechanics.
 
+## Phase 2: the society model (U, 2026-11-21)
+
+WP0-WP9 are done. The physical model is settled (U, 2026-11-21: "pretty
+content with the physical model now"); the Earth society test is
+skipped (D11). Phase 2 works on the society model, from the open
+questions, the sensitivity screen and the `wp8m` results. Every
+package starts with measures or a design note; nothing is tuned to
+reach a target. Compare against the newest baseline (`wp8n`).
+
+| # | Brief | Changes the rules? | Depends on |
+|---|---|---|---|
+| 10 | [WP10-peoples-movement.md](WP10-peoples-movement.md): conquest that settles land, deportation, a motive to rule, acculturation | yes | - |
+| 11 | [WP11-settlement-density.md](WP11-settlement-density.md): why grassland and forest stay at forager density | yes | - |
+| 12 | [WP12-crises.md](WP12-crises.md): lagged capacity, rural plague | yes | - |
+| 13 | [WP13-war-states.md](WP13-war-states.md): campaigns, vassalage, rulers in the war decision, herder conquest | yes | 10 (B) |
+| 14 | [WP14-technology.md](WP14-technology.md): loss, borrowing, costs | yes | - |
+| 15 | [WP15-loose-ends.md](WP15-loose-ends.md): small fixes | some | - |
+
+Why this order (C):
+
+- **10 first.** One people's share keeps rising (Snake folk 30-56% in
+  `wp8m`), and conquest moves almost no one. It is the most visible
+  result and its causes are already listed.
+- **11 next.** It is mostly a trace of capacity, and it changes how
+  much land there is to fight over.
+- **13 after 10's design note**, since both touch what a won war does.
+- **12 and 14** change the timeline, so they come after the shares and
+  densities they would shift.
+- **15 any time**, alongside the package that touches the same code.
+
 ## How to run a session
 
 One stage of one work package per session. Open the session in
@@ -82,7 +112,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D8 | Cityless polities (tribes, confederations, herder states) | build, as "camp" seats | |
 | D9 | Several peoples per cell (the 2026-11-06 option A in full, plus C, displacement) | build after WP4; design note signed off first | 2026-11-18 (U): `WP7-design.md` confirmed with a presence table (not slots), niche overlap, raids inside a cell, flight share = 1 − attacker violence |
 | D10 | When derived climate disagrees with the hand-drawn biome map | the drawn map wins; climate fields vary conditions within a biome | 2026-11-19 (U): report first; then, on the report (the southern jungle belt "probably an old error"), the climate's biome replaces the drawn one everywhere in `world_v2` (`syn_biome`; `fic_biome` and `world.gpkg` untouched). `world_v2` is the default world and `floodplain` a default switch |
-| D11 | Earth test (needs public datasets downloaded) | scope it in WP9 stage C; decide after the sensitivity screen | 2026-11-20: scoped (`docs/earth-test-plan.md`); U chose the climate check alone, done (`docs/earth-climate-check.md`); 2026-11-21: U had its fixes (a)-(d) made, which spends the check for the climate model; the society test is still open |
+| D11 | Earth test (needs public datasets downloaded) | scope it in WP9 stage C; decide after the sensitivity screen | 2026-11-20: scoped (`docs/earth-test-plan.md`); U chose the climate check alone, done (`docs/earth-climate-check.md`); 2026-11-21: U had its fixes (a)-(d) made, which spends the check for the climate model; the society test is still open; 2026-11-21 (U): skip the society test |
 | D12 | Break seed-for-seed continuity with old runs when the RNG is split into named streams | yes, at the end of WP1, followed by a fresh baseline run or two | 2026-11-17 (U): yes, no problem; also yes to a fresh seed for a branch (`--branch-seed`) and to drawing the climate's local field at reduced resolution |
 
 ## Files here
@@ -92,6 +122,7 @@ Recommendations are mine (C). Record answers here with the date.
 | [GUIDE.md](GUIDE.md) | Rules every session follows: principles, environment, how little to test, reporting |
 | [BASELINE.md](BASELINE.md) | The measured numbers above, how each was computed, and the profile |
 | [STATUS.md](STATUS.md) | Handoff log; one entry per finished stage |
+| `WP10`-`WP15` | Phase 2 briefs (society model) |
 | `tools/profile_phases.py` | Per-phase timing by millennium plus cProfile of the last 500 years |
 | `tools/analyze_run.py` | The review's measurements on finished runs |
 | `baseline/phases_2026-11-16.txt` | Profile output of 2026-11-16 |

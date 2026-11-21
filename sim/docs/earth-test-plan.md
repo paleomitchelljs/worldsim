@@ -165,3 +165,6 @@ Possible fixes are listed there, for U.
 Recommendation (C): option 1 now, since the climate model is still being
 refined. Decide on the rest after the sensitivity screen
 (docs/sensitivity.md), as the README recommends.
+
+**Answer (U, 2026-11-21):** skip the society test. Work moves to the
+society model (phase 2, upgrade/README.md).
