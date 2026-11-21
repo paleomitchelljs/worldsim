@@ -2564,7 +2564,7 @@ Results are in the brief ("Stage B part 1 results"), with the chart
 **Not done.** Stage B part 2 (metal by contact; overlaps WP14) waits
 for U.
 
-### WP13 stage A: design note (2026-11-21, HASH)
+### WP13 stage A: design note (2026-11-21, f2f988f)
 
 **Asked by U (2026-11-21).** "Let's do the next WP" (WP13 by the README
 order, after WP10 and WP11).
