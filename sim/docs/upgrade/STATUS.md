@@ -59,6 +59,7 @@ what an entry holds.
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
 | 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
+| 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | HASH |
 
 ## Entries
 
@@ -2477,3 +2478,32 @@ and cross-people captures come late (all but one of 113 after 6000).
 **For the next session / U.** The limit on mixing is how seldom peoples
 conquer each other (WP13), not what conquest does. Next by D13: WP11
 stage A (density trace).
+
+### WP11 stage A: density trace (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** "Let's do that" (after WP10, D13).
+
+**Done.** `tools/wp11_trace.py`: runs the Sim in memory with the output
+stream replaced by a no-op (no run files; the disk had 360 MB free),
+then splits each occupied cell's capacity into land.K2's factors and
+compares with the best lineage of any people. Tables and a map in
+`baseline/wp11a_*`. Results in the brief ("Stage A results").
+
+**Checks.** Seed 101 in memory reproduces `wp10c_seed101` (63.1M main
+rows).
+
+**Results.**
+- Goblins (about half of grassland and temperate forest) and Humans
+  (a fifth of grassland) have no metal at 8000. Sod stays at 0.35 and
+  herding wins on 70-75% of grassland. The best lineage would have
+  2.2-2.7x the capacity.
+- Every biome sits at about half its raw capacity (fill 0.39-0.58).
+- The steppe cut is 0 under `climate_fields`, and climate multipliers
+  are 0.9-1.0: land is not the cause.
+
+**For U.** Stage B proposals: trace the half-fill; decide whether metal
+should reach low-innovation peoples by contact (WP14); leave herding
+density until then.
+
+**Disk.** About 360 MB free on the machine (U told). Batches of five
+runs need about 400 MB; free space before the next batch.

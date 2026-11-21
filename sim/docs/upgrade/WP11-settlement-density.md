@@ -54,3 +54,63 @@ reference numbers are for reporting, not tuning. Sanity run, then a
 ## Not in this package
 
 - Climate or biome changes (the physical model is settled, U 2026-11-21).
+
+## Stage A results (2026-11-21)
+
+Tool: `tools/wp11_trace.py` runs the Sim in memory (no run files) and
+splits each occupied cell's capacity into land.K2's factors for its main
+lineage at year 8000. Tables: `baseline/wp11a_trace_seed101.md`,
+`baseline/wp11a_trace_seed103.md`; map: `baseline/wp11a_capacity_seed101.png`.
+Code as `wp10c`; seed 101 reproduces `wp10c_seed101` (63.1M).
+
+| Biome | People per km² | Capacity per km² | Fill | Best capacity per km² | Sod | Herding wins |
+|---|---|---|---|---|---|---|
+| Jungle | 1.3-1.8 | 2.4-3.1 | 0.53-0.57 | 4.9-5.3 | - | 11-12% |
+| Temperate forest | 0.39-0.57 | 1.0-1.1 | 0.39-0.52 | 2.2-2.5 | - | 20% |
+| Grassland | 0.25 | 0.60-0.64 | 0.39-0.42 | 1.65 | 0.37-0.38 | 70-75% |
+| Desert | 0.14-0.18 | 0.29-0.31 | 0.48-0.58 | 0.52-0.57 | - | 76-81% |
+
+"Fill" is people over raw capacity (before what states take). "Best" is
+the capacity the most developed lineage of any people would have there.
+
+**What holds grassland and forest down:**
+
+1. **The peoples who hold them have no metal.** Goblins hold about half
+   of all grassland and temperate forest, Humans a fifth of grassland.
+   At year 8000 neither has bronze in any lineage (Goblins: agri
+   0.70-0.73, metal 0.03-0.11). So:
+   - sod stays at SOD0 (0.35): the plough barely works on grassland;
+   - tools stay at 1;
+   - herding beats farming on 70-75% of grassland.
+
+   The most developed lineage elsewhere (Snake folk, Elves, Dwarves:
+   94-96% with metal) would have **2.2-2.7 times the capacity** there.
+   **This is the largest factor.** Metal does not spread to the
+   grassland peoples in 8,000 years. Goblins' innovation is 0.1, and
+   borrowing runs at (0.3 + innovation).
+2. **Every biome sits at about half its raw capacity** (fill 0.39-0.58),
+   jungle included. This is not specific to open land. The candidates,
+   not traced here:
+   - what states take (rent, tax, army);
+   - shared-cell competition;
+   - devastation;
+   - lag behind growing capacity.
+3. **Land factors are not the cause.**
+   - The steppe cut is 0 under `climate_fields`; aridity replaced it.
+   - Climate multipliers on rain-fed farming are 0.9-1.0.
+   - The crop-package factor is 0.67-0.73, as in jungle (0.77-0.91).
+
+**So thin grassland is mostly a technology-spread question** (WP14:
+borrowing; WP10/WP13: who holds the land), with a uniform half-fill on
+top. It is not mainly a land rule.
+
+## Stage B (needs U), revised by stage A
+
+Proposals for U before any change:
+1. **Trace the half-fill** (records only): split pop/K into the state's
+   take, army, shared-cell overlap, waste and growth lag.
+2. **Metal spread to low-innovation peoples:** whether the sod and
+   tools gap should close by contact (borrowing between peoples, WP14),
+   or whether Goblins without metal is intended.
+3. **Herding density** (HERD grassland 0.45) only matters while farming
+   is held back by sod. Leave it until 2 is settled.
