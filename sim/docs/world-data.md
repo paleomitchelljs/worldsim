@@ -82,7 +82,8 @@ byte-identical to the committed copies, with 66,895 land cells.
 - **Temperature.**
   - Sea-level annual mean T_pole + (T_eq − T_pole) cos² lat. This is the
     leading Legendre term of an energy-balance model under annual-mean
-    insolation.
+    insolation. Since 2026-11-21, a second term and dry-land warming are
+    added (Earth-check fixes, below).
   - Cooled by up to 4 °C beside upwelling coasts, using the paleo ocean
     model's vertical velocity, scaled so 1.5e-6 m/s counts as full.
   - Lowered 6.5 °C per km of `fic_elev_km`.
@@ -120,7 +121,8 @@ byte-identical to the committed copies, with 66,895 land cells.
     - **ITCZ.** It sits at s × (5° + 13° × the land fraction within 30°
       of the equator in the summer hemisphere, by longitude, averaged
       over 10°). It reaches 18° over longitudes all land, because the
-      summer continent's heat low draws it: the monsoon.
+      summer continent's heat low draws it: the monsoon. Since
+      2026-11-21 high plateaus add to the pull (below).
     - **Trades** blow toward the ITCZ, not toward the equator. Between
       the equator and a displaced ITCZ the meridional wind runs toward
       the summer pole, bringing equatorial moisture onto the summer
@@ -197,6 +199,77 @@ byte-identical to the committed copies, with 66,895 land cells.
   - `syn_aridity_season` is aridity × the timing factor. The biome rule
     reads it, and so do the sim's yields under `climate_fields`.
   - `syn_gdd` is degree-days above 5 °C.
+
+### Earth-check fixes (U, 2026-11-21)
+
+**Asked by U (2026-11-21):** "Please implement those climate model
+changes", the fixes (a)-(d) of [earth-climate-check.md](earth-climate-check.md).
+Every form and number is C. Off (T_MID 0, T_DRY 0, Z_CONV 0, H_BL very
+large, W_ITCZ_LAND = W_ITCZ, L_SUB very large), the fields are identical
+to before.
+
+- **(a) Temperature.**
+  - **Flatter tropics.** The sea-level profile gains the energy-balance
+    model's next Legendre term (P4), written T_MID × 4 sin² cos² lat:
+    heat carried poleward by the circulation. T_MID 6 °C is its warming
+    at 45°: cos² alone gives 6 °C there, and Earth's zonal-mean sea
+    surface is about 12 °C.
+  - **Dry land is warmer.** Land gains T_DRY × (1 − AET/PET), with AET
+    from Fu's curve: what a surface does not evaporate it sheds as heat.
+    T_DRY 5 °C is the warming of a surface that evaporates nothing.
+    PET is computed once without it, then again with it.
+- **(b) Summer rain over warm land.**
+  - **Convection.** In each month, land adds a rain-out factor Z_CONV
+    (1, the polar front's) × the month's warmth, from 0 at 18 °C to 1 at
+    26 °C. It rains only the water the air already carries.
+  - **The subtropical high's western flank.** In summer, over land
+    within L_CONT (1,000 km) of a wide ocean basin to the east
+    (BASIN_MIN, as for the gyres; narrower seas count as land), the
+    trade rows' meridional flow turns poleward: moist air from the
+    ocean, not dry air from the continent. East Asia, the eastern United
+    States and eastern Australia lie there.
+- **(c) Plateaus pull the ITCZ.** The summer ITCZ's land fraction gains,
+  within PLAT_LAT (40°) of the equator, each land cell's height above
+  H_BL (1.5 km, the summer boundary layer sea-level land heats) over
+  H_BL. A plateau heats air that sea-level land does not reach. The land
+  fraction may then exceed 1, and the ITCZ 18°.
+- **(d) Wider rain belt, drier subtropics.**
+  - **Width.** The ITCZ's half-width is W_ITCZ (5°) over open sea and
+    W_ITCZ_LAND (8°) at an all-land longitude, by land fraction. The
+    monsoon westerly's fade uses the same width.
+  - **Sinking air dries.** The Hadley cell's sinking branch replaces the
+    moist low air with dry air from aloft, without rain: over land, 1 −
+    1/e of the air's water is lost per L_SUB (2,000 km). It acts
+    equatorward of the Hadley edge (fading over 5° either side of it),
+    less toward the ITCZ's core. It does not act on the summer western
+    flanks above. Before this, air under sinking motion kept its water
+    and rained it wherever rain-out rose, so deserts were wet.
+- **What was tried and changed on the way** (on Earth, before the
+  values above were final):
+  - Convection alone made every warm land wet: Earth's deserts fell to
+    3M km² (observed 31). The sinking-air drying came from this.
+  - The drying at first acted wherever the ITCZ and front were weak. It
+    turned Siberia and the eastern United States to desert, so it was
+    limited to the Hadley band.
+  - The western flank first only lifted the sinking; East China barely
+    changed (0.48 → 0.52 m/yr), because its trades still blew from the
+    continent. Turning the flow poleward gave 0.60.
+- **On Earth** (`../earth_climate.py --tag fix1`; outputs
+  `../gis/qa/earth_climate_fix1*`):
+  - Biome agreement 0.46 → 0.54; mean recall 0.50 → 0.57.
+  - Land temperature bias −5.0 → +0.3 °C.
+  - Tundra 51.8 → 31.6M km² (observed 24.5); desert 12.4 → 18.0 (30.6).
+  - The Sahara's rain is 0.27 m/yr (0.31 before; 0.02 observed).
+  - **India still fails**: 0.49 m/yr against 1.10. Its July trough is at
+    15-17°N; Earth's is near 25°N.
+  - Siberia is grassland, not boreal forest: too dry (0.21 vs 0.46),
+    a fault older than these fixes.
+  - More in [earth-climate-check.md](earth-climate-check.md).
+- **On this world** (`world_v2`): biome areas (M km²) jungle 23.8 →
+  28.9, desert 5.5 → 10.2, grassland 33.9 → 38.0, temperate forest
+  27.3 → 24.4, tundra 31.5 → 20.5. Agreement with the drawn map rose
+  from 0.35 to 0.44, though nothing was fitted to it. Land rain 0.89 →
+  1.02 m/yr; P0 3.29.
 
 ### Parameters and biomes (refit on physical grounds, U 2026-11-19)
 

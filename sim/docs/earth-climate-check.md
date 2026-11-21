@@ -15,7 +15,8 @@ same definitions and the same biome rule.
   redistribution.
 
 **The model's own rule sets P0.** Global mean precipitation is held at
-1.0 m/yr, which puts P0 at 3.77 on Earth (2.3 on the fantasy world).
+1.0 m/yr, which puts P0 at 3.77 on Earth (4.07 on the fantasy world;
+"2.3" here before 2026-11-21 was the parameter table's stale default).
 Nothing was fitted to Earth.
 
 **Earth has no upwelling input.** The fantasy world gets one from its
@@ -130,7 +131,7 @@ except the monsoon one, which is about Tibet:
 Its biome areas are no evidence either way: the drawn map is not an
 observed climate.
 
-## Possible fixes (for U; none made)
+## Possible fixes (as first proposed; made 2026-11-21, below)
 
 Each would be a physical rule, not a fit to Earth.
 
@@ -158,3 +159,79 @@ Each would be a physical rule, not a fit to Earth.
   independent test. A rerun after a fix would show whether the fix
   worked, not that the model is right. The society test on observed
   climate (plan option a) is unaffected.
+
+## Fixes made (U, 2026-11-21)
+
+**Asked by U (2026-11-21):** "Please implement those climate model
+changes." All four were made. Forms and values are in
+[world-data.md](world-data.md), "Earth-check fixes". In brief:
+- **(a)** the P4 term (6 °C at 45°) and dry-land warming (5 °C at no
+  evaporation);
+- **(b)** summer convection over land warmer than 18-26 °C, and poleward
+  summer flow on the subtropical highs' western flanks;
+- **(c)** plateaus above 1.5 km add to the ITCZ's pull;
+- **(d)** an ITCZ half-width of 8° over land, and drying under the
+  Hadley cell's sinking branch.
+
+**The check is now spent for the climate model.** The fixes were
+developed against Earth: several forms were changed after seeing Earth's
+response (world-data.md lists them). The values were set from physical
+reasoning, and none was searched for a best score, but the rerun below
+shows whether the fixes worked, not that the model is right. The
+fantasy world's drawn map was printed alongside but chose no form; its
+agreement rose from 0.35 to 0.44.
+
+**Rerun** (`earth_climate.py --tag fix1`; outputs
+`gis/qa/earth_climate_fix1*`; the first check's outputs are kept):
+
+| | Before | After | Observed |
+|---|---|---|---|
+| Biome agreement (land area) | 0.46 | 0.54 | |
+| Mean recall | 0.50 | 0.57 | |
+| Land temperature (°C) | 4.4 (r 0.97) | 9.6 (r 0.98) | 9.3 |
+| Precipitation (m/yr) | 0.73 (r 0.60) | 0.85 (r 0.58) | 0.76 |
+| PET (m/yr) | 0.79 | 0.96 | 1.10 |
+| Jungle (M km²) | 21.8 | 27.1 | 24.5 |
+| Desert | 12.4 | 18.0 | 30.6 |
+| Grassland | 35.2 | 41.3 | 32.8 |
+| Temperate forest | 32.5 | 35.8 | 41.3 |
+| Tundra | 51.8 | 31.6 | 24.5 |
+
+**By region** (rain m/yr, model before → after, observed):
+
+| Region | Rain | Biome after (observed) |
+|---|---|---|
+| Sahara | 0.31 → 0.27 (0.02) | desert 71% (100%) |
+| Arabia | 0.33 → 0.50 (0.12) | desert 39% (100%) |
+| India | 0.25 → 0.49 (1.10) | desert 69% (grassland 87%) |
+| Southeast Asia | 0.92 → 2.44 (1.80) | jungle 68% (78%) |
+| East China | 0.46 → 0.60 (1.00) | grassland 59% (forest 72%) |
+| Eastern US | 0.72 → 0.84 (1.17) | forest 76% (100%) |
+| Western Europe | 0.86 → 1.05 (0.86) | forest 95% (99%) |
+| Siberia | 0.20 → 0.21 (0.46) | grassland 84% (forest 97%) |
+| Central Asia | 0.88 → 0.72 (0.21) | forest 62% (desert 75%) |
+| Interior Australia | 0.28 → 0.62 (0.28) | grassland 60% (desert 95%) |
+| Congo basin | 1.31 → 1.12 (1.72) | jungle 60% (100%) |
+
+**What the fixes did.**
+- **Temperature is fixed.** The bias is +0.3 °C. Western Europe and
+  the boreal belt are no longer tundra.
+- **Summer rain over the continents is partly there.** The warm
+  half-year's share is about right in East China (July/January 3.7
+  against 6.2) and the eastern US (1.0 against 1.3). Both are still too
+  dry over the year: their spring and autumn rain is missing.
+- **Deserts grew but are still too small** (18 against 31M km²).
+
+**What remains wrong.**
+- **India's monsoon still fails.** Its July trough reaches 15-17°N, and
+  Earth's is near 25°N. The plateau term, a share of land averaged over
+  40° of latitude and 10° of longitude, dilutes Tibet. A fix would place
+  the ITCZ where near-surface moist static energy peaks, a larger
+  change.
+- **Interior Australia got wetter** (0.28 → 0.62): summer convection
+  rains Pacific air that the western flank no longer dries.
+- **The Congo and central Amazon are drier**: in the off-season they lie
+  under the sinking branch.
+- **Siberia is too dry for forest** and Central Asia too wet: the older
+  fault 5 above.
+- **The Horn of Africa and the Red Sea coast** come out jungle.

@@ -56,7 +56,7 @@
 | Diagnostics: Price decomposition, historical checks | [diagnostics.md](diagnostics.md) |
 | Patterns runs are judged on (frozen; spent and held out) | [patterns.md](patterns.md) |
 | Earth test: plan and cost (WP9 C; scoping only, D11) | [earth-test-plan.md](earth-test-plan.md) |
-| Earth climate check: climate_world.py on Earth vs WorldClim | [earth-climate-check.md](earth-climate-check.md) |
+| Earth climate check: climate_world.py on Earth vs WorldClim; fixes (a)-(d) made 2026-11-21 | [earth-climate-check.md](earth-climate-check.md) |
 | Sensitivity screen: which parameters move which patterns (WP9 B) | [sensitivity.md](sensitivity.md) |
 | Map data the model reads | [world-data.md](world-data.md) |
 | Rosters (sets of peoples) | [scenarios.md](scenarios.md) |

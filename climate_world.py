@@ -8,10 +8,14 @@ from Earth's map (all forms and numbers C):
 
   temperature     a zonal sea-level profile from annual insolation
                   (T_pole + (T_eq - T_pole) cos^2 lat, the leading Legendre
-                  term of an energy-balance model), a lapse rate on
-                  fic_elev_km, colder winters and a colder mean with
-                  continentality, and cooling beside upwelling coasts
-                  (the paleo ocean model's vertical velocity)
+                  term of an energy-balance model, plus the next term,
+                  T_MID x 4 sin^2 cos^2: heat carried poleward flattens
+                  the tropics), a lapse rate on fic_elev_km, colder
+                  winters and a colder mean with continentality, cooling
+                  beside upwelling coasts (the paleo ocean model's
+                  vertical velocity), and warmer dry land (what a surface
+                  does not evaporate it sheds as heat: T_DRY x
+                  (1 - AET/PET))
   seasons         a half-amplitude that grows with latitude, more over
                   land far from the windward ocean
   ocean currents  wind-driven gyres from basin geometry: in each wide
@@ -22,7 +26,9 @@ from Earth's map (all forms and numbers C):
   precipitation   prevailing winds by circulation band (trade easterlies,
                   westerlies, polar easterlies), month by month: the
                   ITCZ follows the sun, further over longitudes with much
-                  land (the monsoon), the trades blow toward it, between
+                  land and with high plateaus (the monsoon; a plateau
+                  heats air above the boundary layer), its rain belt
+                  wider over land, the trades blow toward it, between
                   the equator and a displaced ITCZ the wind turns
                   westerly (the monsoon westerly), and the
                   storm tracks and band edges shift with it; air takes up
@@ -32,7 +38,13 @@ from Earth's map (all forms and numbers C):
                   rate set by the band (rising air at the ITCZ and the
                   polar front, sinking air in the subtropics), more where
                   it is forced uphill and less where it descends; part of
-                  the rain is evaporated again and carried on (recycling)
+                  the rain is evaporated again and carried on (recycling);
+                  warm land in summer adds convective rain-out (from the
+                  water the air already carries); the Hadley cell's
+                  sinking branch dries the air over land without rain,
+                  except on the subtropical highs' western flanks in
+                  summer (near a wide ocean to the east), where the flow
+                  turns poleward and rises
   water balance   potential evaporation by FAO-56 Penman-Monteith, month
                   by month: net radiation from annual insolation, with
                   monthly insolation, sunshine set by cloud (more under
@@ -138,6 +150,39 @@ PARAMS = dict(
     # rain seasonality (C, 2026-11-20, U): plant-available soil water a
     # monthly bucket carries between months (typical 100-200 mm)
     S_MAX=0.15,        # m
+    # Earth climate check fixes (C, 2026-11-21, U: "implement those
+    # climate model changes"; docs/earth-climate-check.md (a)-(d))
+    # (a) heat carried poleward flattens the tropics: the profile's
+    # second Legendre term (P4), as T_MID x 4 sin^2 cos^2, its warming
+    # at 45 deg (cos^2 alone gives 6 degC there; Earth's zonal-mean sea
+    # surface is about 12)
+    T_MID=6.0,         # degC
+    # a dry surface sheds as heat what a wet one evaporates: warming at a
+    # surface with no evaporation (1 - AET/PET = 1)
+    T_DRY=5.0,         # degC
+    # (b) summer convection over warm land: rain-out factor added where
+    # the month's mean is T_CONV + DT_CONV or more, from 0 at T_CONV;
+    # rain only from the moisture the winds already carry
+    Z_CONV=1.0,
+    T_CONV=18.0,       # degC
+    DT_CONV=8.0,       # degC
+    # (c) high plateaus heat the air above the depth sea-level land heats
+    # (the summer boundary layer, H_BL): within PLAT_LAT of the equator
+    # each km above H_BL counts 1/H_BL extra land in the ITCZ's pull
+    H_BL=1.5,          # km
+    PLAT_LAT=40.0,     # deg
+    # (d) the rain belt is wider over land: half-width at an all-land
+    # longitude (W_ITCZ over open sea)
+    W_ITCZ_LAND=8.0,   # deg
+    # and the Hadley cell's sinking branch dries the air over land without
+    # rain: dry air from aloft replaces the moist low layer, 1 - 1/e of
+    # it over L_SUB of land. It acts equatorward of the Hadley edge
+    # (fading over BAND_SHIFT either side of it), less toward the
+    # ITCZ's core. In summer the subtropical high's western flank rises:
+    # over land within about L_CONT of a wide ocean basin to the east
+    # (BASIN_MIN; narrower seas count as land) the sinking fades, and
+    # within L_CONT of it the trade rows' meridional flow turns poleward
+    L_SUB=2000.0,      # km
 )
 P_GLOBAL = 1.0        # m/yr, mean precipitation over the whole globe
 
@@ -229,7 +274,8 @@ def march(q0_sea, land, dx, rate, west, south, mer, prev=None):
     """Carry the air's rain potential along each row with the wind. Over
     sea it relaxes toward q0_sea (rate[0] per cell); over land a share
     rate[1] of it falls as rain, and (1 - recycling) of that is lost.
-    Rows in `west` are walked toward lower longitude. At each step the
+    A further share rate[3] (sinking air), if given, is lost over land
+    without rain. Rows in `west` are walked toward lower longitude. At each step the
     air also takes a share mer[0] from the cell upwind of it in latitude
     (the wind's meridional part: where `south`, a (NY, NX) grid, it
     blows toward the south pole) and mixes a share mer[1] with both
@@ -241,7 +287,9 @@ def march(q0_sea, land, dx, rate, west, south, mer, prev=None):
     each cell (before its own rain-out) and km of land crossed since the
     last sea cell."""
     flip = lambda a: np.where(west[:, None], a[:, ::-1], a)  # noqa: E731
-    qs, ld, (rs, rl, keep) = flip(q0_sea), flip(land), (flip(r) for r in rate)
+    if len(rate) == 3:
+        rate = tuple(rate) + (np.zeros((NY, NX)),)
+    qs, ld, (rs, rl, keep, sub) = flip(q0_sea), flip(land), (flip(r) for r in rate)
     sth = flip(south)
     same_n = np.r_[False, west[1:] == west[:-1]]    # row r-1 walked the same way
     same_s = np.r_[west[:-1] == west[1:], False]    # row r+1
@@ -263,7 +311,7 @@ def march(q0_sea, land, dx, rate, west, south, mer, prev=None):
             if lap:
                 Q[:, c], D[:, c] = q, d
             q = np.where(sea, q + (qs[:, c] - q) * rs[:, c],
-                         q * (1 - rl[:, c] * keep[:, c]))
+                         q * (1 - rl[:, c] * keep[:, c] - sub[:, c]))
             qn, qsth = np.r_[q[:1], q[:-1]], np.r_[q[1:], q[-1:]]
             if prev is not None:
                 qn = np.where(same_n, qn, pn[:, c])
@@ -289,6 +337,21 @@ def carry(a_sea, land, dx, L, west):
             if lap:
                 out[:, c] = a
     return flip(out)
+
+
+def land_run(land, dx, west):
+    """km of land crossed along each row since the last sea cell, walking
+    with the wind (two laps, as in march)."""
+    flip = lambda a: np.where(west[:, None], a[:, ::-1], a)  # noqa: E731
+    ld = flip(land)
+    d = np.zeros(NY)
+    D = np.zeros((NY, NX))
+    for lap in range(2):
+        for c in range(NX):
+            d = np.where(ld[:, c], d + dx, 0.0)
+            if lap:
+                D[:, c] = d
+    return flip(D)
 
 
 def coast_distance(land, dx):
@@ -317,7 +380,7 @@ def current_anomaly(land, LAT, dx, p):
     cold water equatorward on its eastern side; subpolar gyres (about
     45-70 deg) the reverse. Each fades from its coast with L_WBC or L_EBC.
     Only landmasses of COAST_MIN or more bound a basin; currents pass
-    smaller islands."""
+    smaller islands. Also returns the mask of basin sea cells."""
     lab, n = ndimage.label(land, structure=np.ones((3, 3)))
     cell_km2 = (dx * RES * 111.2)[:, None] * np.ones((1, NX))
     big = np.r_[False, ndimage.sum(cell_km2, lab, np.arange(1, n + 1)) >= p["COAST_MIN"]]
@@ -328,8 +391,9 @@ def current_anomaly(land, LAT, dx, p):
     basin = (d_w + d_e) >= p["BASIN_MIN"]
     a = p["A_WBC"] * np.exp(-d_w / p["L_WBC"]) * (st - sp) + \
         p["A_EBC"] * np.exp(-d_e / p["L_EBC"]) * (sp - st)
-    a = np.where(~land & basin & np.isfinite(d_w + d_e), a, 0.0)
-    return ndimage.gaussian_filter(a, 1.0, mode=("nearest", "wrap"))
+    basin = ~land & basin & np.isfinite(d_w + d_e)
+    a = np.where(basin, a, 0.0)
+    return ndimage.gaussian_filter(a, 1.0, mode=("nearest", "wrap")), basin
 
 
 # twelve months, as (the sun's side: sin of the month's phase, +1 at the
@@ -345,13 +409,16 @@ def fields(inp, p=PARAMS):
     lat1 = LAT[:, 0]
     land = inp["land"]
     s2 = np.sin(np.radians(LAT)) ** 2
-    T0 = p["T_POLE"] + (p["T_EQ"] - p["T_POLE"]) * (1 - s2)
+    T0 = p["T_POLE"] + (p["T_EQ"] - p["T_POLE"]) * (1 - s2) + \
+        4 * p["T_MID"] * s2 * (1 - s2)
     dx = np.maximum(RES * 111.2 * np.cos(np.radians(lat1)), 5.0)
     # upwelling: the ocean model's vertical velocity near the cell (m/s,
     # scaled so 1.5e-6 is full); cools the sea and the coast beside it
     up = np.clip(np.nan_to_num(inp["upwelling"]) / 1.5e-6, 0, 1)
     # gyre currents warm or cool the sea
-    sst_anom = current_anomaly(land, LAT, dx, p)
+    sst_anom, basin = current_anomaly(land, LAT, dx, p)
+    # km from a wide ocean basin to the east, along the row
+    flank = np.exp(-land_run(~basin, dx, np.ones(NY, bool)) / p["L_CONT"]) * land
     T_sea = T0 - p["U_COOL"] * up + sst_anom
 
     # slope on the smoothed land surface (m per km, toward higher longitude)
@@ -370,32 +437,66 @@ def fields(inp, p=PARAMS):
     sig = p["LF_SMOOTH"] / RES
     lf_n = ndimage.gaussian_filter1d(land[(lat1 > 0) & (lat1 < 30)].mean(0), sig, mode="wrap")
     lf_s = ndimage.gaussian_filter1d(land[(lat1 < 0) & (lat1 > -30)].mean(0), sig, mode="wrap")
+    # high plateaus heat the air above the boundary layer: extra pull
+    hi = np.where(land, np.clip(inp["elev_km"] - p["H_BL"], 0, None) / p["H_BL"], 0.0)
+    lf_n = lf_n + ndimage.gaussian_filter1d(
+        hi[(lat1 > 0) & (lat1 < p["PLAT_LAT"])].mean(0), sig, mode="wrap")
+    lf_s = lf_s + ndimage.gaussian_filter1d(
+        hi[(lat1 < 0) & (lat1 > -p["PLAT_LAT"])].mean(0), sig, mode="wrap")
+
+    # temperature before the dry-land warming (it needs the rain): the
+    # convection below reads its months. Continentality: land crossed
+    # along the equinox wind, and plain distance to the sea, averaged
+    west0 = (np.abs(lat1) < p["PHI_HADLEY"]) | (np.abs(lat1) > p["PHI_POLAR"])
+    dland = 0.5 * (land_run(land, dx, west0) + np.clip(inp["dcoast_km"], 0, None))
+    cont = np.where(land, 1 - np.exp(-dland / p["L_CONT"]), 0.0)
+    A = p["A0"] + p["A1"] * np.sqrt(s2) * (p["A_SEA"] + (1 - p["A_SEA"]) * cont)
+    # the sea's current anomaly, carried inland on the equinox wind
+    T_anom = np.where(land, carry(sst_anom, land, dx, p["L_MARITIME"], west0), sst_anom)
+    T = T0 - p["U_COOL"] * up + T_anom - p["C_COLD"] * cont * s2 - \
+        p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
 
     P, wsum, Pm = np.zeros((NY, NX)), 0.0, {}
     for sun, wt in SEASONS:
         lf = lf_n if sun > 0 else lf_s
         itcz = sun * (p["ITCZ_SEA"] + (p["ITCZ_LAND"] - p["ITCZ_SEA"]) * lf)   # (NX,)
+        w_itcz = p["W_ITCZ"] + (p["W_ITCZ_LAND"] - p["W_ITCZ"]) * np.clip(lf, 0, 1)
         sh = p["BAND_SHIFT"] * sun * np.sign(lat1)          # poleward in the summer hemisphere
         hadley = p["PHI_HADLEY"] + sh
         west = (np.abs(lat1) < hadley) | (np.abs(lat1) > p["PHI_POLAR"] + sh)
         front = (p["PHI_FRONT"] + sh)[:, None]
-        z = p["Z_ITCZ"] * np.exp(-((LAT - itcz[None, :]) / p["W_ITCZ"]) ** 2) + \
+        # summer convection over warm land (this month's temperature)
+        Tm = T + A * sun * np.sign(LAT)
+        conv = p["Z_CONV"] * np.clip((Tm - p["T_CONV"]) / p["DT_CONV"], 0, 1) * land
+        z = p["Z_ITCZ"] * np.exp(-((LAT - itcz[None, :]) / w_itcz[None, :]) ** 2) + \
             p["Z_FRONT"] * np.exp(-((phi - front) / p["W_FRONT"]) ** 2) + \
-            p["Z_BASE"]
+            p["Z_BASE"] + conv
         # the trades blow toward the ITCZ, westerlies toward the pole,
         # polar easterlies toward the equator
         trade = (np.abs(lat1) < hadley)[:, None]
         south = np.where(trade, LAT > itcz[None, :], ((LAT > 0) == west[:, None]))
+        # on the high's western flank in summer the flow is poleward
+        up_flank = (sun * np.sign(LAT) > 0) & (flank > np.exp(-1)) & trade & \
+            (np.abs(LAT) > np.abs(itcz)[None, :])
+        south = np.where(up_flank, LAT < 0, south)
         slope = np.where(west[:, None], -dE, dE) / dx[:, None]
         oro = (1 + p["K_ORO"] * np.clip(slope, 0, None)) * \
             np.exp(-p["K_LEE"] * np.clip(-slope, 0, None))
         r_land = np.clip(z * oro * dx[:, None] / p["L_RAIN"], 0, 0.9)
-        rate = (r_sea, r_land, keep)
+        # the Hadley cell's sinking branch: between the ITCZ and the
+        # cell's poleward edge
+        g = p["Z_ITCZ"] * np.exp(-((LAT - itcz[None, :]) / w_itcz[None, :]) ** 2)
+        edge = np.clip((hadley[:, None] + p["BAND_SHIFT"] - phi) / (2 * p["BAND_SHIFT"]), 0, 1)
+        sink = (1 - np.clip(g / p["Z_FRONT"], 0, 1)) * edge * \
+            (1 - np.clip(sun * np.sign(LAT), 0, 1) * flank)
+        sub = np.minimum(sink * (1 - np.exp(-dx[:, None] / p["L_SUB"])),
+                         1 - r_land * keep)
+        rate = (r_sea, r_land, keep, sub)
         # rain: the share of the air's potential falling here, as a depth
         # per year over the cell (rain-out per km x L_RAIN keeps it a rate)
         rain = lambda q: np.where(land, q * r_land * p["L_RAIN"] / dx[:, None], q * z)  # noqa: E731
-        q, dup = march(q_sat, land, dx, rate, west, south, mer)
-        q, dup = march(q_sat, land, dx, rate, west, south, mer, prev=q)
+        q, _ = march(q_sat, land, dx, rate, west, south, mer)
+        q, _ = march(q_sat, land, dx, rate, west, south, mer, prev=q)
         Pmon = rain(q)
         if sun != 0 and p["MONSOON_W"] > 0:
             # the monsoon westerly: summer-side trade rows walked eastward.
@@ -407,31 +508,27 @@ def fields(inp, p=PARAMS):
             west_m = west & ~(trade[:, 0] & summer)
             qm, _ = march(q_sat, land, dx, rate, west_m, south, mer)
             qm, _ = march(q_sat, land, dx, rate, west_m, south, mer, prev=qm)
-            ramp = np.clip((np.abs(itcz)[None, :] - phi) / p["W_ITCZ"], 0, 1) * summer[:, None]
+            ramp = np.clip((np.abs(itcz)[None, :] - phi) / w_itcz[None, :], 0, 1) * summer[:, None]
             m = p["MONSOON_W"] * ramp
             Pmon = (1 - m) * Pmon + m * rain(qm)
         Pm[sun] = ndimage.gaussian_filter(Pmon, 1.0, mode=("nearest", "wrap"))
         P += wt * Pmon
         wsum += wt
-        if sun == 0:
-            dup0, west0 = dup, west
     P = ndimage.gaussian_filter(P / wsum, 1.0, mode=("nearest", "wrap"))
 
-    # continentality: land crossed along the wind, and plain distance to
-    # the sea, averaged
-    dland = 0.5 * (dup0 + np.clip(inp["dcoast_km"], 0, None))
-    cont = np.where(land, 1 - np.exp(-dland / p["L_CONT"]), 0.0)
-    A = p["A0"] + p["A1"] * np.sqrt(s2) * (p["A_SEA"] + (1 - p["A_SEA"]) * cont)
-    # the sea's current anomaly, carried inland on the equinox wind
-    T_anom = np.where(land, carry(sst_anom, land, dx, p["L_MARITIME"], west0), sst_anom)
-    T = T0 - p["U_COOL"] * up + T_anom - p["C_COLD"] * cont * s2 - \
-        p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
+    w = p["FU_W"]
+
+    def fu(pet):
+        ratio = pet / np.maximum(P, 1e-6)
+        return P * (1 + ratio - (1 + ratio ** w) ** (1 / w))
+    # dry land is warmer: what it does not evaporate it sheds as heat
+    pet = penman_pet(T, A, P, LAT, p)[0]
+    dry = np.where(land & (pet > 1e-3), 1 - fu(pet) / np.maximum(pet, 1e-3), 0.0)
+    T = T + p["T_DRY"] * np.clip(dry, 0, 1)
 
     gdd = degree_days(T, A, GDD_BASE)
     pet, rh, sun, pet_mon = penman_pet(T, A, P, LAT, p)
-    ratio = pet / np.maximum(P, 1e-6)
-    w = p["FU_W"]
-    aet_fu = P * (1 + ratio - (1 + ratio ** w) ** (1 / w))
+    aet_fu = fu(pet)
     # rain seasonality: Fu's curve stands for rain spread through the
     # year; a monthly bucket with the real timing, against one with the
     # same total spread evenly, gives the factor timing makes (rain in

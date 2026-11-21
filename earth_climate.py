@@ -34,8 +34,13 @@ question, not asked here.
 
 Nothing is tuned to the result; the parameters are not changed by it.
 
-Run:  ~/.venvs/worldsim/bin/python earth_climate.py
-      (writes gis/qa/earth_climate_*.png and gis/qa/earth_climate.json)
+Run:  ~/.venvs/worldsim/bin/python earth_climate.py [--tag fix1]
+      (writes gis/qa/earth_climate_*.png and gis/qa/earth_climate.json;
+      with --tag, earth_climate_<tag>_*.png and earth_climate_<tag>.json,
+      so the first check's record is kept)
+
+After the fixes of 2026-11-21 (U), the check is spent for the climate
+model: a rerun shows whether the fixes worked, not that it is right.
 """
 import json
 import os
@@ -47,6 +52,7 @@ import climate_world as cw
 HERE = os.path.dirname(os.path.abspath(__file__))
 WC = os.path.join(HERE, "gis", "earth", "worldclim")
 QA = cw.QA_DIR
+TAG = ""
 NY, NX, RES = cw.NY, cw.NX, cw.RES
 
 # named regions for the table: (name, lat lo, lat hi, lon lo, lon hi)
@@ -65,6 +71,8 @@ REGIONS = [
     ("Atacama", -28, -18, -71, -69),
     ("Interior Australia", -30, -20, 120, 145),
     ("Sahel", 11, 16, -15, 30),
+    ("East China", 25, 40, 105, 122),
+    ("Mediterranean", 36, 44, -8, 28),
 ]
 
 
@@ -200,7 +208,7 @@ def figures(f, o, pm, po, good, land):
                           for k, b in enumerate(cw.BIOMES)],
                  loc="lower left", fontsize=8, frameon=True)
     fig.tight_layout()
-    fig.savefig(os.path.join(QA, "earth_climate_biomes.png"), dpi=110)
+    fig.savefig(os.path.join(QA, f"earth_climate{TAG}_biomes.png"), dpi=110)
     plt.close(fig)
 
     # fields: model, observed, difference
@@ -227,7 +235,7 @@ def figures(f, o, pm, po, good, land):
         a.set_facecolor("#dde6ee")
         a.tick_params(labelsize=7, colors="#555")
     fig.tight_layout()
-    fig.savefig(os.path.join(QA, "earth_climate_fields.png"), dpi=100)
+    fig.savefig(os.path.join(QA, f"earth_climate{TAG}_fields.png"), dpi=100)
     plt.close(fig)
 
     # zonal means over land
@@ -252,7 +260,7 @@ def figures(f, o, pm, po, good, land):
     ax[0].legend(frameon=False, fontsize=9)
     fig.suptitle("Land zonal means, Earth", x=0.01, ha="left", fontsize=11)
     fig.tight_layout()
-    fig.savefig(os.path.join(QA, "earth_climate_zonal.png"), dpi=100)
+    fig.savefig(os.path.join(QA, f"earth_climate{TAG}_zonal.png"), dpi=100)
     plt.close(fig)
 
     # monsoon: July and January rain
@@ -267,7 +275,7 @@ def figures(f, o, pm, po, good, land):
             ax[i, j].tick_params(labelsize=7, colors="#555")
             fig.colorbar(im, ax=ax[i, j], shrink=0.7)
     fig.tight_layout()
-    fig.savefig(os.path.join(QA, "earth_climate_monsoon.png"), dpi=100)
+    fig.savefig(os.path.join(QA, f"earth_climate{TAG}_monsoon.png"), dpi=100)
     plt.close(fig)
 
 
@@ -322,7 +330,7 @@ def main():
         mean_recall=round(mean_rec, 3), overall=round(overall, 3),
         confusion=conf.round(3).to_dict(orient="records"),
         fields=fields, regions=regions)
-    with open(os.path.join(QA, "earth_climate.json"), "w") as fh:
+    with open(os.path.join(QA, f"earth_climate{TAG}.json"), "w") as fh:
         json.dump(record, fh, indent=1)
     figures(f, o, pm, po, good, land)
     print(json.dumps({k: v for k, v in record.items() if k != "confusion"}, indent=1))
@@ -330,4 +338,7 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
+    if "--tag" in sys.argv:
+        TAG = "_" + sys.argv[sys.argv.index("--tag") + 1]
     main()

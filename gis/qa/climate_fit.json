@@ -17,7 +17,7 @@
   "Z_ITCZ": 2.0,
   "Z_FRONT": 1.0,
   "Z_BASE": 0.1,
-  "P0": 4.071,
+  "P0": 3.288,
   "CC": 0.07,
   "L_OCEAN": 800.0,
   "L_RAIN": 2000.0,
@@ -47,7 +47,16 @@
   "ALBEDO": 0.23,
   "FU_W": 2.6,
   "MONSOON_W": 1.0,
-  "S_MAX": 0.15
+  "S_MAX": 0.15,
+  "T_MID": 6.0,
+  "T_DRY": 5.0,
+  "Z_CONV": 1.0,
+  "T_CONV": 18.0,
+  "DT_CONV": 8.0,
+  "H_BL": 1.5,
+  "PLAT_LAT": 40.0,
+  "W_ITCZ_LAND": 8.0,
+  "L_SUB": 2000.0
  },
  "calibrated": [
   "P0"
@@ -58,67 +67,67 @@
   "GRASS_AI": 0.65,
   "JUNGLE_COLD": 18.0
  },
- "land_precip_m_yr": 0.892,
+ "land_precip_m_yr": 1.024,
  "biome_area_mkm2": {
-  "Jungle": 23.8,
-  "Desert": 5.5,
-  "Grassland": 33.9,
-  "Temperate forest": 27.3,
-  "Tundra": 31.5
+  "Jungle": 28.9,
+  "Desert": 10.2,
+  "Grassland": 38.0,
+  "Temperate forest": 24.4,
+  "Tundra": 20.5
  },
  "recall_by_biome": {
-  "Jungle": 0.287,
-  "Desert": 0.075,
-  "Grassland": 0.37,
-  "Temperate forest": 0.203,
-  "Tundra": 0.995
+  "Jungle": 0.347,
+  "Desert": 0.29,
+  "Grassland": 0.535,
+  "Temperate forest": 0.262,
+  "Tundra": 0.958
  },
- "mean_recall": 0.386,
- "overall": 0.354,
+ "mean_recall": 0.479,
+ "overall": 0.442,
  "confusion": [
   {
    "drawn": "Jungle",
-   "Jungle": 0.287,
-   "Desert": 0.02,
-   "Grassland": 0.165,
-   "Temperate forest": 0.199,
-   "Tundra": 0.329,
+   "Jungle": 0.347,
+   "Desert": 0.017,
+   "Grassland": 0.203,
+   "Temperate forest": 0.332,
+   "Tundra": 0.102,
    "area_km2": 26316897.795
   },
   {
    "drawn": "Desert",
-   "Jungle": 0.264,
-   "Desert": 0.075,
-   "Grassland": 0.482,
-   "Temperate forest": 0.179,
+   "Jungle": 0.023,
+   "Desert": 0.29,
+   "Grassland": 0.606,
+   "Temperate forest": 0.08,
    "Tundra": 0.0,
    "area_km2": 12288469.682
   },
   {
    "drawn": "Grassland",
-   "Jungle": 0.143,
-   "Desert": 0.04,
-   "Grassland": 0.37,
-   "Temperate forest": 0.419,
-   "Tundra": 0.027,
+   "Jungle": 0.176,
+   "Desert": 0.123,
+   "Grassland": 0.535,
+   "Temperate forest": 0.164,
+   "Tundra": 0.002,
    "area_km2": 28979132.829
   },
   {
    "drawn": "Temperate forest",
-   "Jungle": 0.234,
-   "Desert": 0.075,
-   "Grassland": 0.338,
-   "Temperate forest": 0.203,
-   "Tundra": 0.15,
+   "Jungle": 0.376,
+   "Desert": 0.052,
+   "Grassland": 0.255,
+   "Temperate forest": 0.262,
+   "Tundra": 0.054,
    "area_km2": 38057418.849
   },
   {
    "drawn": "Tundra",
    "Jungle": 0.0,
-   "Desert": 0.003,
+   "Desert": 0.04,
    "Grassland": 0.002,
    "Temperate forest": 0.0,
-   "Tundra": 0.995,
+   "Tundra": 0.958,
    "area_km2": 16388388.614
   }
  ]
