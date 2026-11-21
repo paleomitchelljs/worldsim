@@ -2563,3 +2563,33 @@ Results are in the brief ("Stage B part 1 results"), with the chart
 
 **Not done.** Stage B part 2 (metal by contact; overlaps WP14) waits
 for U.
+
+### WP13 stage A: design note (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** "Let's do the next WP" (WP13 by the README
+order, after WP10 and WP11).
+
+**Done.** `WP13-design.md`: measures from the `wp10c` tables (five
+seeds) for each item in the brief, and a proposal for each. No code
+changed.
+
+**Results.**
+- **Campaigns.** 96-97% of wars take at most one city. The main cause
+  is that a war aims at one goal city and ends soon after it falls.
+  There is also a muster lag: no war besieges in the year it is
+  declared (median 4 years), and odds fall from the first siege to
+  later ones.
+- **Vassalage** is common but short. There are 288-1,076 submissions
+  per run, 42-55% defect, and only same-people vassals can be annexed.
+  VASSAL_RATIO is read only with `war_odds` off.
+- **Rulers.** Small-state declaration rates are flat across ruler
+  offense quartiles.
+- **Camps.** No camp state reaches 5 cities; a camp that takes a city
+  becomes an ordinary state.
+- **WAR_IDLE and WAR_GAIN** are read nowhere (left from `war_motive`),
+  so the screen's "inert" was an artefact.
+
+**For U.** The five questions at the end of `WP13-design.md`.
+Recommended: 1a muster and 1b campaign goals, 2b annexing foreign
+vassals, 3 ruler's edge in the decision (reverses U's 2026-11-18
+form), 4 camps that rule through tribute, 5 delete the dead constants.
