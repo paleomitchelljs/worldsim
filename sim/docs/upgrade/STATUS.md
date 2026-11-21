@@ -2508,7 +2508,7 @@ density until then.
 **Disk.** About 360 MB free on the machine (U told). Batches of five
 runs need about 400 MB; free space before the next batch.
 
-### Run storage: summaries by default (2026-11-21, HASH)
+### Run storage: summaries by default (2026-11-21, e88ac6b)
 
 **Done (U).** The disk filled with full runs (about 150 MB each at year
 8000); U cleared `runs/`, so no run folders remain, `wp10c` included.
