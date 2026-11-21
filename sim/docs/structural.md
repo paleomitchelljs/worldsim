@@ -27,6 +27,8 @@ gives back the earlier model draw for draw ([running.md](running.md)).
 | `roads` | later | states build roads that cut travel cost ([roads](#roads-roads)) |
 | `improvements` | later | field works, terraces and canals, built up and wrecked ([improvements](#improvements-improvements)) |
 | `clearing` | on (2026-11-20, U) | farmers and herders clear forest, which farms and herds as grassland; unused clearings grow back ([land clearing](#land-clearing-clearing)) |
+| `clear_terrain` | on (2026-11-20, U; untested until the screen ends) | cleared forest is crossed and defended as open country ([cleared land as terrain](#cleared-land-as-terrain-clear_terrain)) |
+| `fire` | on (2026-11-20, U; untested until the screen ends) | foragers keep part of temperate forest burnt open, which forages better ([burning by foragers](#burning-by-foragers-fire)) |
 | `separation` | later | separation becomes preferred spacing; its hostile effects move to low tolerance ([separation](#separation-as-spacing-separation)) |
 | `hierarchy` | later | a hierarchy trait: elite growth, extraction, levies ([traits/cultural.md](traits/cultural.md)) |
 | `patience` | later | a patience trait: building, granaries, land care ([traits/cultural.md](traits/cultural.md)) |
@@ -440,9 +442,11 @@ numbers **C**.
 - **Regrowth:** above the target, a clearing grows back at
   CLEAR_REGROW 1/150 per year. An emptied cell's target is 0. Secondary
   forest closes its canopy in decades to a century or two.
-- **Not modelled:** clearing's effect on movement and defence (edge
-  costs are fixed at the start), on the climate (albedo, rain recycling)
-  and on erosion; burning by foragers; clearing in sacks and wars.
+- **Not modelled:** clearing's effect on the climate (albedo, rain
+  recycling) and on erosion. Movement and defence are
+  `clear_terrain`, and foragers' burning is `fire` (both below). Wars
+  touch clearing only through the people they kill: raids and ravaging
+  already wreck field works, and emptied land grows back.
 - **Records:** `cleared_km2` in `timeseries.csv`; `clear` in
   `final_state.npz`.
 - **Test** (`wp8j_sanity_seed101`, 3,000 years; with `--off clearing`
@@ -450,6 +454,56 @@ numbers **C**.
   - 5.6M km² is cleared by year 3,000: 11% of jungle and of temperate
     forest, most in the long-settled cores.
   - Population is 13-26% above `wp8i` at years 1,000-3,000.
+
+## Cleared land as terrain (`clear_terrain`)
+
+U (2026-11-20): "prepare the extensions" (the clearing items not yet
+modelled). Form and numbers **C**.
+
+- **What:** cleared forest is crossed and held like open country.
+- **When:** every ROAD_EVERY (50) years, before roads, in cells whose
+  cleared share has moved by CLEAR_TERRAIN_STEP (0.05) or more since it
+  was last applied. The step keeps the travel graph's cached distances
+  valid outside the cells that changed.
+- **Travel cost:** the biome's MOVE is × (1 + clear × (grassland's MOVE /
+  the biome's − 1)). At full clearing, jungle is × 0.59 and temperate
+  forest × 0.8. Relief, rivers and roads keep their own factors.
+- **Terrain defence:** TERRAIN_DEF is blended the same way. At full
+  clearing, jungle is × 0.59 and temperate forest × 0.91. Relief and
+  wetland keep theirs. Raids, ravaging and sieges read it as before.
+- **State:** `Sim.clear_at` holds the share last applied, and the
+  world's `move_x` and `defence0` (the defence before clearing) are kept
+  with the world. A state saved before this starts from the uncleared
+  terrain.
+- **Not modelled:** forest cleared along roads (the road stock is its own
+  multiplier).
+
+## Burning by foragers (`fire`)
+
+U (2026-11-20): "prepare the extensions". Form and numbers **C**.
+
+- **What:** foragers in temperate forest keep a share of it burnt open:
+  a mosaic of regrowth and edge (`Sim.burn`, 0–1). Examples are
+  Australian fire-stick farming and the Holocene burning of Europe's and
+  North America's woodlands.
+- **Jungle is left out.** Closed rainforest carries little fire.
+- **Target:** BURN_MAX 0.3 × (1 − farming level) × clip(pop / farming K,
+  0, 1) on non-herding cells, 0 elsewhere.
+- **Rates:** the share rises at BURN_RATE 0.1 per year of the gap, and
+  grows back at BURN_REGROW 1/20 per year above the target.
+- **Effect:** the burnt share of the uncleared forest forages × (1 +
+  BURN_GAIN 0.25). Hunting returns run higher on recently burnt ground
+  (Bliege Bird et al. 2008, *PNAS*). With `clearing` the factor is 1 +
+  0.25 × burn × (1 − clear).
+- **Farmers take over burnt land.** Their cleared share is first raised
+  to the burnt share, up to their own target, so farming starts from
+  what foragers kept open.
+- **Not modelled:**
+  - the burnt mosaic's effect on travel and defence (it stays forest);
+  - fires that escape;
+  - burning of grassland, which is open already.
+- **Records:** `burnt_km2` in `timeseries.csv`; `burn` in
+  `final_state.npz`.
 
 ## Separation as spacing (`separation`)
 

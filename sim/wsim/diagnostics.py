@@ -87,6 +87,7 @@ class DiagnosticsMixin:
             improvements=round(float((self.imp * self.pop).sum() /
                                      max(self.pop.sum(), 1)), 3),
             cleared_km2=round(float((self.clear * self.W.area).sum())),
+            burnt_km2=round(float((self.burn * self.W.area).sum())),
             minority_pop=float(self.mpop.sum()),
             stress_mean=round(float(np.mean([p["stress"] for p in live2]))
                               if live2 else 0.0, 3),

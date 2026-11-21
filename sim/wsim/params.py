@@ -112,7 +112,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "food_flow", "war_terms", "urban_city", "trade_debit",
             "war_odds", "site_defence", "ruler_mil", "pol_step",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
-            "displacement", "climate_fields", "floodplain", "clearing"]
+            "displacement", "climate_fields", "floodplain", "clearing",
+            "clear_terrain", "fire"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -1282,3 +1283,24 @@ CLIM_AMP = 1.0             # climate: scales the precipitation anomaly (PREC_SD)
 CLEAR_RATE = 0.01
 CLEAR_REGROW = 1 / 150
 CLEAR_HERD = 0.5
+# Cleared land as terrain (`clear_terrain`, 2026-11-20; U: "prepare the
+# extensions"; C). Every ROAD_EVERY years, where a cell's cleared share
+# has moved by CLEAR_TERRAIN_STEP or more since it was last applied, its
+# travel cost (MOVE) and terrain defence (TERRAIN_DEF) blend toward
+# grassland's by the cleared share: open fields are crossed and held like
+# open country. Relief, wetland and rivers keep their own factors.
+CLEAR_TERRAIN_STEP = 0.05
+# Burning by foragers (`fire`, 2026-11-20; C). Foragers in temperate forest
+# keep a share of it burnt open, a mosaic of regrowth and edge (Australian
+# fire-stick farming; the Holocene burning of Europe's and North America's
+# woodlands). Target: BURN_MAX x (1 - farming level) x pop / farming K;
+# rise at BURN_RATE per year of the gap, regrowth at BURN_REGROW. The
+# burnt share's forage is x (1 + BURN_GAIN) (hunting returns on recently
+# burnt ground run higher: Bliege Bird et al. 2008, PNAS). Jungle is left
+# out: closed rainforest carries little fire. Farmers who take over burnt
+# land start clearing from it: their cleared share is raised to the burnt
+# share, up to their target.
+BURN_MAX = 0.3
+BURN_GAIN = 0.25
+BURN_RATE = 0.1
+BURN_REGROW = 1 / 20

@@ -9,6 +9,8 @@ from .geo import *  # noqa: F401,F403
 # `clearing`: per biome, grassland's FARM, FORAGE and HERD over the biome's,
 # less 1 (0 where nothing is cleared); CLEARABLE marks the forest biomes
 CLEARABLE = np.array([b in ("Jungle", "Temperate forest") for b in BIOMES], float)
+# `fire`: the biome foragers burn
+BURNABLE = np.array([b == "Temperate forest" for b in BIOMES], float)
 CLEAR_X = np.array([[(t["Grassland"] / t[b] - 1) * c for b, c in
                      zip(BIOMES, CLEARABLE)] for t in (FARM, FORAGE, HERD)])
 
@@ -163,6 +165,10 @@ class LandMixin:
             rain = rain * (1 + cl * CLEAR_X[0, b0])
             forage = forage * (1 + cl * CLEAR_X[1, b0])
             herd = herd * (1 + cl * CLEAR_X[2, b0])
+        if "fire" in self.on:
+            # the burnt mosaic of the uncleared forest forages better
+            unc = 1 - self.clear[j] if "clearing" in self.on else 1
+            forage = forage * (1 + BURN_GAIN * self.burn[j] * unc)
         # canals carry irrigation; field works and terraces help rain-fed
         cm0, cm1 = cm[0, j], cm[1, j]
         imp = self.imp[j]
@@ -583,10 +589,41 @@ class LandMixin:
                 CLEAR_HERD * np.clip(self.pop[occ] / np.maximum(Kh, 1e-3), 0, 1),
                 use[occ])
             tgt *= CLEARABLE[W.biome]
+            if "fire" in self.on:
+                # farmers start from what foragers kept open
+                self.clear = np.maximum(self.clear, np.minimum(self.burn, tgt))
             gap = tgt - self.clear
             self.clear += DT * np.where(gap > 0, CLEAR_RATE * gap,
                                         CLEAR_REGROW * gap)
             np.clip(self.clear, 0, 1, out=self.clear)
+        if "fire" in self.on:
+            # foragers keep part of the forest burnt open
+            tgt = np.zeros(W.N)
+            tgt[occ] = ~self.herding[occ] * BURN_MAX * (1 - self.agri[L]) * \
+                np.clip(self.pop[occ] / np.maximum(Kc, 1e-3), 0, 1)
+            tgt *= BURNABLE[W.biome]
+            gap = tgt - self.burn
+            self.burn += DT * np.where(gap > 0, BURN_RATE * gap,
+                                       BURN_REGROW * gap)
+            np.clip(self.burn, 0, 1, out=self.burn)
+
+    def clear_terrain(self):
+        """`clear_terrain`: cells whose cleared share has moved by
+        CLEAR_TERRAIN_STEP or more since last applied take travel cost
+        and terrain defence blended toward grassland's by that share."""
+        W = self.W
+        ch = np.abs(self.clear - self.clear_at) >= CLEAR_TERRAIN_STEP
+        if not ch.any():
+            return
+        self.clear_at[ch] = self.clear[ch]
+        g = BIOMES.index("Grassland")
+        mv = np.array([MOVE[b] for b in BIOMES])
+        td = np.array([TERRAIN_DEF[b] for b in BIOMES])
+        b = W.biome
+        W.move_x = 1 + self.clear_at * CLEARABLE[b] * (mv[g] / mv[b] - 1)
+        W.defence = W.defence0 * (
+            1 + self.clear_at * CLEARABLE[b] * (td[g] / td[b] - 1))
+        W.travel()
 
     def disasters(self):
         rng = self.R("disasters")
