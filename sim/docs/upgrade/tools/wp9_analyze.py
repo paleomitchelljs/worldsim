@@ -8,8 +8,11 @@ the unit-scaled parameter space (delta = 2/3 at 4 levels; log-scaled
 parameters are scaled on log10). Seed noise: the sd of the pattern over
 six seeds at the default point (the baseline batch's five, base_seed105).
 An EE made of two single-seed runs has noise sqrt(2) sd / delta; `ratio`
-is mu* over that. Points whose run failed are skipped, with the EEs
-that use them.
+is mu* over that. Pure noise gives a mu* of about 0.8 x noise, so ratio
+> 1 is a weak screen. The firmer test is direction: z = |mu| / (noise /
+sqrt(n)); z >= 3 ("clear") lets through about 2 of the 840 parameter-
+pattern pairs by chance. Points whose run failed are skipped, with the
+EEs that use them.
 """
 import argparse
 import json
@@ -118,7 +121,9 @@ def main():
                 ms = float(np.abs(e).mean())
                 stats.append((n, ms, float(e.mean()),
                               float(e.std(ddof=1)) if len(e) > 1 else np.nan,
-                              len(e), ms / noise if noise > 0 else np.nan))
+                              len(e), ms / noise if noise > 0 else np.nan,
+                              abs(e.mean()) / (noise / math.sqrt(len(e)))
+                              if noise > 0 else np.nan))
         stats.sort(key=lambda s: -s[1])
         rows.append((pid, fn, key, sd, float(np.nanmean(ys)), noise, stats))
         lines.append(f"### {pid}: {fn}: {key}")
@@ -126,26 +131,34 @@ def main():
         lines.append(f"Default point: mean {np.nanmean(ys):.4g}, seed sd "
                      f"{sd:.3g}; EE noise {noise:.3g}.")
         lines.append("")
-        lines.append("| Parameter | mu* | mu | sigma | n | mu* / noise |")
-        lines.append("|---|---|---|---|---|---|")
-        for n, ms, mu, sg, cnt, r in stats[:8]:
-            lines.append(f"| {n} | {ms:.3g} | {mu:.3g} | {sg:.3g} | {cnt} | {r:.2f} |")
+        lines.append("| Parameter | mu* | mu | sigma | n | mu* / noise | z |")
+        lines.append("|---|---|---|---|---|---|---|")
+        for n, ms, mu, sg, cnt, r, z in stats[:8]:
+            lines.append(f"| {n} | {ms:.3g} | {mu:.3g} | {sg:.3g} | {cnt} | {r:.2f} | {z:.1f} |")
         above = [s[0] for s in stats if s[5] > 1]
+        clear = [f"{s[0]} ({'+' if s[2] > 0 else '-'})" for s in
+                 sorted(stats, key=lambda s: -s[6]) if s[6] >= 3]
         lines.append("")
-        lines.append(f"Above seed noise: {', '.join(above) or 'none'}.")
+        lines.append(f"mu* above seed noise: {', '.join(above) or 'none'}.")
+        lines.append("")
+        lines.append(f"Clear direction (z >= 3; sign of the effect of raising "
+                     f"the parameter): {', '.join(clear) or 'none'}.")
         lines.append("")
     # parameters above noise on no pattern
     hit = {n: 0 for n in names}
-    for *_, stats in rows:
+    clr = {n: [] for n in names}
+    for pid, *_, stats in rows:
         for s in stats:
             if s[5] > 1:
                 hit[s[0]] += 1
-    lines.append("### Patterns each parameter moves above seed noise")
+            if s[6] >= 3:
+                clr[s[0]].append(f"{pid}{'+' if s[2] > 0 else '-'}")
+    lines.append("### Patterns each parameter moves")
     lines.append("")
-    lines.append("| Parameter | patterns |")
-    lines.append("|---|---|")
-    for n in sorted(names, key=lambda n: -hit[n]):
-        lines.append(f"| {n} | {hit[n]} |")
+    lines.append("| Parameter | mu* above noise (patterns) | clear direction (z >= 3) |")
+    lines.append("|---|---|---|")
+    for n in sorted(names, key=lambda n: (-len(clr[n]), -hit[n])):
+        lines.append(f"| {n} | {hit[n]} | {' '.join(clr[n]) or '-'} |")
     text = "\n".join(lines)
     print(text)
     if a.md:
