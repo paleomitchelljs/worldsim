@@ -58,7 +58,7 @@ what an entry holds.
 | 9 | B sensitivity screen | done (`docs/sensitivity.md`) | 2026-11-21 | f61a47f |
 | 9 | C Earth test scoping | done (`docs/earth-test-plan.md`; D11 open) | 2026-11-20 | 785fb84 |
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
-| 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | HASH |
+| 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
 
 ## Entries
 
@@ -2444,7 +2444,7 @@ good."
 (assimilation under long rule)? Leave B (deportation) out? WP11 stage A
 before WP10 stage C?
 
-### WP10 stage C: peoples that move; baseline `wp10c` (2026-11-21, HASH)
+### WP10 stage C: peoples that move; baseline `wp10c` (2026-11-21, 289a949)
 
 **Decisions (U, 2026-11-21, D13).** Build A (conquest that settles), B
 (deportation) and C (assimilation under long rule); WP11's trace after.
