@@ -487,3 +487,18 @@ Earlier versions, for the record:
   and no sea ice.
 - The straight-edged strips at 100–120°E (above) show in temperature
   and precipitation too, through elevation.
+
+### Plateau warming (U, 2026-11-21)
+
+- **The rule.** T += MASS_K × min(z_broad, z), with z_broad the land
+  elevation (sea 0) smoothed by a gaussian of L_MASS = 300 km, and
+  MASS_K = 1 °C/km (C; the mass-elevation effect of the Tibetan
+  interior is about 4-6 °C). The cap at the cell's own height keeps a
+  lowland beside a plateau from being raised. MASS_K 0 gives the fields
+  before.
+- **On Earth** (`--tag fix3`): Tibet −7.8 °C (−13.7 before; observed
+  −3.7), the Colorado Plateau 5.7 (3.8; 9.5); India's rain unchanged at
+  0.42 m/yr; agreement 0.543.
+- **On this world:** land 0.7 °C warmer; jungle 29.4, desert 9.5,
+  grassland 37.9, temperate forest 26.0, tundra 19.2M km²; agreement
+  with the drawn map 0.44.

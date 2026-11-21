@@ -10,7 +10,8 @@ from Earth's map (all forms and numbers C):
                   (T_pole + (T_eq - T_pole) cos^2 lat, the leading Legendre
                   term of an energy-balance model, plus the next term,
                   T_MID x 4 sin^2 cos^2: heat carried poleward flattens
-                  the tropics), a lapse rate on fic_elev_km, colder
+                  the tropics), a lapse rate on fic_elev_km less the
+                  warming of broad plateaus (MASS_K), colder
                   winters and a colder mean with continentality, cooling
                   beside upwelling coasts (the paleo ocean model's
                   vertical velocity), and warmer dry land (what a surface
@@ -98,6 +99,12 @@ PARAMS = dict(
     T_EQ=27.0,         # degC, sea-level annual mean at the equator
     T_POLE=-15.0,      # degC, the same at the poles (maritime)
     LAPSE=6.5,         # degC per km of elevation
+    # mass-elevation effect: a broad plateau heats the air above it, so
+    # its surface is warmer than the free air at the same height (about
+    # 4-6 degC on the Tibetan interior); MASS_K degC per km of elevation
+    # smoothed over L_MASS
+    MASS_K=1.0,        # degC per km
+    L_MASS=300.0,      # km, smoothing scale (gaussian sigma)
     A0=1.0,            # degC, seasonal half-amplitude at the equator
     A1=22.0,           # degC x |sin lat|, half-amplitude in a continental interior
     A_SEA=0.25,        # share of A1 felt on a windward coast
@@ -471,6 +478,12 @@ def fields(inp, p=PARAMS):
     T_anom = np.where(land, carry(sst_anom, land, dx, p["L_MARITIME"], west0), sst_anom)
     T = T0 - p["U_COOL"] * up + T_anom - p["C_COLD"] * cont * s2 - \
         p["LAPSE"] * np.where(land, np.clip(inp["elev_km"], 0, None), 0.0)
+    if p["MASS_K"]:
+        zb = ndimage.gaussian_filter(np.where(land, np.clip(inp["elev_km"], 0, None), 0.0),
+                                     p["L_MASS"] / (RES * 111.2), mode=("nearest", "wrap"))
+        # never more than the cell's own height: a lowland beside a
+        # plateau is not raised
+        T = T + p["MASS_K"] * np.where(land, np.minimum(zb, np.clip(inp["elev_km"], 0, None)), 0.0)
 
     P, wsum, Pm = np.zeros((NY, NX)), 0.0, {}
     def mse_itcz(Pmon, sun):

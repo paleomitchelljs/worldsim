@@ -862,3 +862,40 @@ every seed, at 30-56%**, their largest share yet. Reported only (U:
 peoples later).
 
 None is tuned.
+
+## `wp8n`: plateau warming (2026-11-21)
+
+**Asked by U (2026-11-21):** "A small cold highland change would be
+good." Broad plateaus gain 1 °C per km of elevation smoothed over 300 km
+(world-data.md, "Plateau warming"); `world_v2` and `sites_v3.json`
+rebuilt. Society code as `wp8k`.
+
+**The world** (M km²): jungle 28.1 → 29.4, desert 9.5 (unchanged),
+grassland 37.8 → 37.9, temperate forest 26.1 → 26.0, tundra 20.5 →
+19.2. Land 0.7 °C warmer.
+
+| Measure | wp8n (current) | wp8m (previous) |
+|---|---|---|
+| World population at 8000 (M) | 52-81 | 47-70 |
+| Population at 1000 / 4000 (M) | 2.9-3.3 / 17.7-20.6 | 2.6-3.4 / 16.1-19.5 |
+| First city / 10M (year) | 555-1,475 / 2,555-2,760 | 520-985 / 2,310-2,845 |
+| First bronze / iron / steel (year) | 4,675-6,260 / 4,905-7,325 / 5,130-7,010 | 4,015-5,870 / 4,735-6,945 / 5,215-7,840 |
+| Urban share at the end | 0.047-0.059 | 0.055-0.066 |
+| Rank-size slope at the end | -0.74 to -0.57 | -0.80 to -0.56 |
+| States with 3+ cities | 73-174 | 95-275 |
+| Largest state (M km²) | 1.6-1.9 | 1.2-2.7 |
+| Wars | 1,004-3,607 | 871-2,781 |
+| Sieges taken | 41-45% | 43-48% |
+| City food from trade | 0.032-0.049 | 0.036-0.060 |
+| Pop share: \|lat\| 0-15 / 15-30 / 30-45 | 0.52-0.70 / 0.20-0.33 / 0.06-0.12 | 0.56-0.58 / 0.25-0.30 / 0.09-0.11 |
+| Largest people at the end | Snake folk in 4 seeds (27-33%), Humans in one (36%) | Snake folk in every seed, 30-56% |
+
+**What moved.** Population ends higher (52-81M), and fewer states reach
+3+ cities. Most measures overlap `wp8m`'s range. **Snake folk's lead
+shrank**: 27-33% in four seeds, and Humans lead seed 102 with 36%.
+Reported only (U: refine the world first; don't tune peoples).
+
+**Empty land** (measured on `wp8m`, 2026-11-21): settlement reaches
+87-88% of land by year 6000 and stops; the 12% never settled is mostly
+tundra. Settled land is thin: median 0.1 people per km² on grassland,
+0.12-0.14 in temperate forest. Taken up as WP11.

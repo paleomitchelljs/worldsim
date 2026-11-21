@@ -2576,3 +2576,19 @@ not adopted.
 **The batch** (BASELINE.md, last section): population 47-70M; 95-275
 states with 3+ cities; 871-2,781 wars; Snake folk lead every seed with
 30-56%.
+
+### 2026-11-21 WP8: plateau warming (`wp8n_seed101`-`104`, `106`)
+
+What it tested: the mass-elevation effect (U, 2026-11-21: "a small cold
+highland change") in `climate_world.py`, with `world_v2` and
+`sites_v3.json` rebuilt; society code as `wp8k`.
+
+**Checks.** MASS_K 0 gives the `wp8m` climate.
+
+**Climate** (earth-climate-check.md, last section): Tibet −7.8 °C
+(−13.7 before; observed −3.7); India unchanged at 0.42 m/yr; land 0.9
+°C too warm overall on Earth.
+
+**The batch** (BASELINE.md, last section): population 52-81M; 73-174
+states with 3+ cities; 1,004-3,607 wars; Snake folk lead four seeds at
+27-33%, Humans one at 36%.

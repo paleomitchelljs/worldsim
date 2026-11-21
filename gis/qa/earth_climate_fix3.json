@@ -1,0 +1,439 @@
+{
+ "source": "WorldClim 2.1, 10 arc-minute, 1970-2000; averaged to 0.5 degrees",
+ "P0_earth": 3.055,
+ "land_cells": 89612,
+ "biome_area_mkm2": {
+  "model": {
+   "Jungle": 28.2,
+   "Desert": 20.0,
+   "Grassland": 39.6,
+   "Temperate forest": 36.0,
+   "Tundra": 30.0
+  },
+  "observed": {
+   "Jungle": 24.5,
+   "Desert": 30.6,
+   "Grassland": 32.8,
+   "Temperate forest": 41.3,
+   "Tundra": 24.5
+  }
+ },
+ "recall_by_observed_biome": {
+  "Jungle": 0.761,
+  "Desert": 0.373,
+  "Grassland": 0.31,
+  "Temperate forest": 0.471,
+  "Tundra": 0.972
+ },
+ "mean_recall": 0.577,
+ "overall": 0.543,
+ "confusion": [
+  {
+   "observed": "Jungle",
+   "Jungle": 0.761,
+   "Desert": 0.021,
+   "Grassland": 0.144,
+   "Temperate forest": 0.074,
+   "Tundra": 0.0,
+   "area_km2": 24463226.233
+  },
+  {
+   "observed": "Desert",
+   "Jungle": 0.064,
+   "Desert": 0.373,
+   "Grassland": 0.447,
+   "Temperate forest": 0.112,
+   "Tundra": 0.004,
+   "area_km2": 30595265.612
+  },
+  {
+   "observed": "Grassland",
+   "Jungle": 0.21,
+   "Desert": 0.126,
+   "Grassland": 0.31,
+   "Temperate forest": 0.335,
+   "Tundra": 0.019,
+   "area_km2": 32803953.397
+  },
+  {
+   "observed": "Temperate forest",
+   "Jungle": 0.017,
+   "Desert": 0.089,
+   "Grassland": 0.292,
+   "Temperate forest": 0.471,
+   "Tundra": 0.132,
+   "area_km2": 41343711.47
+  },
+  {
+   "observed": "Tundra",
+   "Jungle": 0.0,
+   "Desert": 0.009,
+   "Grassland": 0.006,
+   "Temperate forest": 0.013,
+   "Tundra": 0.972,
+   "area_km2": 24522005.835
+  }
+ ],
+ "fields": {
+  "temp_c": {
+   "model": 10.256,
+   "observed": 9.335,
+   "bias": 0.92,
+   "rmse": 3.813,
+   "r": 0.982
+  },
+  "temp_range_c": {
+   "model": 18.927,
+   "observed": 19.572,
+   "bias": -0.645,
+   "rmse": 7.226,
+   "r": 0.835
+  },
+  "gdd": {
+   "model": 3959.785,
+   "observed": 3951.448,
+   "bias": 8.337,
+   "rmse": 608.932,
+   "r": 0.98
+  },
+  "precip_m_yr": {
+   "model": 0.849,
+   "observed": 0.756,
+   "bias": 0.093,
+   "rmse": 0.846,
+   "r": 0.563
+  },
+  "pet_m_yr": {
+   "model": 0.979,
+   "observed": 1.102,
+   "bias": -0.123,
+   "rmse": 0.367,
+   "r": 0.884
+  },
+  "aridity_season": {
+   "model": 5.161,
+   "observed": 20.404,
+   "bias": -15.243,
+   "rmse": 92.567,
+   "r": 0.443
+  },
+  "season_factor": {
+   "model": 0.978,
+   "observed": 0.988,
+   "bias": -0.01,
+   "rmse": 0.109,
+   "r": 0.258
+  },
+  "warm_rain_share": {
+   "model": 0.624,
+   "observed": 0.586,
+   "bias": 0.038,
+   "rmse": 0.25,
+   "r": 0.243
+  },
+  "precip_m_yr (log10)": {
+   "model": -0.4,
+   "observed": -0.383,
+   "bias": -0.018,
+   "rmse": 0.573,
+   "r": 0.545
+  },
+  "aridity_season (log10)": {
+   "model": -0.061,
+   "observed": -0.108,
+   "bias": 0.047,
+   "rmse": 0.706,
+   "r": 0.669
+  }
+ },
+ "regions": [
+  {
+   "region": "Sahara",
+   "cells": 1920,
+   "T_model": 24.0,
+   "T_obs": 24.6,
+   "P_model": 0.24,
+   "P_obs": 0.02,
+   "jul_jan_model": 3.71,
+   "jul_jan_obs": 1.81,
+   "biome_model": {
+    "Desert": 0.76,
+    "Grassland": 0.24
+   },
+   "biome_obs": {
+    "Desert": 1.0
+   }
+  },
+  {
+   "region": "Arabia",
+   "cells": 702,
+   "T_model": 23.1,
+   "T_obs": 26.3,
+   "P_model": 0.51,
+   "P_obs": 0.12,
+   "jul_jan_model": 4.82,
+   "jul_jan_obs": 0.12,
+   "biome_model": {
+    "Jungle": 0.09,
+    "Desert": 0.38,
+    "Grassland": 0.51
+   },
+   "biome_obs": {
+    "Desert": 1.0
+   }
+  },
+  {
+   "region": "Amazon",
+   "cells": 960,
+   "T_model": 27.7,
+   "T_obs": 26.0,
+   "P_model": 1.41,
+   "P_obs": 2.33,
+   "jul_jan_model": 0.43,
+   "jul_jan_obs": 0.42,
+   "biome_model": {
+    "Jungle": 0.85,
+    "Grassland": 0.15
+   },
+   "biome_obs": {
+    "Jungle": 1.0
+   }
+  },
+  {
+   "region": "Congo basin",
+   "cells": 576,
+   "T_model": 26.2,
+   "T_obs": 24.5,
+   "P_model": 1.24,
+   "P_obs": 1.72,
+   "jul_jan_model": 1.11,
+   "jul_jan_obs": 0.75,
+   "biome_model": {
+    "Jungle": 0.82,
+    "Grassland": 0.18
+   },
+   "biome_obs": {
+    "Jungle": 1.0
+   }
+  },
+  {
+   "region": "India (monsoon)",
+   "cells": 704,
+   "T_model": 25.2,
+   "T_obs": 25.8,
+   "P_model": 0.42,
+   "P_obs": 1.1,
+   "jul_jan_model": 5.54,
+   "jul_jan_obs": 31.78,
+   "biome_model": {
+    "Jungle": 0.14,
+    "Desert": 0.72,
+    "Grassland": 0.13
+   },
+   "biome_obs": {
+    "Jungle": 0.07,
+    "Grassland": 0.87
+   }
+  },
+  {
+   "region": "Southeast Asia",
+   "cells": 496,
+   "T_model": 23.9,
+   "T_obs": 25.0,
+   "P_model": 2.48,
+   "P_obs": 1.8,
+   "jul_jan_model": 8.17,
+   "jul_jan_obs": 36.76,
+   "biome_model": {
+    "Jungle": 0.7,
+    "Grassland": 0.1,
+    "Temperate forest": 0.2
+   },
+   "biome_obs": {
+    "Jungle": 0.78,
+    "Temperate forest": 0.18
+   }
+  },
+  {
+   "region": "Western Europe",
+   "cells": 646,
+   "T_model": 6.5,
+   "T_obs": 9.1,
+   "P_model": 1.06,
+   "P_obs": 0.86,
+   "jul_jan_model": 0.95,
+   "jul_jan_obs": 1.05,
+   "biome_model": {
+    "Temperate forest": 0.96
+   },
+   "biome_obs": {
+    "Temperate forest": 0.99
+   }
+  },
+  {
+   "region": "Siberia (boreal)",
+   "cells": 2400,
+   "T_model": -2.4,
+   "T_obs": -3.7,
+   "P_model": 0.21,
+   "P_obs": 0.46,
+   "jul_jan_model": 3.69,
+   "jul_jan_obs": 3.18,
+   "biome_model": {
+    "Desert": 0.09,
+    "Grassland": 0.85,
+    "Temperate forest": 0.06
+   },
+   "biome_obs": {
+    "Temperate forest": 0.97
+   }
+  },
+  {
+   "region": "Central Asia",
+   "cells": 800,
+   "T_model": 9.3,
+   "T_obs": 9.8,
+   "P_model": 0.73,
+   "P_obs": 0.21,
+   "jul_jan_model": 0.67,
+   "jul_jan_obs": 0.5,
+   "biome_model": {
+    "Grassland": 0.34,
+    "Temperate forest": 0.61
+   },
+   "biome_obs": {
+    "Desert": 0.75,
+    "Grassland": 0.17,
+    "Temperate forest": 0.06
+   }
+  },
+  {
+   "region": "Eastern US",
+   "cells": 460,
+   "T_model": 15.3,
+   "T_obs": 12.9,
+   "P_model": 0.85,
+   "P_obs": 1.17,
+   "jul_jan_model": 0.98,
+   "jul_jan_obs": 1.31,
+   "biome_model": {
+    "Grassland": 0.24,
+    "Temperate forest": 0.76
+   },
+   "biome_obs": {
+    "Temperate forest": 1.0
+   }
+  },
+  {
+   "region": "US Southwest",
+   "cells": 304,
+   "T_model": 11.6,
+   "T_obs": 14.6,
+   "P_model": 0.68,
+   "P_obs": 0.3,
+   "jul_jan_model": 0.19,
+   "jul_jan_obs": 1.58,
+   "biome_model": {
+    "Grassland": 0.73,
+    "Temperate forest": 0.26
+   },
+   "biome_obs": {
+    "Desert": 0.58,
+    "Grassland": 0.4
+   }
+  },
+  {
+   "region": "Atacama",
+   "cells": 62,
+   "T_model": 17.4,
+   "T_obs": 13.6,
+   "P_model": 0.18,
+   "P_obs": 0.03,
+   "jul_jan_model": 3.25,
+   "jul_jan_obs": 0.28,
+   "biome_model": {
+    "Desert": 0.73,
+    "Grassland": 0.2,
+    "Tundra": 0.06
+   },
+   "biome_obs": {
+    "Desert": 0.9,
+    "Tundra": 0.1
+   }
+  },
+  {
+   "region": "Interior Australia",
+   "cells": 1000,
+   "T_model": 23.6,
+   "T_obs": 23.0,
+   "P_model": 0.74,
+   "P_obs": 0.28,
+   "jul_jan_model": 0.1,
+   "jul_jan_obs": 0.24,
+   "biome_model": {
+    "Desert": 0.16,
+    "Grassland": 0.57,
+    "Temperate forest": 0.23
+   },
+   "biome_obs": {
+    "Desert": 0.95,
+    "Grassland": 0.05
+   }
+  },
+  {
+   "region": "Sahel",
+   "cells": 900,
+   "T_model": 27.6,
+   "T_obs": 27.7,
+   "P_model": 0.28,
+   "P_obs": 0.52,
+   "jul_jan_model": 17.14,
+   "jul_jan_obs": 1117.24,
+   "biome_model": {
+    "Desert": 0.73,
+    "Grassland": 0.23
+   },
+   "biome_obs": {
+    "Desert": 0.49,
+    "Grassland": 0.5
+   }
+  },
+  {
+   "region": "East China",
+   "cells": 948,
+   "T_model": 18.3,
+   "T_obs": 13.9,
+   "P_model": 0.68,
+   "P_obs": 1.0,
+   "jul_jan_model": 5.27,
+   "jul_jan_obs": 6.15,
+   "biome_model": {
+    "Desert": 0.12,
+    "Grassland": 0.55,
+    "Temperate forest": 0.3
+   },
+   "biome_obs": {
+    "Grassland": 0.26,
+    "Temperate forest": 0.72
+   }
+  },
+  {
+   "region": "Mediterranean",
+   "cells": 654,
+   "T_model": 12.7,
+   "T_obs": 13.5,
+   "P_model": 1.02,
+   "P_obs": 0.68,
+   "jul_jan_model": 0.46,
+   "jul_jan_obs": 0.33,
+   "biome_model": {
+    "Grassland": 0.13,
+    "Temperate forest": 0.87
+   },
+   "biome_obs": {
+    "Grassland": 0.66,
+    "Temperate forest": 0.34
+   }
+  }
+ ]
+}

@@ -269,3 +269,28 @@ static energy beats northern India's, for two reasons:
 - India got 0.41 m/yr, against 0.49 with (a)-(d) alone.
 
 **Overall:** agreement 0.54, mean recall 0.58, desert 19.7M km².
+
+## Plateau warming (U, 2026-11-21: "a small cold highland change")
+
+The mass-elevation effect: a broad plateau heats the air above it, so
+its surface is warmer than the free air at the same height (about 4-6
+°C on the Tibetan interior). Land gains MASS_K = 1 °C per km of
+elevation smoothed over 300 km, never more than its own height. The
+value is from that literature range, not fitted here; world-data.md has
+the rule. Rerun: `earth_climate.py --tag fix3`.
+
+| Region | Before (°C) | After | Observed |
+|---|---|---|---|
+| Tibet | −13.7 | −7.8 | −3.7 |
+| Colorado Plateau | 3.8 | 5.7 | 9.5 |
+| Altiplano | 7.8 | 9.9 | 12.4 |
+| Iran plateau | 13.6 | 14.6 | 17.9 |
+
+- **High land is still too cold**, by about half as much as before.
+- **India is unchanged:** 0.42 m/yr, against 1.10 observed. Cold
+  plateaus were not what held its ITCZ south; the Arabian Sea's missing
+  upwelling remains.
+- **Land is now 0.9 °C too warm overall** (0.3 before). Lowland at
+  30-50° was already 1.3-2.0 °C too warm, which the cold plateaus had
+  hidden.
+- **Overall:** agreement 0.543 (0.542), mean recall 0.577.
