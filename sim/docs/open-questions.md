@@ -771,3 +771,13 @@ would tell whether this is real before anything is built on it.
 - **Sites:** `sites_v3.json` is placed on `world_v2`
   (`make_sites.py --v3`) and is in the standard command. `sites.json` and
   `sites_v2.json` stay as they were, made on `world.gpkg`.
+
+## Feud costs more than its grounds since D7 (2026-11-21, WP11 B)
+
+`FEUD_K`'s comment in `params.py` assumes growth of 1.2-2% a year,
+which would settle land at 0.65-0.8 of capacity at violence 0.99. Since
+D7 (R_SCALE 0.5), growth near capacity is about 0.8-1%. So the same
+FEUD_K costs about twice that share. Feud is the largest single cause
+of the half-fill: 0.09-0.33 of heads per century (WP11 brief, "Stage B
+part 1 results"). Undecided (U): rescale FEUD_K to its stated grounds,
+leave it, or take it up under WP13 (how far state order reaches).

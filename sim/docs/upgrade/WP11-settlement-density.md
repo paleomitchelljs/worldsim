@@ -178,3 +178,8 @@ violence 0.99. That was before D7 (2026-11-18) halved growth
 (R_SCALE 0.5). At today's 0.8-1%, the same FEUD_K costs about twice as
 much of the equilibrium. So feud is out of line with its own grounds,
 not with a density target.
+
+**Closed (U, 2026-11-21, D14).** Part 2 (metal by contact) goes to
+WP14; WP11 closes as a trace, with no rule changes. Herding density
+waits with it. The feud finding (FEUD_K's grounds predate D7) is open
+for U.
