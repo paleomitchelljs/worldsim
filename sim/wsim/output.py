@@ -542,7 +542,8 @@ def write_outputs(sim, out):
             write_checks(m, os.path.join(out, "checks.txt"))
     except Exception as e:  # noqa: BLE001
         print(f"metrics failed ({e!r})")
-    if getattr(sim, "video", True) and sim.hist:
+    full = getattr(sim, "keep", "full") == "full"
+    if full and getattr(sim, "video", True) and sim.hist:
         # history.mp4 (WP3 stage D): states above peoples, one frame per
         # snapshot, Mollweide; a failure must not lose the other outputs
         try:
@@ -553,7 +554,7 @@ def write_outputs(sim, out):
                             verbose=False)
         except Exception as e:  # noqa: BLE001
             print(f"history.mp4 failed ({e!r})")
-    if sim.hist:
+    if full and sim.hist:
         # viewer.html (WP3 stage D, U 2026-11-17): about 2 s
         try:
             import viewer
@@ -569,3 +570,12 @@ def write_outputs(sim, out):
             figures.compose(out)
         except Exception as e:  # noqa: BLE001
             print(f"figures.py failed ({e!r}); final_maps.png kept")
+    if not full:
+        # --keep summary (U, 2026-11-21): only runio.SUMMARY stays; the full
+        # tables are kept if metrics.json failed, so it can be made again
+        from .runio import shrink
+        if os.path.exists(os.path.join(out, "metrics.json")):
+            print(f"summary kept; {shrink(out) / 1e6:.0f} MB of tables "
+                  "removed (--keep full keeps them)")
+        else:
+            print("metrics.json missing: every file kept")

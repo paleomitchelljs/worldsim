@@ -2507,3 +2507,23 @@ density until then.
 
 **Disk.** About 360 MB free on the machine (U told). Batches of five
 runs need about 400 MB; free space before the next batch.
+
+### Run storage: summaries by default (2026-11-21, HASH)
+
+**Done (U).** The disk filled with full runs (about 150 MB each at year
+8000); U cleared `runs/`, so no run folders remain, `wp10c` included.
+- `worldsim.py --keep summary` (the default) keeps only `runio.SUMMARY`
+  (`metrics.json`, `run.json`, `timeseries.csv`, the chronicle, traits,
+  `final.png`, `population.png`, `checks.txt`) and skips `history.mp4`
+  and `viewer.html`. The tables are kept if `metrics.json` failed.
+  `--keep full` keeps everything.
+- `shrink_runs.py RUNS [--yes]` shrinks existing full runs to the summary
+  (makes `metrics.json` first if missing; lists only without `--yes`).
+- GUIDE "Run storage": one full baseline (five seeds); everything else
+  summary; saved states in scratch, deleted after use.
+
+**Checks.** A 2,000-year run of seed 101 kept 1.5 MB of 13 MB;
+`realism.py` reads it.
+
+**Next.** Rebuild `wp10c` with `--keep full` (about 750 MB) as the one
+full baseline; asked U first.

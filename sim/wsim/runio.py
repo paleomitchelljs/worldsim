@@ -47,6 +47,29 @@ FILES = {
     "metrics": "metrics.json",
 }
 
+# what a run kept with --keep summary (the default; U, 2026-11-21): enough
+# for realism.py, the chronicle and a look at the end state
+SUMMARY = ("run.json", "metrics.json", "checks.txt", "timeseries.csv",
+           "chronicle.txt", "traits.txt", "final.png", "population.png")
+
+
+def shrink(folder):
+    """Delete everything in a run folder but SUMMARY; returns bytes freed."""
+    import shutil
+    freed = 0
+    for f in os.listdir(folder):
+        if f in SUMMARY:
+            continue
+        p = os.path.join(folder, f)
+        if os.path.isdir(p):
+            freed += sum(os.path.getsize(os.path.join(d, x))
+                         for d, _, xs in os.walk(p) for x in xs)
+            shutil.rmtree(p)
+        else:
+            freed += os.path.getsize(p)
+            os.remove(p)
+    return freed
+
 
 class Missing(Exception):
     """A table the run does not have, or has only online."""

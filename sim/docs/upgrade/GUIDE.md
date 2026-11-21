@@ -52,6 +52,25 @@ These come from the user (`docs/README.md`, "Principles").
   check `uptime` first, because the user often has other jobs running.
 - An 8,000-year run takes about 14 minutes on an idle machine.
 
+### Run storage (U, 2026-11-21)
+
+The disk is shared with the user's Dropbox, which is most of what the
+machine is for. Hundreds of full runs (about 150 MB each at year 8000)
+filled it. So:
+
+- **Runs keep only a summary by default** (`--keep summary`): `metrics.json`,
+  `run.json`, `timeseries.csv`, the chronicle and a few figures, about
+  6 MB. `realism.py --group` works from these.
+- **One baseline is kept full:** the current baseline's five seeds, run with
+  `--keep full`. When a new baseline replaces it, shrink the old one with
+  `shrink_runs.py 'OLD_seed10?' --yes` (ask U first; it deletes files).
+- **Use `--keep full` only when a run must be studied** (tables, maps,
+  video), and shrink it when done. Prefer the in-memory approach of
+  `docs/upgrade/tools/wp11_trace.py` for one-off traces.
+- **Saved states** (`--save-state`, ~450 MB each) go in the scratchpad or
+  `/tmp` and are deleted once the branch runs are done.
+- Check `df -h /System/Volumes/Data` before a batch.
+
 ### Dropbox hazards
 
 As of 2026-11-17 the project lives at `~/Desktop/world`, outside Dropbox,

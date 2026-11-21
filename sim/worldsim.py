@@ -110,6 +110,14 @@ def make_sim(argv=None):
     ap.add_argument("--no-video", action="store_true",
                     help="skip history.mp4 at the end (render_run.py "
                     "can draw it later from history.npz)")
+    ap.add_argument("--keep", choices=["summary", "full"],
+                    default="summary",
+                    help="summary (default): keep only runio.SUMMARY "
+                    "(metrics.json, run.json, timeseries.csv, the chronicle "
+                    "and a few figures, a few MB); full: every table, "
+                    "history.npz, history.mp4 and viewer.html (~150 MB at "
+                    "year 8000), for the baseline and runs to study (U, "
+                    "2026-11-21)")
     ap.add_argument("--homelands", choices=["continents", "anywhere"],
                     default="continents",
                     help="continents: founders start on the two large "
@@ -255,6 +263,7 @@ def make_sim(argv=None):
     if a.hist_every is not None:
         sim.hist_every = a.hist_every
     sim.video = not a.no_video
+    sim.keep = a.keep
     sim.overrides = a.set
     sim.manifest = dict(
         code=code,
@@ -310,6 +319,7 @@ def branch(a, ap, off, saves, code, t0, argv):
     if a.hist_every is not None:
         sim.hist_every = a.hist_every
     sim.video = not a.no_video
+    sim.keep = a.keep
     if saves and min(saves) <= year0:
         ap.error(f"--save-state: the state is already at year {year0}")
     sim.out = out = runroot.path(a.out or f"branch{year0}")
