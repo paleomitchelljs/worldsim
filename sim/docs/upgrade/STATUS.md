@@ -2594,7 +2594,7 @@ Recommended: 1a muster and 1b campaign goals, 2b annexing foreign
 vassals, 3 ruler's edge in the decision (reverses U's 2026-11-18
 form), 4 camps that rule through tribute, 5 delete the dead constants.
 
-### WP13 stage B: build (2026-11-21, HASH)
+### WP13 stage B: build (2026-11-21, 4808fea)
 
 **Decisions (U, 2026-11-21, D15).** Yes to all five proposals.
 
