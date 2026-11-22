@@ -62,7 +62,7 @@ what an entry holds.
 | 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
 | 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
-| 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | - |
+| 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
 
 ## Entries
 
@@ -2740,7 +2740,7 @@ built: the cost of a fall of state already exists (above).
    E around 6750; climate?) before any more crisis mechanics?
 3. Build C anyway (disorder after a fall of state), or close WP12?
 
-### WP12 stage C, part 2: `rural_onset` default; `collapse_cost` (2026-11-22, -)
+### WP12 stage C, part 2: `rural_onset` default; `collapse_cost` (2026-11-22, 441c3e7)
 
 **Decisions (U, 2026-11-22).** 1 yes (`rural_onset` a default); 2 no
 (no trace of seed 104's event); 3 yes (build C).
