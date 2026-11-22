@@ -554,6 +554,7 @@ K. Growth, migration pressure and room use K × pref.
   shortfall × imp per year, shortfall = clip((0.7 × pmem − pop) / (0.7 ×
   pmem), 0, 1), 0 on herding cells; pmem = the cell's people, exponential
   mean over 50 years (updated after the improvement step).
+  `[works_lag]` (WP12 C, 2026-11-22, U; 0.85 **C**) 0.85 in place of 0.7.
 - `[salinity]` salt (0–1) changes per year by 0.002 × use × irrigated
   share × (1 − salt) (`[patience]` × (1.5 − patience)) − 0.003 × (1 −
   use) × salt.
@@ -1540,6 +1541,9 @@ numbers **C**) replaces the rule below:
   U(0.15, 0.35) per epidemic, × 0.3 for peoples other than the host; city
   cells a further 0.3 × that; immunity ≥ 0.8. Ends when no new cell is
   reached, or after 100 years.
+- `[rural_onset]` (WP12 C, 2026-11-22, U; numbers **C**; optional) also
+  onset per occupied cell per year: 2e-6 × min(1, people per km² / 5),
+  host = the cell's people; a cell inside an epidemic starts none.
 
 Without `[epidemic]`:
 - Each year with chance 0.008 × min(1, city population / 3 million) (×

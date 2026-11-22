@@ -60,6 +60,8 @@ what an entry holds.
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
 | 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
 | 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
+| 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | - |
+| 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | - |
 
 ## Entries
 
@@ -2665,3 +2667,75 @@ the effect small.
 20%+ by landmass group and state, cause, depth, recovery; time below
 capacity). Traces of seeds 101 and 103 were running at the session's
 end and write `baseline/wp12a_falls_seed*.md/.png`. Not yet reported.
+
+### WP12 stages A and B: falls measured; design note (2026-11-21, -)
+
+**Asked by U (2026-11-21).** Report the stage A falls, then write the
+stage B design note.
+
+**Done.** `tools/wp12_trace.py` (records only) on seeds 101 and 103:
+`baseline/wp12a_falls_seed101`, `_seed103` (`.md`, `.png`). The note is
+`WP12-design.md`. No rules changed.
+
+**Results.**
+- Every landmass fall of 20%+ is a plague in E: seven in two seeds,
+  depth 0.20-0.29, back to 90% in 75-200 years. Capacity does not fall
+  with the people. There are no falls from war, hunger or climate, and
+  none in S, W or N. The X falls are a founding artefact.
+- 86-91% of state falls are land lost (median depth 0.42-0.44). People
+  change rulers rather than die.
+- Fill is 0.22-0.62, so "under 0.8" is always true. "Under 0.8 x own
+  median" measures the rising trend, not crises.
+- Why falls are short: the steady state pulls people back to the same
+  k; `upkeep` triggers only below IMP_HANDS 0.7, which a plague rarely
+  reaches; plague spread is already rural, but onset is in cities.
+
+**For U.** A `works_lag` (recommended, IMP_HANDS 0.85); B
+`rural_onset` (recommended: hold); C `collapse_cost` (recommended:
+measure first); whether later steel is acceptable.
+
+### WP12 stage C: build (2026-11-22, -)
+
+**Decisions (U, 2026-11-22, D16).** The note's recommendations (A at
+0.85, hold B, measure C, report a later steel); then "build B" too.
+
+**Done.**
+- `works_lag` (default): upkeep's threshold WORKS_HANDS 0.85 in place of
+  IMP_HANDS 0.7 (`wsim/land.py`, `land_use`).
+- `rural_onset` (optional, `--on`): epidemics can start in any occupied
+  cell, PL_RURAL 2e-6 x min(1, people per km2 / PL_D_ON 5) a year; the
+  epidemic start is shared with city onset (`start_epi`); counter
+  `plague_rural`.
+- `tools/wp12_trace.py`: cells that change hands against cells that keep
+  them (C's measure), and fill against a 500-year running median.
+- Docs: rules/population.md, rules/disasters.md, model-description,
+  switch inventory, README (D16), WP12-design.md, run-log.
+
+**Runs.** `wp12c_seed101`-`104`, `106` (A) and `wp12d_*` (A + B),
+8,000 years, summary, each with a trace (`baseline/wp12c_falls_*`,
+`wp12d_falls_*`); one extra trace of seed 104 with `works_lag` off
+(scratch, not kept). Results in run-log.md.
+- `works_lag` changes little: improvements 0.45-0.53 at 8000 (wp13b
+  0.44-0.57); plague falls still recover in 50-225 years; steel not
+  later (4,805-7,635).
+- `rural_onset`: 8-17 rural onsets a run, late; plague falls reach S, N
+  and X (4 of 20), and recover as E's.
+- C's measure: a cell left with no state ends the next century about 8%
+  below a held one (mostly feud); a change of ruler costs 3-5%.
+- The only slow, violent landmass falls (seed 104, S and W, about
+  6750-6850; capacity falls in three groups at once) are in the run
+  without `works_lag` too: a world event, probably climate, not checked.
+- Fill falls below 0.8 of its running median in 0-4% of records: no
+  group spends real time depressed.
+
+**Not done.** No new baseline (`wp13b` stays the full one). C not
+built: the cost of a fall of state already exists (above).
+
+**For U.**
+1. Make `rural_onset` a default, or leave it optional? (C: optional is
+   fine either way; it adds dips, not dark ages.)
+2. Neither A nor B lengthens recovery. Dark ages here come from the
+   seed-104 kind of event. Trace it (what fell in capacity in S, W and
+   E around 6750; climate?) before any more crisis mechanics?
+3. Build C anyway (disorder after a fall of state), or close WP12?
+

@@ -115,12 +115,12 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "displacement", "climate_fields", "floodplain", "clearing",
             "clear_terrain", "fire", "conquest_settle", "deport",
             "assimilate", "muster", "campaign", "vassal_annex_cross",
-            "ruler_odds", "camp_tribute"]
+            "ruler_odds", "camp_tribute", "works_lag"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
 # since `floodplain` did (WP8, U 2026-11-19).
-OPTIONAL = []
+OPTIONAL = ["rural_onset"]
 # Trait costs. Cohesion slows borrowing from outsiders; statecraft's
 # extraction raises unrest when the state is underfed; violence raises the
 # chance of a succession crisis; expansion leaves thin frontier cells more
@@ -1118,6 +1118,13 @@ IMM_PROTECT = 0.8           # mortality x (1 - IMM_PROTECT * immunity)
 PL_EMERGE, PL_CCS, PL_LINK = 5e-5, 3e4, 1.0
 PL_STEPS, PL_BETA, PL_D0, PL_JUMP = 60, 0.9, 1.0, 0.3
 PL_MORT, PL_MAXT = (0.15, 0.35), 100
+# `rural_onset` (WP12 C, U 2026-11-22; form and numbers C; off unless
+# --on): plague can also start outside cities, from a reservoir in herds
+# or wild rodents. Each occupied cell, herders' included, starts one per
+# year with chance PL_RURAL x min(1, people per km2 / PL_D_ON). PL_D_ON 5
+# is about the 99th percentile of cell density at 8000 (`wp13b_seed101`),
+# where rural onsets come to about as many as city onsets.
+PL_RURAL, PL_D_ON = 2e-6, 5.0
 PRICE_EVERY = 100           # years between Price-equation snapshots
 # Roads (`roads`): every ROAD_EVERY years each state of 2+ cities builds
 # along the cheapest routes from its capital to its cities. A cell's road
@@ -1140,6 +1147,10 @@ IMP_SACK = 0.6              # a sack wrecks up to this share, x violence
 # shortfall ((IMP_HANDS x mean - pop) / (IMP_HANDS x mean)); an emptied
 # cell has shortfall 1 (works gone in about a decade).
 IMP_HANDS, IMP_LAPSE, IMP_MEM = 0.7, 0.1, 50.0
+# `works_lag` (WP12 C, U 2026-11-22, D16; number C): the threshold is
+# WORKS_HANDS instead, so a plague-sized loss (0.15-0.35 of a cell) also
+# lets works fall in; IMP_HANDS 0.7 let most struck cells keep them.
+WORKS_HANDS = 0.85
 # Separation as spacing (`separation`, 2026-10-29; U: a separated people
 # may be tolerant and trade freely, yet live at low density). A lineage
 # fills a cell only to SEP_PREF = 1 - SEP_DENS x separation^2 of its

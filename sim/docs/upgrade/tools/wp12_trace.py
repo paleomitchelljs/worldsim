@@ -23,7 +23,18 @@ largest of these.
 Time below capacity: heads / raw capacity per group (`fill`); the share
 of records after 3000 with fill under 0.8, and under 0.8 x the group's
 own median fill after 3000 (WP11 found every biome at about half of raw
-capacity, so the first is near 1 by construction).
+capacity, so the first is near 1 by construction). Fill rises all run,
+so the second measures the trend; WP12 C adds fill under 0.8 x its own
+centred 500-year running median.
+
+Cells that change hands (WP12 C, for `collapse_cost`): between two
+records, an occupied cell whose state changes to another state, or to
+none. Over the next CH_YEARS, its deaths per head (all causes; feud and
+raids) and its heads at the end over its heads before, against cells of
+the same landmass group whose state did not change (held, or stateless
+throughout, shown apart), weighted by heads. Cells are counted
+once per record they change in; later changes inside the window are
+not removed.
 """
 import argparse
 import os
@@ -42,6 +53,8 @@ from wp11_trace import _NoStream  # noqa: E402
 EVERY = 25          # years between records
 DROP = 0.2          # a fall: under 80% of the running peak
 STATE_MIN = (3, 200)    # states with 3+ cities at peak, 200+ years of records
+RUN_MED = 500       # years in the running median of fill
+CH_YEARS = 100      # years followed after a change of hands
 
 
 class Trace:
@@ -61,6 +74,10 @@ class Trace:
         self.gdead, self.sdead = [], []      # per record: {cause: array}
         self.spop, self.pol, self.cpop = [], [], []
         self.cur_g, self.cur_s = {}, {}
+        self.cdead, self.cfeud, self.craid = [], [], []
+        self.cur_c = np.zeros(W.N)
+        self.cur_f = np.zeros(W.N)
+        self.cur_r = np.zeros(W.N)
         dead, step = s.dead, s.step
 
         def dead_(cause, cells, lost, minority=False, rows=False):
@@ -82,6 +99,11 @@ class Trace:
         lost = np.broadcast_to(np.atleast_1d(lost), cc.shape)
         ok = (np.atleast_1d(cul[c]) >= 0) & (lost > 0)
         cc, lost = cc[ok], lost[ok]
+        np.add.at(self.cur_c, cc, lost)
+        if cause == "feud":
+            np.add.at(self.cur_f, cc, lost)
+        elif cause == "raid":
+            np.add.at(self.cur_r, cc, lost)
         g = self.grp[cc]
         m = g >= 0
         self.cur_g[cause] = self.cur_g.get(cause, 0) + np.bincount(
@@ -112,6 +134,10 @@ class Trace:
         self.gdead.append(self.cur_g)
         self.sdead.append(self.cur_s)
         self.cur_g, self.cur_s = {}, {}
+        for lst, cur in ((self.cdead, self.cur_c), (self.cfeud, self.cur_f),
+                         (self.craid, self.cur_r)):
+            lst.append(cur.astype(np.float32))
+            cur[:] = 0
         self.spop.append({pid: (P["pop"], len(P["cities"]))
                           for pid, P in s.polities.items()
                           if P["ended"] is None})
@@ -137,6 +163,47 @@ def falls(y, x):
                 break
             i = pk = j
         i += 1
+    return out
+
+
+def hands(T, y):
+    """Cells that change hands against cells that keep them (WP12 C)."""
+    n = CH_YEARS // EVERY
+    P = np.array(T.pol)
+    C = np.array(T.cpop)
+    Dd = [np.array(T.cdead), np.array(T.cfeud), np.array(T.craid)]
+    kinds = {"to another state": [], "to no state": [],
+             "kept, in a state": [], "stateless throughout": []}
+    for i in range(1, len(y) - n):
+        if y[i] < 1000:
+            continue
+        p0, p1, h0 = P[i - 1], P[i], C[i - 1]
+        occ = (h0 > 0) & (T.grp >= 0)
+        sel = {"to another state": occ & (p0 >= 0) & (p1 >= 0) & (p0 != p1),
+               "to no state": occ & (p0 >= 0) & (p1 < 0),
+               "kept, in a state": occ & (p0 == p1) & (p0 >= 0),
+               "stateless throughout": occ & (p0 < 0) & (p1 < 0)}
+        for k, m in sel.items():
+            if not m.any():
+                continue
+            # deaths from the change on (record i holds deaths since i-1)
+            d = [float(D[i:i + n + 1, m].sum()) for D in Dd]
+            kinds[k].append((float(h0[m].sum()), *d,
+                             float(C[i + n, m].sum()), int(m.sum())))
+    out = [f"Cells that change hands after 1000, and the {CH_YEARS} years "
+           "that follow (deaths per head at the change; heads at the end "
+           "over heads before), against cells whose state did not change.",
+           "", "| Cells | Changes (cell-records) | Deaths per head | Feud "
+           "| Raids | Heads after / before |", "|---|---|---|---|---|---|"]
+    for k, r in kinds.items():
+        if not r:
+            out.append(f"| {k} | 0 | | | | |")
+            continue
+        a = np.array(r)
+        h = a[:, 0].sum()
+        out.append(f"| {k} | {int(a[:, 5].sum())} | {a[:, 1].sum() / h:.3f}"
+                   f" | {a[:, 2].sum() / h:.3f} | {a[:, 3].sum() / h:.3f} | "
+                   f"{a[:, 4].sum() / h:.3f} |")
     return out
 
 
@@ -198,17 +265,24 @@ def main():
     # ---- time below capacity
     lines += ["", "Heads / raw capacity by landmass group after 3000: "
               "median, and share of 25-year records under 0.8 and under "
-              "0.8 x the group's own median.", "",
-              "| Group | Median fill | Under 0.8 | Under 0.8 x own median |",
-              "|---|---|---|---|"]
+              f"0.8 x the group's own median, and under 0.8 x its centred "
+              f"{RUN_MED}-year running median.", "",
+              "| Group | Median fill | Under 0.8 | Under 0.8 x own median "
+              "| Under 0.8 x running median |",
+              "|---|---|---|---|---|"]
     late = y >= min(3000, y[-1] // 2)
     for g, name in enumerate(T.names):
         if H[late, g].max() < 1e5:
             continue
-        f = H[late, g] / np.maximum(K[late, g], 1)
+        fa = H[:, g] / np.maximum(K[:, g], 1)
+        h = RUN_MED // EVERY // 2
+        rm = np.array([np.median(fa[max(0, i - h):i + h + 1])
+                       for i in range(len(fa))])
+        f = fa[late]
         md = float(np.median(f))
         lines.append(f"| {name} | {md:.2f} | {(f < 0.8).mean():.2f} | "
-                     f"{(f < 0.8 * md).mean():.2f} |")
+                     f"{(f < 0.8 * md).mean():.2f} | "
+                     f"{(f < 0.8 * rm[late]).mean():.2f} |")
 
     # ---- states
     pids = sorted({p for r in T.spop for p in r})
@@ -257,6 +331,7 @@ def main():
             lines.append(f"| {k} | {n} | {np.median(dep[m]):.2f} | "
                          f"{ok.mean():.2f} | "
                          f"{np.median(r_[ok]) if ok.any() else float('nan'):.0f} |")
+    lines += [""] + hands(T, y)
     text = "\n".join(lines)
     print(text)
     if a.md:

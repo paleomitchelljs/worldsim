@@ -25,6 +25,13 @@ states. The form and every number are **C**.
   / 30,000) x (1 + its state's trade ties, summed, up to 1). The city's
   people is the host. A city already inside an epidemic starts no other.
   Several epidemics can run at once; there is no minimum gap.
+- **Outside cities** (`rural_onset`, off unless `--on`; WP12 C,
+  2026-11-22, U; form and numbers C). A reservoir in herds or wild
+  rodents: every occupied cell, herders' included, can start one, with
+  chance per year 2e-6 x min(1, its people per km² / 5). The cell's
+  people is the host. 5 per km² is about the 99th percentile of cell
+  density at year 8000, where rural onsets come to about as many as
+  city onsets; on thin land they are rare and seldom spread.
 - **Spread.** Each tick (5 years) the epidemic moves up to 60 rings of
   cells over land and short sea crossings. Each infected neighbour passes
   it on with chance 0.9 x d / (d + 1), d being the target cell's people

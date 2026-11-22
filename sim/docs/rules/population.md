@@ -87,7 +87,10 @@ Where a cell's people fall below 0.7 of their mean over the last 50 years
 shortfall ((0.7 x mean − pop) / (0.7 x mean)); an emptied cell loses them
 in about a decade. They are rebuilt at the old rate (0.003 a year at
 most), so a crash lowers the land's capacity for decades to centuries.
-Herders' cells keep the old slow silting only. A first form measured the
+Herders' cells keep the old slow silting only. With `works_lag` (WP12 C,
+2026-11-22, U D16; 0.85 is C) the threshold is 0.85 instead of 0.7: an
+epidemic kills 0.15-0.35 of a cell, which under 0.7 left most struck
+cells their works, so nothing lagged after a plague. A first form measured the
 shortfall against farming K; that halved improvements everywhere and all
 the time (many settled cells sit below 0.7 of farming K, since rent and
 tax take part of it), so it was replaced the same day.

@@ -2647,3 +2647,47 @@ The new rules' own counts per run:
   have the same or fewer. The spread across seeds widened on most state
   measures.
 - Peoples' shares barely moved.
+
+### 2026-11-22 WP12 C: works that lapse, rural plague (`wp12c_seed101`-`104`, `106`; `wp12d_seed101`-`104`, `106`)
+
+What it tested (U, D16): `wp12c` has `works_lag` on (upkeep's threshold
+0.85 instead of 0.7). `wp12d` adds `--on rural_onset` (plague starts in
+any occupied cell, 2e-6 a year x min(1, people per km2 / 5)). Summary
+runs; each seed also traced in memory with `tools/wp12_trace.py`
+(`docs/upgrade/baseline/wp12c_falls_*`, `wp12d_falls_*`).
+
+| Measure | wp13b | wp12c | wp12d |
+|---|---|---|---|
+| Population at 8000 (M) | 47.5-95.2 | 61.7-78.1 | 52.9-79.4 |
+| Improvements at 8000 (head-weighted mean) | 0.44-0.57 | 0.45-0.53 | 0.40-0.47 |
+| Urban share at the end | 0.042-0.068 | 0.054-0.067 | 0.047-0.060 |
+| First bronze / iron / steel (yr) | 4,560-6,165 / 4,965-7,710 / 5,250-7,560 | 3,810-5,910 / 4,365-6,830 / 4,805-7,635 | 3,845-5,085 / 4,480-6,435 / 4,915-6,925 |
+| Plague, share of deaths | 0.067-0.144 | 0.095-0.134 | 0.093-0.141 |
+| Largest 100-yr fall after 3000 (log) | -0.06 to -0.19 | -0.05 to -0.18 | -0.07 to -0.26 |
+| Worst 300-yr world fall | 0.10-0.22 | 0.17-0.26 | 0.10-0.24 |
+| States with 3+ cities | 59-288 | 95-245 | 84-151 |
+| Rural onsets per run | - | - | 8-17 |
+
+Landmass falls of 20%+ (traces; X's founding falls left out):
+
+| | wp12c | wp12d |
+|---|---|---|
+| Plague falls / of them outside E | 18 / 2 (N) | 20 / 4 (S, N 2, X) |
+| Plague falls: depth; years to 90% | 0.20-0.34; 50-225 | 0.20-0.32; 75-300 |
+| Slow falls with capacity (feud, raids, hunger) | seed 104 S, W at 6750-6850; seed 102 W at 3625 | the same seeds and years |
+
+**Found.**
+- `works_lag` changes little: improvements and recovery times are
+  within the seed spread; steel is not later. The worst 300-year falls
+  hit cities harder (urban low -0.21 to -0.33).
+- Seed 104's S and W falls (depth 0.22-0.29, 150-350 years down,
+  125-275 back) are there with `works_lag` off too (traced: S 0.24,
+  W 0.22, E 0.41 at the same years), and with capacity falling in three
+  groups at once: a world event, probably climate (not checked).
+- `rural_onset` starts 8-17 epidemics a run, nearly all late. Plague
+  falls now reach S, N and X, but recover as E's do: more notches, not
+  longer ones (as WP12-design.md expected).
+- Cells that change hands (C's measure): left with no state, they end
+  the next century about 8% below cells kept in a state (heads after /
+  before 0.96-0.97 against 1.04-1.06), mostly by feud; passing to
+  another state costs 3-5%.

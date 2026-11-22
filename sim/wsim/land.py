@@ -573,7 +573,9 @@ class LandMixin:
             # level over the last IMP_MEM years, fields go back to scrub
             # and canals silt up; an emptied cell loses its works fastest.
             # Herders' cells keep the slow silting alone.
-            ref = IMP_HANDS * self.pmem
+            # `works_lag` (WP12 C): a smaller loss of hands is enough
+            ref = (WORKS_HANDS if "works_lag" in self.on else IMP_HANDS) \
+                * self.pmem
             short = np.clip((ref - self.pop) / np.maximum(ref, 1e-9), 0, 1)
             short[self.herding] = 0
             lapse = lapse + IMP_LAPSE * short
@@ -725,7 +727,16 @@ class LandMixin:
         community to keep going and contact to bring it in: each city's
         chance per year is PL_EMERGE x min(1, its people / PL_CCS) x
         (1 + PL_LINK x its state's trade ties, up to 1). A city already in
-        an epidemic does not start another."""
+        an epidemic does not start another. With `rural_onset` (WP12 C)
+        any occupied cell may start one too, at PL_RURAL x min(1, its
+        people per km2 / PL_D_ON)."""
+        if "rural_onset" in self.on:
+            occ = np.nonzero(self.cul >= 0)[0]
+            d = (self.pop[occ] + self.mpop[occ]) / self.W.area[occ]
+            h = PL_RURAL * np.minimum(1, d / PL_D_ON)
+            for o in occ[rng.random(len(occ)) < -np.expm1(-h * DT)]:
+                if self.start_epi(int(o), rng):
+                    self.count("plague_rural")
         if not self.cities:
             return
         cc = np.fromiter(self.cities.keys(), int)
@@ -739,16 +750,21 @@ class LandMixin:
         h = PL_EMERGE * np.minimum(1, comm / PL_CCS) * (1 + PL_LINK * link)
         new = cc[rng.random(len(cc)) < -np.expm1(-h * DT)]
         for o in new:
-            o = int(o)
-            if self.cul[o] < 0 or any(e["seen"][o] for e in self.epi):
-                continue
-            seen = np.zeros(self.W.N, bool)
-            seen[o] = True
-            self.epi.append(dict(
-                origin=o, host=int(self.cul[o]), start=self.year,
-                mort=float(rng.uniform(PL_MORT[0], PL_MORT[1])),
-                seen=seen, src=np.array([o]), todo=np.array([o]),
-                pols=set(), dead=0.0, cells=0, trail=[]))
+            self.start_epi(int(o), rng)
+
+    def start_epi(self, o, rng):
+        """An epidemic starts in cell o, unless o is empty or already in
+        one; returns whether it started."""
+        if self.cul[o] < 0 or any(e["seen"][o] for e in self.epi):
+            return False
+        seen = np.zeros(self.W.N, bool)
+        seen[o] = True
+        self.epi.append(dict(
+            origin=o, host=int(self.cul[o]), start=self.year,
+            mort=float(rng.uniform(PL_MORT[0], PL_MORT[1])),
+            seen=seen, src=np.array([o]), todo=np.array([o]),
+            pols=set(), dead=0.0, cells=0, trail=[]))
+        return True
 
     def plague_step(self, rng):
         """Each epidemic spreads for one tick and kills where it arrives
