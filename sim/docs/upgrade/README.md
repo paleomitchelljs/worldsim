@@ -116,6 +116,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D12 | Break seed-for-seed continuity with old runs when the RNG is split into named streams | yes, at the end of WP1, followed by a fresh baseline run or two | 2026-11-17 (U): yes, no problem; also yes to a fresh seed for a branch (`--branch-seed`) and to drawing the climate's local field at reduced resolution |
 | D13 | WP10: how peoples move (`WP10-design.md`) | A conquest that settles, C assimilation under long rule; B deportation later; WP11 trace first | 2026-11-21 (U): build A, B and C; WP11's trace after WP10's build |
 | D14 | WP11 stage B part 2: metal to low-innovation peoples (Goblins) by contact | leave for WP14; close WP11 as a trace; settle feud (FEUD_K grounds predate D7) first | 2026-11-21 (U): (b), leave it for WP14; WP11 closes as a trace |
+| D15 | WP13 (`WP13-design.md`): muster, campaign goals, annexing foreign vassals, the ruler in the war decision, herder tribute, the dead war constants | build all five | 2026-11-21 (U): yes to 1a, 1b, 2b, 3, 4 and 5 |
 
 ## Files here
 

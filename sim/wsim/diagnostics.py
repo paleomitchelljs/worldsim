@@ -148,7 +148,8 @@ class DiagnosticsMixin:
                "colony_state", "colony_displace", "colony_minority",
                "colony_city", "trade_post", "devastation",
                "devastation_city", "settler_heads", "cq_settlers", "deported",
-               "assimilated", "flip_to_ruler",
+               "assimilated", "war_muster", "war_campaign_next",
+               "vassal_annex_cross", "camp_tribute", "flip_to_ruler",
                "flip_other", "ext_food", "war_tributary", "war_sack",
                "ff_rent", "ff_tax", "ff_trade"] + \
             [f"revolt_{k}{c}" for k in ("secession", "kin", "ethnic",

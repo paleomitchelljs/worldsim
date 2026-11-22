@@ -97,9 +97,10 @@ the edge fades over later reigns. Numbers C.
 - Offense multiplies the strength the state brings when it besieges
   (its own sieges and its counter-offensives) and when it presses for a
   cession.
-- It does not enter defence or deterrence, so the chance of declaring is
-  unchanged. It moves the siege odds, so it moves the siege threshold
-  and the defender's choice to submit.
+- It does not enter defence or the defender's deterrence. It moves the
+  siege odds, so it moves the siege threshold and the defender's choice
+  to submit. Under `ruler_odds` (below) it also enters the attacker's
+  own reading of its odds when deciding on war.
 - Successions run in states of any size (U, 2026-11-18; before then
   only at 3+ cities, so a smaller state kept its founder's g until it
   grew). A small state can draw a talented ruler and, in that reign,
@@ -155,6 +156,34 @@ Forms from the review; numbers C.
   soldiers ends its war with chance about 0.6 per 5 years.
 - It replaces the flat WAR_COST on everyone in a state at war.
 - An army whose state ends is lost.
+
+## Campaigns, vassals, rulers and herders (WP13 B, 2026-11-21)
+
+U (2026-11-21, D15): build all five proposals of
+`docs/upgrade/WP13-design.md`. Forms and numbers C.
+- **Muster (`muster`).** A state that declares a war raises its army at
+  once to MUSTER_F (0.5) of its full levy (4% of its people), from its
+  own people's cells (at most half their people). It then raises the
+  rest as under `army`. The defender starts from what it has.
+- **Campaign goals (`campaign`).** When a land, rule or resource war
+  takes its goal city, its next goal is the defender's city nearest the
+  attacker's capital, if the attacker's strength there is at least
+  ODDS_MID (0.7) of the defence (as `siege_odds` reads both). Otherwise
+  the war is done and ends as before (WAR_DONE). Exhaustion and the end
+  hazard still apply.
+- **The ruler in the decision (`ruler_odds`).** The attacker's strength
+  ratio in `war_chance` (deterrence and the prey motive) is multiplied
+  by its offense (1 + talent + legacy). This reverses the 2026-11-18
+  form ("does not change the chance of going to war"; U 2026-11-21).
+- **Herders take tribute (`camp_tribute`).** A camp polity whose state
+  herds (herding share >= 0.5) does not annex a city it wins: the
+  city's state becomes its tributary vassal, or, if it is already
+  another lord's vassal, is sacked. A city it would be ceded becomes
+  submission in the same way. The camp stays a camp, gains tribute
+  (VASSAL_TRIB) and does not annex its vassals. Camps that do not herd
+  take cities and become city states as before.
+- Annexing vassals of another people (`vassal_annex_cross`) is in
+  [states.md](states.md).
 
 ## Terms after a won siege (`war_terms`, 2026-11-09)
 

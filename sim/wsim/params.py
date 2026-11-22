@@ -114,7 +114,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "army", "camps", "epidemic", "upkeep", "shared_cells",
             "displacement", "climate_fields", "floodplain", "clearing",
             "clear_terrain", "fire", "conquest_settle", "deport",
-            "assimilate"]
+            "assimilate", "muster", "campaign", "vassal_annex_cross",
+            "ruler_odds", "camp_tribute"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -144,7 +145,8 @@ SUCC_GEN = 25.0             # years per reign, on average
 SUCC_P = 0.12               # crisis chance per reign x (0.5 + violence)
                             # x (1.3 - 0.6 statecraft)
 # Vassals: a much weaker side may submit instead of being besieged.
-VASSAL_RATIO = 3.0          # projected strength ratio that invites submission
+VASSAL_RATIO = 3.0          # strength ratio that invites submission; read only
+                            # with `war_odds` off (SUBMIT_ODDS otherwise)
 VASSAL_TRIB = 0.25          # share of a vassal's strength paid to its lord
 VASSAL_DEFECT = 0.01        # per year, x vassal/lord strength x (1.5 - lord S)
 # Balancing: a common strong neighbour pushes two states into alliance,
@@ -424,12 +426,6 @@ ORE_VALUE = 0.3
 # (1 - a) x min(1, X / ASSET_X0); growth x (1 + X).
 TRADE_RATE2, TOL_TRADE2, ASSET_X0 = 0.045, (0.3, 0.15), 1.0
 ASSET_XMAX = 2.0            # growth x (1 + min(X, ASSET_XMAX))
-# War (`war_motive`): the old declaration chance (without the dominance
-# and hunger terms) x WAR_IDLE, plus a motivated chance DT x 0.012 x
-# WAR_GAIN x (0.5 + violence) x S x strength term x (1 - tie) x gain,
-# gain = dominance x min(2, their people / ours) + 2 x (1 - fed)
-# [climate] + what the target offers the attacker (assets above).
-WAR_IDLE, WAR_GAIN = 0.5, 3.0
 WAR_GAIN_CAP = 2.0          # the summed motive saturates: g / (1 + g / cap)
 # Salinity (`salinity`, U 2026-10-29: realistic depletion; numbers C).
 # Salt (0-1) builds on worked irrigated land at SALT_GAIN x intensity x
@@ -1325,3 +1321,24 @@ DEP_RATE, DEP_FRAC, DEP_MIN = 0.001, 0.3, 3
 # (0.5 + the ruler's proselytism); at tolerance and proselytism 0.5 and a
 # full clock, about 10% a century.
 ASSIM_RATE = 0.002
+
+# War and states (WP13 B, U 2026-11-21, D15; numbers C).
+# `muster`: a state that declares a war starts it with MUSTER_F of its
+# full levy (ARMY_SHARE x its people) raised at once from its own cells.
+MUSTER_F = 0.5
+# `campaign`: when a land, rule or resource war takes its goal city, the
+# defender's city nearest the attacker's capital becomes the next goal if
+# the attacker's strength there over the defence is still >= ODDS_MID;
+# otherwise the war is done, as before.
+# `vassal_annex_cross`: a lord may annex a vassal of another people on a
+# kin vassal's terms (3 cities or fewer, 50+ years a vassal), at the kin
+# rate x (1 - the vassal's tolerance) x the lord's dominance.
+VASSAL_ANNEX = 0.004        # the kin rate per year (was an unnamed number)
+# `ruler_odds`: the attacker reads its odds with its ruler's offense
+# (strength ratio x offense) when deciding on war.
+# `camp_tribute`: a camp polity whose state herds (herding share >=
+# CAMP_TRIB_HERD) does not annex the cities it wins: their state becomes
+# its tributary vassal (or, already someone's vassal, is sacked); a
+# ceded city likewise becomes submission. Other camps take cities as
+# before.
+CAMP_TRIB_HERD = 0.5

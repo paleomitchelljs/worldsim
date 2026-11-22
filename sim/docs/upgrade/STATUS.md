@@ -2593,3 +2593,44 @@ changed.
 Recommended: 1a muster and 1b campaign goals, 2b annexing foreign
 vassals, 3 ruler's edge in the decision (reverses U's 2026-11-18
 form), 4 camps that rule through tribute, 5 delete the dead constants.
+
+### WP13 stage B: build (2026-11-21, HASH)
+
+**Decisions (U, 2026-11-21, D15).** Yes to all five proposals.
+
+**Done** (`wsim/war.py`, `wsim/states.py`; numbers C in `params.py`):
+- `muster`: a declaring state raises MUSTER_F (0.5) of its full levy
+  at once (`muster`);
+- `campaign`: after the goal falls, the next nearest city becomes the
+  goal while strength >= ODDS_MID x defence (`next_goal`);
+- `ruler_odds`: offense multiplies the strength ratio in `war_chance`;
+- `camp_tribute`: herding camps turn an annexing win or a cession into
+  submission (`camp_trib`), and do not annex vassals;
+- `vassal_annex_cross`: the kin annex rate (now VASSAL_ANNEX) x (1 -
+  tolerance) x dominance for foreign vassals (`annex_w`);
+- WAR_IDLE and WAR_GAIN deleted (also from `tools/wp9_screen.py`), and
+  `sensitivity.md` corrected;
+- counters `war_muster`, `war_campaign_next`, `vassal_annex_cross` and
+  `camp_tribute` in the timeseries.
+
+Docs: rules/war.md, rules/states.md, model-description, switch
+inventory, open-questions (vassalage), run-log.
+
+**Runs.** `wp13b_sanity` (3,000 years, fine) and `wp13b_seed101`-`104`,
+`106` (8,000 years, summary). Results in run-log.md.
+- Campaign next goals fire 0-17 times a run. 86-90% of goals taken are
+  a one-city defender's only city, so the war ends with the defender.
+  The diagnosis in `WP13-design.md` (the goal ends the war) was mostly
+  wrong: the limit is how many states have one city.
+- Wars inside one tick rose from 0.05-0.11 to 0.18-0.26 (muster).
+- More vassals (to 21 standing on average in seed 102).
+- Cross-people captures before 6000: 1-23 (1-9).
+- Peoples' shares barely moved.
+
+**Not done.**
+- The ruler effect is not measured: summary runs keep no `rulers.csv`.
+- No new baseline: `wp10c` stays the full one until U decides.
+
+**For U.** Keep `campaign` (cheap, nearly idle) or drop it? Measure
+campaigns as a state's run of wars over a reign? Make `wp13b` the
+baseline (rebuild full, shrink `wp10c`)?

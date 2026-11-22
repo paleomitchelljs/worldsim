@@ -175,7 +175,10 @@ double the standing vassals; world population falls a quarter.
 ### States and war
 - **Vassalage is rare** (7-31 standing at the end of batch1). The 3:1
   threshold is applied after terrain and capital defence, so it is
-  seldom met.
+  seldom met. *Superseded (WP13 A, 2026-11-21):* under `war_odds` the
+  3:1 rule is not read; defenders submit through SUBMIT_ODDS, 288-1,076
+  times a run in `wp10c`. Vassalage is short rather than rare (42-55%
+  defect). WP13 B adds annexing vassals of another people.
 - **Elite model.** Elites grow whenever crowding exceeds 0.75, which
   mature states usually do; cycles or a steady rise in revolts?
 - **Floodplain cities get swamp defence**, through wetness on alluvial

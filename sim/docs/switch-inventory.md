@@ -125,3 +125,8 @@ before that switch became a default can turn it on.
 | `conquest_settle` | 2026-11-21 (U, D13); default | After a city of another people is taken, the conqueror's people settle it and its land, up to CQ_MAX of the hosts' food x expansion x establishment, from the state's crowded cells; hosts of equal food pushed out (WP10, `wsim/movement.py`) |
 | `deport` | 2026-11-21 (U, D13); default | A state moves DEP_FRAC of a subject city's people to its core and settles its own people there (WP10) |
 | `assimilate` | 2026-11-21 (U, D13); default | Under long rule by another people, subjects join the ruler's people at ASSIM_RATE x the `acc_cross` clock x tolerance x (0.5 + proselytism) (WP10) |
+| `muster` | 2026-11-21 (U, D15); default | A state that declares a war starts it with half its full levy raised at once from its own cells ([rules/war.md](rules/war.md)) |
+| `campaign` | 2026-11-21 (U, D15); default | A land, rule or resource war that takes its goal aims at the defender's next nearest city while the odds there stay at ODDS_MID or better ([rules/war.md](rules/war.md)) |
+| `ruler_odds` | 2026-11-21 (U, D15); default | The ruler's offense enters the attacker's reading of its odds when deciding on war ([rules/war.md](rules/war.md)) |
+| `camp_tribute` | 2026-11-21 (U, D15); default | Herding camps make the cities they win pay tribute (vassals) instead of taking them, and stay camps ([rules/war.md](rules/war.md)) |
+| `vassal_annex_cross` | 2026-11-21 (U, D15); default | Lords may annex vassals of another people, at the kin rate x (1 - vassal's tolerance) x lord's dominance ([rules/states.md](rules/states.md)) |

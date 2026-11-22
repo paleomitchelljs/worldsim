@@ -264,6 +264,9 @@ class WarMixin:
         if not self.seated(A) or not self.seated(B):
             return 0.0, None
         R, _ = self.deter(A, B, allies)
+        if "ruler_odds" in self.on:
+            # `ruler_odds`: a gifted ruler reads its chances with its edge
+            R *= self.offense(A)
         d = self.eff(A, "dom")
         crowd = A.get("crowd", 0.5)
         g = {}
@@ -373,6 +376,8 @@ class WarMixin:
                             rng.random() < motive[1]:
                         self.set_goal(self.wars[k], A, B, motive[0])
                     self.war_open(self.wars[k], A, B)
+                    if "muster" in self.on and "army" in self.on:
+                        self.muster(A)
                     self.spike(att)
                     self.spike(dfn)
                     self.call_allies(self.wars[k], A, B)
@@ -403,8 +408,18 @@ class WarMixin:
                 ra = self.projected(A, g) * self.offense(A) * \
                     self.field(A) / max(
                     1.4 * self.city_def(g) * self.projected(B, g), 1e-9)
-                if rng.random() < over(WAR_CEDE * min(
-                        1.0, max(0.0, ra - 1)), self.dtp):
+                cedes = rng.random() < over(WAR_CEDE * min(
+                    1.0, max(0.0, ra - 1)), self.dtp)
+                if cedes and self.camp_trib(A):
+                    # `camp_tribute`: herders take tribute, not the city;
+                    # a vassal of another lord is not theirs to take
+                    if w["dfn"] not in self.vassal:
+                        self.count("camp_tribute")
+                        self.submit(w["dfn"], w["att"])
+                        self.war_close(self.wars.pop(k, None), "submitted")
+                        self.truce[k] = self.year + TRUCE_WAR
+                        continue
+                elif cedes:
                     w["moved"] = w.get("moved", 0.0) + self.city_fe(g)
                     # closed first: ceding a last city ends the defender,
                     # and its end would close the war as "defender fell"
@@ -624,6 +639,11 @@ class WarMixin:
                 X["cohesion"] *= 1 - SIEGE_COH * (1.5 - self.logi(X) / 1.5)
             return None
         terms = self.siege_terms(w, A, B, t) if won else ""
+        if terms == "annex" and self.camp_trib(A):
+            # `camp_tribute`: herders make the city's state pay tribute;
+            # another lord's vassal they plunder instead
+            terms = "tributary" if w["dfn"] not in self.vassal else "sack"
+            self.count("camp_tribute")
         self.siege_log.append(rec + (terms, len(A["cities"]),
                                      len(B["cities"]),
                                      s["end"] - s["start"]))
@@ -642,15 +662,56 @@ class WarMixin:
         if won:
             w["moved"] = w.get("moved", 0.0) + fe
             w["caps"] += 1
-            if t == w.get("goal"):
+            met = t == w.get("goal")
+            if met:
                 w["done"] = True
                 self.count("war_goal_met")
             self.capture(w["att"], w["dfn"], t)
             if k not in self.wars:
                 return "stop"
+            if met and "campaign" in self.on:
+                self.next_goal(w, A, B)
         else:
             A["cohesion"] *= 1 - SIEGE_COH * (1.5 - self.logi(A) / 1.5)
         return None
+
+    def next_goal(self, w, A, B):
+        """`campaign`: a land, rule or resource war that took its goal
+        aims at the defender's city nearest A's capital, if A's strength
+        there over B's defence is still at least ODDS_MID."""
+        if w.get("kind") not in ("land", "rule", "resource") or \
+                not B["cities"]:
+            return
+        cc = list(B["cities"])
+        t = cc[int(np.argmin(gc_km(self.W.xyz, A["capital"], np.array(cc))))]
+        PA, PB, _ = self.siege_odds(w, A, B, t)
+        if PA >= ODDS_MID * PB:
+            w["goal"], w["done"] = int(t), False
+            self.count("war_campaign_next")
+
+    def muster(self, P):
+        """`muster`: state P, declaring a war, raises its army to MUSTER_F
+        of its full levy at once from its own people's cells (at most
+        half their people), as `army_step` raises it."""
+        want = MUSTER_F * ARMY_SHARE * P.get("pop", 0.0)
+        a = P.get("army", 0.0)
+        if want <= a:
+            return
+        oc = np.nonzero((self.cell_pol == P["id"]) &
+                        (self.cul == P["culture"]))[0]
+        opop = float(self.pop[oc].sum())
+        if opop <= 0:
+            return
+        d = min(want - a, 0.5 * opop)
+        self.pop[oc] *= 1 - d / opop
+        P["army"] = a + d
+        self.count("war_muster")
+
+    def camp_trib(self, P):
+        """`camp_tribute`: whether P is a herding camp polity, which takes
+        tribute rather than cities."""
+        return "camp_tribute" in self.on and P.get("camp") is not None \
+            and P.get("herd", 0.0) >= CAMP_TRIB_HERD
 
     def call_allies(self, w, A, B):
         """Defender B's allies are called against attacker A: each joins

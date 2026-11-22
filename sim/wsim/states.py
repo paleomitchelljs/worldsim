@@ -1088,6 +1088,16 @@ class StatesMixin:
                 out[k] = min(1.0, (worst - 1) / 2)
         return out
 
+    def annex_w(self, V, O):
+        """How readily lord O annexes vassal V, against a kin vassal (1):
+        a vassal of another people only under `vassal_annex_cross`, x (1 -
+        its tolerance) x O's dominance."""
+        if V["culture"] == O["culture"]:
+            return 1.0
+        if "vassal_annex_cross" not in self.on:
+            return 0.0
+        return (1 - self.eff(V, "tol")) * self.eff(O, "dom")
+
     def vassal_politics(self):
         """Vassals throw off weak lords; lords annex small kin vassals."""
         rng = self.R("diplomacy")
@@ -1109,15 +1119,18 @@ class StatesMixin:
                     self.log("vassal", f"{self.pname(v)} throws off "
                              f"{self.pname(o)}",
                              polities=[v, o])
-            elif V["culture"] == O["culture"] and len(V["cities"]) <= 3 \
-                    and V["vassal_years"] >= 50 and rng.random() < \
-                    self.dtp * 0.004 * (0.5 + self.eff(O, "state")):
+            elif len(V["cities"]) <= 3 and V["vassal_years"] >= 50 and \
+                    not self.camp_trib(O) and rng.random() < \
+                    self.dtp * VASSAL_ANNEX * (0.5 + self.eff(O, "state")) * \
+                    self.annex_w(V, O):
                 for c in list(V["cities"]):
                     self.cities[c]["polity"] = o
                     self.cities[c]["owners"].append(o)
                     O["cities"].add(c)
                 V["cities"] = set()
                 self.count("vassal_annex")
+                if V["culture"] != O["culture"]:
+                    self.count("vassal_annex_cross")
                 self.kill_polity(v, f"annexed by its lord {self.pname(o)}",
                                  by=o, code="annexed")
 

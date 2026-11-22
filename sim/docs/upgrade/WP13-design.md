@@ -195,3 +195,11 @@ peoples' shares against `wp10c`.
    your 2026-11-18 form)?
 4. 4: herder camps rule cities as tributaries?
 5. 5: delete WAR_IDLE and WAR_GAIN?
+
+## Built (WP13 B, 2026-11-21; U: D15, all five)
+
+All five are built as switches, on by default. In the five-seed batch
+(`wp13b`, run-log.md), 1b fired only 0-17 times a run. 86-90% of the
+goals taken are a one-city defender's only city, so the war ends with
+the defender. Section 1's diagnosis was therefore mostly wrong: few
+states have a second city to campaign on.

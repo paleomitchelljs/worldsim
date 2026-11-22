@@ -46,7 +46,7 @@ LIN = {"PATH_MIN": (0.3, 0.9), "BUD_PRESS": (0.3, 0.6),
 FACTORS = [
     ("R_SCALE", "growth"), ("R_MAX", "growth"), ("BUD_PRESS", "budding"),
     ("RAID_RATE", "raids"), ("KIN_RAID", "raids"), ("FEUD_K", "raids"),
-    ("WAR_BASE", "war"), ("WAR_GAIN", "war"), ("WAR_IDLE", "war"),
+    ("WAR_BASE", "war"),
     ("ODDS_MID", "war"), ("SITE_DEF_SD", "war"),
     ("COH_DECAY", "states"), ("REVOLT_BASE", "states"), ("UNREST", "states"),
     ("SUCC_P", "states"), ("EXT_SUBJ", "extraction"),

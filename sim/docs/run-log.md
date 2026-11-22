@@ -2606,3 +2606,44 @@ settlers 42k-425k, deported 0-64k and assimilated 65k-394k heads per
 run, under 1% of people. Heads outside their cell's plurality 1.8-2.5%
 (2.3-2.8% in `wp8n`). Snake folk lead three seeds, Humans one,
 Lizardfolk one. Few peoples rule others, and only late.
+
+### 2026-11-21 WP13 B: campaigns, vassals, rulers, herders (`wp13b_seed101`-`104`, `106`)
+
+What it tested: `muster`, `campaign`, `ruler_odds`, `camp_tribute` and
+`vassal_annex_cross` (U, D15), all on by default; WAR_IDLE and WAR_GAIN
+deleted. Summary runs (`--keep summary`). Compared with `wp10c`.
+
+| Measure | wp10c | wp13b |
+|---|---|---|
+| Population at 8000 (M) | 52.4-86.3 | 47.5-95.2 |
+| Wars | 1,205-4,906 | 919-8,258 |
+| Wars ending inside one tick | 0.05-0.11 | 0.18-0.26 |
+| Sieges taken | 0.43-0.51 | 0.40-0.44 |
+| War ends: submitted / defender fell | 0.14-0.19 / 0.20-0.29 | 0.15-0.21 / 0.17-0.25 |
+| Peer wars (both 5+ cities) | 1-23 | 0-94 |
+| States with 3+ cities | 89-189 | 59-288 |
+| Largest state (share of land) | 0.009-0.026 | 0.008-0.022 |
+| State lifespan, median (yr) | 256-436 | 223-822 |
+| Vassals standing, mean 4000+ | 3.6-11.5 | 3.8-21.1 |
+| Cross-people captures before 6000 | 1-9 | 1-23 |
+| Largest people at the end | Snk 3, Hum 1, Liz 1 (0.27-0.41) | the same peoples by seed (0.23-0.39) |
+
+The new rules' own counts per run:
+- musters 819-3,364;
+- campaign next goals **0-17** (goals met 129-1,373);
+- foreign vassals annexed 0-9 (kin 19-97);
+- camp tribute 1-22.
+
+**Found.**
+- **Campaign goals almost never fire.** In `wp10c`'s tables, 86-90% of
+  goal cities taken were the defender's only city. The capture ends the
+  defender, and the war with it. Enmity, the commonest goal, is not a
+  campaign kind.
+- So the limit on multi-city wars is that most defenders have one city
+  (S5: 82-92% of states never pass one), not the goal rule.
+- A campaign in this world would be one state's run of wars against
+  one-city neighbours. No measure reads that yet.
+- Seed 102 has many more wars (8,258, 274 peer wars); the other seeds
+  have the same or fewer. The spread across seeds widened on most state
+  measures.
+- Peoples' shares barely moved.

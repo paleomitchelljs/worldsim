@@ -96,6 +96,9 @@ mean and seed sd at the defaults.
 
 Four parameters move no pattern at all over a factor of 4:
 - **WAR_GAIN** and **WAR_IDLE**: not even mu\* is above noise.
+  *Correction (WP13 A, 2026-11-21):* neither was read by the code
+  (left from the old `war_motive` rule), so this says nothing about the
+  war motive. Both were deleted in WP13 B.
 - **ACC** (acculturation): not even mu\* is above noise.
 - **SITE_DEF_SD**: mu\* above noise on 4 patterns, with no clear
   direction.

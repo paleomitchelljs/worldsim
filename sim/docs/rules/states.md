@@ -84,3 +84,14 @@ is `docs/upgrade/WP5F-camps-design.md`.
   city as capital.
 - **Ending.** Every 25 years, a camp whose own lineage scores under a
   third of the threshold in its land disperses.
+
+## Annexing vassals (WP13 B, 2026-11-21)
+
+- A lord annexes a vassal of 3 or fewer cities that has been its vassal
+  50+ years with chance per year VASSAL_ANNEX (0.004; unnamed before
+  WP13) x (0.5 + the lord's statecraft) x w. w = 1 for a vassal of the
+  lord's own people. For a vassal of another people, w = (1 - the
+  vassal's tolerance) x the lord's dominance under `vassal_annex_cross`
+  (U 2026-11-21, D15; form C), else 0. The annexed cities' people stay
+  where they are, as subjects.
+- A herding camp lord (`camp_tribute`) does not annex.

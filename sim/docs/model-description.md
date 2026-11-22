@@ -1112,6 +1112,19 @@ the first side at random:
   army and 5% of the winner's ("battle"). Ending chance per 5 years =
   0.12 + 25 × max over sides of soldiers lost / people (instead of
   0.006 × years). No WAR_COST.
+- `[muster]` (WP13 B, 2026-11-21, C) a declaring state's army starts at
+  0.5 of its full levy, raised at once from its own cells.
+- `[campaign]` (WP13 B, C) a land, rule or resource war that takes its
+  goal aims next at the defender's city nearest the attacker's capital
+  while the attacker's strength there is ≥ 0.7 of the defence.
+- `[ruler_odds]` (WP13 B, U 2026-11-21) the attacker's strength ratio in
+  the war decision × its offense.
+- `[camp_tribute]` (WP13 B, C) a herding camp (herding share ≥ 0.5)
+  makes the states of cities it wins or is ceded its tributary vassals
+  instead of annexing them, and annexes no vassal.
+- `[vassal_annex_cross]` (WP13 B, C) lords annex vassals of another
+  people at the kin rate (0.004 a year × (0.5 + statecraft)) × (1 −
+  vassal's tolerance) × lord's dominance.
 
 ### 13.2a Counteroffensives `[two_sided]`
 
