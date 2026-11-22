@@ -63,7 +63,7 @@ what an entry holds.
 | 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 | 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
-| 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, - |
+| 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, 94e7172 |
 
 ## Entries
 
@@ -2771,7 +2771,7 @@ keep `wp13b`? `collapse_cost` is weak as built (C: CHAOS_YEARS longer,
 or disorder that also stops rent and trade, would bite more; not done
 without U). WP12 can close here.
 
-### WP12 stage C, part 3: rent and trade; baseline `wp12f` (2026-11-22, c933d2b, -)
+### WP12 stage C, part 3: rent and trade; baseline `wp12f` (2026-11-22, c933d2b, 94e7172)
 
 **Asked by U (2026-11-22).** "Yes to new baseline, make collapse cost
 stronger so fallen states lose trade & rent", then go on to the next
