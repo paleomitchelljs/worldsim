@@ -60,8 +60,8 @@ what an entry holds.
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
 | 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
 | 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
-| 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | - |
-| 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | - |
+| 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
+| 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 
 ## Entries
 
@@ -2668,7 +2668,7 @@ the effect small.
 capacity). Traces of seeds 101 and 103 were running at the session's
 end and write `baseline/wp12a_falls_seed*.md/.png`. Not yet reported.
 
-### WP12 stages A and B: falls measured; design note (2026-11-21, -)
+### WP12 stages A and B: falls measured; design note (2026-11-21, 6beeea5)
 
 **Asked by U (2026-11-21).** Report the stage A falls, then write the
 stage B design note.
@@ -2694,7 +2694,7 @@ stage B design note.
 `rural_onset` (recommended: hold); C `collapse_cost` (recommended:
 measure first); whether later steel is acceptable.
 
-### WP12 stage C: build (2026-11-22, -)
+### WP12 stage C: build (2026-11-22, 6beeea5)
 
 **Decisions (U, 2026-11-22, D16).** The note's recommendations (A at
 0.85, hold B, measure C, report a later steel); then "build B" too.
