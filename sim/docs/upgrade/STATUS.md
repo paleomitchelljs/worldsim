@@ -2634,3 +2634,34 @@ inventory, open-questions (vassalage), run-log.
 **For U.** Keep `campaign` (cheap, nearly idle) or drop it? Measure
 campaigns as a state's run of wars over a reign? Make `wp13b` the
 baseline (rebuild full, shrink `wp10c`)?
+
+### WP13: campaigns measured; baseline `wp13b` (2026-11-21, HASH)
+
+**Asked by U (2026-11-21).** Keep `campaign`, measure campaigns, and
+make `wp13b` the baseline after shrinking `wp10c` (done, 374 MB freed).
+
+**Baseline.** `wp13b_seed101`-`104`, `106` rebuilt with `--keep full`
+(77-92 MB each). They reproduce the summary batch exactly.
+
+**Campaigns** (a state's run of conquests; the script was in the
+scratchpad, not kept):
+
+| Measure, per run | Range over seeds |
+|---|---|
+| Reigns gaining 3+ / 5+ cities | 4-108 / 0-41 |
+| Most cities gained in one reign | 4-28 |
+| States gaining 5+ cities within 50 years | 0-16 |
+| Wars annexing 2+ cities | 0.1-0.5% |
+
+Seed 102 holds most of the bursts.
+
+**Ruler effect (`ruler_odds`).** For small-state reigns, wars declared
+per century by offense quartile rise only slightly: 0.19, 0.21, 0.23,
+0.24 in seed 104 (before: flat). Cities gained per century show no
+clear trend. The rarity of gifted rulers (median offense 0.07) keeps
+the effect small.
+
+**Next.** WP12 stage A: `tools/wp12_trace.py` (records only: falls of
+20%+ by landmass group and state, cause, depth, recovery; time below
+capacity). Traces of seeds 101 and 103 were running at the session's
+end and write `baseline/wp12a_falls_seed*.md/.png`. Not yet reported.
