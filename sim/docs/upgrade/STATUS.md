@@ -2790,8 +2790,6 @@ freed). BASELINE.md has the `wp12f` section.
 
 **Next.** WP14 (`WP14-design.md`), built at once (U: "dive in").
 
-
-
 ### WP14: design note and build (2026-11-22, 77c13ff)
 
 **Asked by U (2026-11-22).** "Dive in on WP14"; no technology targets
