@@ -2730,3 +2730,16 @@ Cells that change hands, next 100 years, heads after / before:
   425 years back). Plague, feud and raids go together in the first two.
   Other plague falls still recover in 50-200 years.
 - World measures sit inside the `wp13b` spread.
+
+### 2026-11-22 WP12 C: rent and trade under disorder; baseline `wp12f` (`wp12f_seed101`-`104`, `106`, full)
+
+What it tested (U): `collapse_cost` also multiplies a cell's rent rate,
+its surplus sold in trade, and its city's trade weight by
+(1 - disorder). Full tables (the new baseline); traced
+(`docs/upgrade/baseline/wp12f_falls_*`). Compared with `wp12e` and
+`wp13b` in BASELINE.md.
+
+**Found.** Measures stay inside the `wp12e` spread except the worst
+300-year world fall (0.17-0.23, wp12e 0.11-0.19) and the largest
+100-year fall (to -0.25 in log). One long fall: X in seed 101 from
+6800, feud, 1,075 years down, unrecovered.

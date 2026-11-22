@@ -920,3 +920,32 @@ deportation and assimilation (WP10-design.md). World as `wp8n`.
 **What moved.** Little: the new mechanisms move under 1% of people
 over a run (WP10-design.md, "Built"). Most measures overlap `wp8n`;
 wars and the largest state reach higher. Reported only.
+
+## `wp12f`: crises that last (2026-11-22)
+
+**Asked by U (2026-11-22, D16 and after):** WP12's `works_lag`,
+`rural_onset` and `collapse_cost` (with rent and trade stopped under
+disorder), all on; make it the baseline. Full tables, five seeds; it
+replaces `wp13b` (WP13 B, shrunk to summary; its numbers are in
+run-log.md, 2026-11-21).
+
+| Measure | wp12f (current) | wp13b (previous) |
+|---|---|---|
+| World population at 8000 (M) | 55.8-82.2 | 47.5-95.2 |
+| First bronze / iron / steel (year) | 4,250-5,435 / 4,890-6,230 / 5,420-6,715 | 4,560-6,165 / 4,965-7,710 / 5,250-7,560 |
+| Urban share at the end | 0.050-0.059 | 0.042-0.068 |
+| States with 3+ cities | 79-210 | 59-288 |
+| Largest state (M km²) | 1.8-3.3 | 1.0-2.7 |
+| Wars | 1,388-4,551 | 919-8,258 |
+| Sieges taken | 0.41-0.47 | 0.40-0.44 |
+| Population in a state | 0.67-0.78 | 0.59-0.84 |
+| Deaths: feud / raid / plague | 0.50-0.57 / 0.27-0.34 / 0.08-0.15 | 0.49-0.58 / 0.25-0.33 / 0.07-0.14 |
+| Worst 300-yr world fall | 0.17-0.23 | 0.10-0.22 |
+| Largest people at the end | Snake folk 4, Humans 1 | Snake folk 3, Humans 1, Lizardfolk 1 |
+
+**What moved.** Little outside the spread of seeds. The worst world
+falls are deeper (0.17-0.23). Landmass falls of 20%+ (traces in
+`baseline/wp12f_falls_*`): plague falls in E, and in N and X; recovery
+75-350 years; one X fall in seed 101 from 6800 (feud, 1,075 years
+down, not back by 8000); seed 104's S and W falls at 6850 as before.
+Reported only.

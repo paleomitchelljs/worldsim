@@ -63,6 +63,7 @@ what an entry holds.
 | 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 | 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
+| 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, - |
 
 ## Entries
 
@@ -2769,4 +2770,21 @@ built: the cost of a fall of state already exists (above).
 keep `wp13b`? `collapse_cost` is weak as built (C: CHAOS_YEARS longer,
 or disorder that also stops rent and trade, would bite more; not done
 without U). WP12 can close here.
+
+### WP12 stage C, part 3: rent and trade; baseline `wp12f` (2026-11-22, c933d2b, -)
+
+**Asked by U (2026-11-22).** "Yes to new baseline, make collapse cost
+stronger so fallen states lose trade & rent", then go on to the next
+package.
+
+**Done.** Under `collapse_cost`, a cell's rent rate (`food_flows`), its
+marketable surplus (`debit_trade`) and its city's trade weight are
+x (1 - disorder) (c933d2b). `wp12f_seed101`-`104`, `106` rebuilt with
+`--keep full` (80 MB each) and traced; `wp13b` shrunk to summary (375 MB
+freed). BASELINE.md has the `wp12f` section.
+
+**Results.** Inside the `wp12e` spread; worst 300-year world falls
+0.17-0.23. One fall lasts over 1,000 years (X in seed 101, feud).
+
+**Next.** WP14 (`WP14-design.md`), built at once (U: "dive in").
 
