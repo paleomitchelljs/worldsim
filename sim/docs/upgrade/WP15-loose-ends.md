@@ -27,9 +27,12 @@ Each with a sanity run; no batch unless a fix changes the rules (2 and
 
 ## Status (2026-11-22)
 
-- 1: needs U (unchanged).
-- 2: technology contact now reads extra rows; city composition, famine,
-  clearance targeting and snapshots still do not.
+- 1: done. U: "state's culture with ruling lineage's tolerance
+  determining how much the state ends up culturally compromising".
+  Switch `state_view`: the three read the ruling lineage's values moved
+  toward the state's culture by the lineage's tolerance (rules/states.md).
+- 2: done. Technology contact, city composition, famine, clearance and
+  the snapshots read extra rows (structural.md).
 - 3: done, `wars.csv` column `att_helpers`.
 - 4: checked, no change: site defence reaches the odds and halves how
   often hard sites are besieged; the odds gate hides it from outcomes

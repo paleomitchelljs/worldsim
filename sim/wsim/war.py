@@ -1087,6 +1087,15 @@ class WarMixin:
             b_pop = self.pop[t]
             self.pop[t] *= 1 - 0.7 * self.hardy(t)
             self.lost_rows(t, b_pop - self.pop[t], v, "clearance")
+            if self.sh_on:
+                # the city's people in minority and further rows (WP15)
+                N = self.W.N
+                r = np.nonzero((self.rp[N:] == rec["culture"]) &
+                               (self.cell_city[self.rc[N:]] == t) &
+                               (self.rh[N:] > 0))[0] + N
+                b_r = self.rh[r].copy()
+                self.rh[r] *= 1 - 0.85 * self.phardy[self.rp[r]]
+                self.lost_rows(r, b_r - self.rh[r], v, "clearance")
             self.shock(t, "clearance")
             self.imp[hint] *= 0.5
             if len(A["cities"]) + len(B["cities"]) >= 5:

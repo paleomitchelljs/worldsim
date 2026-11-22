@@ -349,7 +349,7 @@ class StatesMixin:
                                               xfor)[m],
                              minlength=n)
         foreign = for_fe / np.maximum(tot_fe, 1e-9)
-        tolp = self.tol[pl[np.maximum(pol, 0)]]
+        tolp = self.stol()[np.maximum(pol, 0)]
         popw = np.where(own, self.pop, (0.4 + 0.5 * tolp) * self.pop) * \
             self.psize[np.maximum(self.cul, 0)]
         popw = popw * np.where(self.herding, MOUNT, 1)
@@ -1470,8 +1470,16 @@ class StatesMixin:
                 if x not in p["cities"] or self.lin[x] < 0:
                     continue
                 Lx = int(self.lin[x])
-                alien = 1 + 3 * (1 - self.similarity(L, Lx)) * \
-                    (1 - 0.6 * self.tol[L])
+                if self.sv_on:
+                    # the city against the state's view
+                    v = self.sview(p)
+                    sim = self.vsim(v, self.city_vec(self.cities[x]["id"]),
+                                    L, Lx, self.Lpeople[Lx] == self.Lpeople[L])
+                    alien = 1 + 3 * (1 - sim) * \
+                        (1 - 0.6 * v[self.city_cols()["tol"]])
+                else:
+                    alien = 1 + 3 * (1 - self.similarity(L, Lx)) * \
+                        (1 - 0.6 * self.tol[L])
                 pr = self.dtp * REVOLT_BASE * (dx / reach) ** 2 * \
                     (1.5 - p["cohesion"]) * alien * (1 + 0.2 * math.log(nc))
                 pr *= 1 + UNREST * p["stress"]

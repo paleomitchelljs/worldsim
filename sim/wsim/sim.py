@@ -340,6 +340,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         """The shorthand flags for switches in self.on (set again when a
         branched run switches mechanics off)."""
         self.cc_on = "city_culture" in self.on
+        self.sv_on = self.cc_on and "state_view" in self.on
         self.dom_on = "dominion" in self.on
         # `food_flow` works through dominion's extraction
         self.ff_on = self.dom_on and "food_flow" in self.on
@@ -664,7 +665,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         """Map state for history.npz, enough for a renderer to need
         nothing else (WP3 stage A): per cell, people, lineage, state,
         minority people, population (float16 of log1p; under 0.5% off
-        after expm1) and the herding flag; each live state's capital,
+        after expm1) and the herding flag; further peoples (extra rows:
+        cell, people, lineage, heads; WP15); each live state's capital,
         people and cities; the trade ties; each city's cell, id, size
         (urban, food-equivalents), state and capital flag. Reads state
         only."""
@@ -678,6 +680,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
                 if P["ended"] is None}
         ct = [(c, r["id"], self.city_size.get(c, 0.0), r["polity"],
                c in caps) for c, r in self.cities.items()]
+        x = self.xrows()
+        xr = np.stack([self.rc[x], self.rp[x], self.rl[x], self.rh[x]], 1)
         self.hist.append(dict(
             year=self.year, people=self.cul.astype(np.int8),
             lineage=self.lin.astype(np.int32),
@@ -687,7 +691,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             herding=self.herding.copy(),
             st=np.array(st, int).reshape(-1, 4),
             tie=np.array(ti, float).reshape(-1, 3),
-            city=np.array(ct, float).reshape(-1, 5)))
+            city=np.array(ct, float).reshape(-1, 5),
+            xrow=xr.astype(float).reshape(-1, 4)))
 
     def run(self, verbose=True, saves=None):
         """Run from the current tick to the end (a loaded state continues

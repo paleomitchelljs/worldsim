@@ -179,6 +179,12 @@ that the account found.
 - Voyages: thin natives pushed out of a cell are recorded as
   `displaced`.
 - Expulsion of a foreign minority (`minorities`) is recorded as
-  `expelled`.
+  `expelled`. Its rate is MIN_EXPEL x (1 − the tolerance of the state's
+  view) ([states.md](states.md)).
+- Famine (`famine`) moves the surplus of minority and further rows too
+  (WP15, 2026-11-22): a row over 1.05 x its share of the cell's capacity
+  (as `grow_shared` reads it) sends part of the excess where its people
+  lives or to empty land, as the main row does. Merchant quarters
+  (capped rows) do not move.
 - `tidy` removes cells under 5 heads and tiny minorities. That is
   recorded as `dwindled`.

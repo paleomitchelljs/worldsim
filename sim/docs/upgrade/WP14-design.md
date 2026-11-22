@@ -89,5 +89,5 @@ See run-log.md. Population at 8000 37.8-51.7M (`wp12f` 55.8-82.2),
 states with 3+ cities 25-94 (79-210), wars about a third. Ablations on
 seeds 101 and 103 point at `tech_costs`; the steel years barely move.
 For U: keep `tech_costs` as it is, lower COST_INN and COST_SAIL, or
-switch it off.
+switch it off. **U (2026-11-22): keep it as it is for now, no trials.**
 

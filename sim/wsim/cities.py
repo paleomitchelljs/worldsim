@@ -59,6 +59,14 @@ class CitiesMixin:
         """Cultural values (TRAITS + XTRAITS) of lineage(s) L."""
         return np.concatenate([self.LT[L], self.LX[L]], -1)
 
+    def city_xrows(self, pos):
+        """Live extra rows in city hinterlands, and their city's position
+        (pos: position by city cell, -1 for others)."""
+        x = self.xrows()
+        x = x[(self.rl[x] >= 0) & (self.cell_city[self.rc[x]] >= 0)]
+        kx = pos[self.cell_city[self.rc[x]]]
+        return x[kx >= 0], kx[kx >= 0]
+
     def city_found(self, rec, op):
         """A new city's culture: its mother city's (the capital of the
         state it joins, or the nearest live city of its lineage), else its
@@ -114,14 +122,40 @@ class CitiesMixin:
         (of their ruling lineages without `city_culture`)."""
         if not self.cc_on:
             return self.similarity(A["lin"], B["lin"])
+        return self.vsim(self.state_vec(A), self.state_vec(B), A["lin"],
+                         B["lin"], A["culture"] == B["culture"])
+
+    def vsim(self, va, vb, La, Lb, same):
+        """similarity() of two value vectors, with the affinities of
+        lineages La and Lb; `same`: of one people."""
         nT = len(TRAITS)
-        va, vb = self.state_vec(A)[:nT], self.state_vec(B)[:nT]
-        La, Lb = A["lin"], B["lin"]
-        d = float(np.linalg.norm(va - vb) + 0.3 * np.linalg.norm(
+        d = float(np.linalg.norm(va[:nT] - vb[:nT]) + 0.3 * np.linalg.norm(
             np.log(self.Laff[La]) - np.log(self.Laff[Lb])))
-        if A["culture"] == B["culture"]:
+        if same:
             return math.exp(-d / SIM_SAME_SCALE)
         return SIM_OTHER[0] + SIM_OTHER[1] * math.exp(-d / 0.8)
+
+    def sview(self, P):
+        """State P's view (`state_view`): its ruling lineage's values moved
+        toward the state's culture by the lineage's tolerance; the
+        lineage's alone without the switch."""
+        L = P["lin"]
+        r = self.lin_vals(L)
+        if not self.sv_on:
+            return r
+        return r + self.tol[L] * (self.state_vec(P) - r)
+
+    def stol(self):
+        """Tolerance of each live state's view by id (0 for ended ids)."""
+        pl = self.ptab()[0]
+        if not self.sv_on:
+            return np.where(pl >= 0, self.tol[np.maximum(pl, 0)], 0.0)
+        t = np.zeros(self.next_pid)
+        k = CITY_COLS["tol"]
+        for pid, P in self.polities.items():
+            if P["ended"] is None:
+                t[pid] = self.sview(P)[k]
+        return t
 
     def saccept(self, A, B, level):
         """accept() for two states, on their cultures."""
@@ -173,6 +207,11 @@ class CitiesMixin:
             np.add.at(RV, k[mm], self.mpop[hc[mm], None] *
                       self.lin_vals(self.mlin[hc[mm]]))
             np.add.at(Rw, k[mm], self.mpop[hc[mm]])
+        # further peoples (WP15)
+        x, kx = self.city_xrows(pos)
+        if len(x):
+            np.add.at(RV, kx, self.rh[x, None] * self.lin_vals(self.rl[x]))
+            np.add.at(Rw, kx, self.rh[x])
         RV = np.where(Rw[:, None] > 0, RV / np.maximum(Rw, 1e-9)[:, None], M)
         conf, tol = M[:, cc], M[:, ct]
         open_ = (0.5 + tol) * (1.5 - conf)
@@ -639,15 +678,17 @@ class CitiesMixin:
             size = np.clip(np.log10(np.maximum(self.pop[cells], 1) /
                                     self.pcity[peo]), 0, 1)
         mm = self.mlin[hc] >= 0
+        x, kx = self.city_xrows(pos)
         key = np.concatenate([k * self.nL + self.lin[hc],
-                              k[mm] * self.nL + self.mlin[hc[mm]]])
-        kw = np.concatenate([w, self.mpop[hc[mm]]])
+                              k[mm] * self.nL + self.mlin[hc[mm]],
+                              kx * self.nL + self.rl[x]])
+        kw = np.concatenate([w, self.mpop[hc[mm]], self.rh[x]])
         uk, inv = np.unique(key, return_inverse=True)
         lw = np.bincount(inv, weights=kw)
         top = np.zeros(n)
         np.maximum.at(top, uk // self.nL, lw)
         div = 1 - top / np.maximum(np.bincount(
-            np.concatenate([k, k[mm]]), weights=kw, minlength=n), 1)
+            np.concatenate([k, k[mm], kx]), weights=kw, minlength=n), 1)
         d = np.zeros_like(M)
 
         def push(a_, up, down):

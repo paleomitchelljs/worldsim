@@ -190,7 +190,9 @@ double the standing vassals; world population falls a quarter.
   term (similarity and tolerance, `rebellions`), the weight of foreign
   subjects in strength (tolerance, `polity_stats`), and the expulsion
   of minorities (tolerance, `minorities`). Intended (the lineage's own
-  view), or should they move to the state's culture?
+  view), or should they move to the state's culture? **Settled
+  2026-11-22 (U, D18):** a blend, the ruling lineage moved toward the
+  state's culture by its tolerance (`state_view`, rules/states.md).
 
 ### Economy and technology
 - **Herding at low farming** is never worse than foraging, which loosens
@@ -712,9 +714,8 @@ would tell whether this is real before anything is built on it.
   deportation by states (left out of the design); and whether the ruling
   people's state weight (SH_STATE 3) should also cut the subjects'
   resistance to settlers outside the ruler's own state.
-- **Routines that still ignore third and further peoples:** technology
-  contact, city composition, famine, clearance targeting, history
-  snapshots (structural.md). Small now (about 140 cells per run).
+- **Routines that still ignore third and further peoples:** none since
+  WP15 (2026-11-22), apart from the `minority_pop` record.
 - **Cascades not measured:** refugees are not recorded by destination,
   so the brief's stage D measure (displacement followed within 50 years
   by raids or more displacement where refugees arrive) needs a record.

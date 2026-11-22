@@ -437,6 +437,10 @@ def history_arrays(H, t0=0):
     S, st_t = flat("st")
     T, tie_t = flat("tie")
     C, city_t = flat("city")
+    # further peoples (WP15); snapshots from before have none
+    for h in H:
+        h.setdefault("xrow", np.zeros((0, 4)))
+    X, xr_t = flat("xrow")
     out = {k: np.stack([h[k] for h in H]) for k in
            ("people", "lineage", "polity", "minority", "pop_log1p",
             "herding")}
@@ -447,7 +451,10 @@ def history_arrays(H, t0=0):
         tie_b=T[:, 1].astype(int), tie=T[:, 2], city_t=city_t,
         city_cell=C[:, 0].astype(np.int32), city_id=C[:, 1].astype(np.int32),
         city_size=C[:, 2].astype(np.float32),
-        city_polity=C[:, 3].astype(np.int32), city_capital=C[:, 4] > 0)
+        city_polity=C[:, 3].astype(np.int32), city_capital=C[:, 4] > 0,
+        xr_t=xr_t, xr_cell=X[:, 0].astype(np.int32),
+        xr_people=X[:, 1].astype(np.int8), xr_lineage=X[:, 2].astype(np.int32),
+        xr_heads=X[:, 3].astype(np.float32))
     return out
 
 

@@ -216,15 +216,21 @@ class DiagnosticsMixin:
                                   else 0.0),
             cities_low_urban=int((U["urban"] < URBAN_MIN).sum()))
         food_now = self.year % CITY_TS_EVERY == 0
+        xfe, xr = self.xsum(self.rh[self.xrows()] *
+                            self.peat[self.rp[self.xrows()]])
         for i, cell in enumerate(self.cities):
             hinter = hint[cell]
             rec = self.cities[cell]
             ms = 0.0
             if self.mlin[cell] >= 0:
+                # the minority and further peoples (WP15)
                 a = self.pop[cell] * self.peat[self.cul[cell]]
-                b = self.mpop[cell] * self.peat[self.mcul[cell]]
+                b = self.mpop[cell] * self.peat[self.mcul[cell]] + xfe[cell]
                 ms = b / max(a + b, 1e-9)
                 rec.setdefault("min_peoples", set()).add(int(self.mcul[cell]))
+                if xfe[cell] > 0:
+                    rec["min_peoples"].update(
+                        int(p) for p in self.rp[xr[self.rc[xr] == cell]])
             rec["min_share"] = ms
             rec["min_peak"] = max(rec.get("min_peak", 0.0), ms)
             if ms > 0.1:

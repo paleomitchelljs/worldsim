@@ -116,7 +116,8 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "clear_terrain", "fire", "conquest_settle", "deport",
             "assimilate", "muster", "campaign", "vassal_annex_cross",
             "ruler_odds", "camp_tribute", "works_lag", "rural_onset",
-            "collapse_cost", "tech_forget", "closed_borrow", "tech_costs"]
+            "collapse_cost", "tech_forget", "closed_borrow", "tech_costs",
+            "state_view"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -255,6 +256,13 @@ MIN_CAP = 0.2
 MIN_GARRISON = 0.04         # of the city, settled by a conqueror
 MIN_MERCHANT = 0.03         # of a city, x tie, from a trade partner people
 MIN_EXPEL = 0.01            # per year x ruler separation x (1 - tolerance)
+# State view (`state_view`, needs `city_culture`; WP15, U 2026-11-22:
+# "state's culture with ruling lineage's tolerance determining how much
+# the state ends up culturally compromising"). Revolt's alien term,
+# foreign subjects' weight in strength and expulsion read the state's
+# view: the ruling lineage's values moved toward the state's culture (its
+# capital's) by the lineage's tolerance, v = r + tol x (s - r). Without
+# it they read the ruling lineage alone.
 # Dominion (`dominion`, 2026-11-06; numbers C). Extraction: a state takes
 # EXT_SUBJ x (0.5 + hierarchy) of the capacity of every people in it other
 # than the ruling people, EXT_CITY times more in city cells, at most

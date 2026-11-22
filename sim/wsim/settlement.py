@@ -694,7 +694,8 @@ class SettlementMixin:
         pl, pc = self.ptab()[:2]
         L = pl[self.cell_pol[m]]
         foreign = (L >= 0) & (self.mcul[m] != pc[self.cell_pol[m]])
-        pr = DT * MIN_EXPEL * self.hostile(L) * self.tolf(L, 1.0)
+        st = self.stol()
+        pr = DT * MIN_EXPEL * (1 - st[self.cell_pol[m]]) * self.tolf(L, 1.0)
         sel = foreign & (rng.random(len(m)) < pr)
         out = m[sel]
         h = self.mpop[out].copy()
@@ -709,7 +710,8 @@ class SettlementMixin:
             Lx = pl[self.cell_pol[self.rc[x]]]
             fx = (Lx >= 0) & (self.rp[x] != pc[self.cell_pol[self.rc[x]]])
             x, Lx = x[fx], Lx[fx]
-            pr = DT * MIN_EXPEL * self.hostile(Lx) * self.tolf(Lx, 1.0)
+            pr = DT * MIN_EXPEL * (1 - st[self.cell_pol[self.rc[x]]]) * \
+                self.tolf(Lx, 1.0)
             sel = rng.random(len(x)) < pr
             x, Lx = x[sel], Lx[sel]
             h = self.rh[x].copy()

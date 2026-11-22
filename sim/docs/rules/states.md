@@ -27,6 +27,20 @@ S runs from 0.02 to 1. Each year it changes by:
     strength = Σ cells: pop x size x (1 if own people, else 0.4 + 0.5 x tolerance)
                x (0.5 + violence) x metal multiplier x (0.3 + 0.7 S)
 
+## The state's view (`state_view`, 2026-11-22)
+
+Three decisions read the state's view, not the ruling lineage alone:
+subjects' weight in strength (the tolerance above), the revolt's alien
+term below, and expulsion of foreign minorities. The view is the ruling
+lineage's values moved toward the state's culture (its capital's) by the
+lineage's own tolerance:
+
+    view = ruler + tolerance x (state culture − ruler)
+
+A tolerant ruling lineage takes on its state's culture; an intolerant
+one keeps its own. Under `--off state_view` (or without `city_culture`)
+the three read the ruling lineage.
+
 ## Assimilation
 
 Cells of the ruler's own people but a different lineage switch to the
@@ -37,9 +51,11 @@ ruling lineage at 0.8% x (0.5 + statecraft) per year.
 - **Chance.** Each non-capital city may revolt each tick with probability
 
       5 x 0.0009 x (distance/reach)² x (1.5 − S)
-        x (1 + 3 (1 − similarity)(1 − 0.6 x ruler tolerance))
+        x (1 + 3 (1 − similarity)(1 − 0.6 x tolerance))
         x (1 + 0.2 ln cities)
 
+  Similarity and tolerance are the state's view's (above): similarity
+  of the view to the city's culture.
 - **Who joins.** The rebel city takes with it nearby cities of its own
   people, each with probability 0.6, if the city is within 400 km of the
   rebel and closer to it than to the capital.

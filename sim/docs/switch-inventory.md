@@ -137,3 +137,4 @@ before that switch became a default can turn it on.
 | `tech_forget` | 2026-11-22 (U, WP14); default | A metal stage out of use for 300 years is forgotten with the stages above it; metallurgy falls 0.2 below its threshold ([WP14-design.md](upgrade/WP14-design.md)) |
 | `closed_borrow` | 2026-11-22 (U, WP14); default | Borrowing runs at innovation, not 0.3 + innovation ([WP14-design.md](upgrade/WP14-design.md)) |
 | `tech_costs` | 2026-11-22 (U, WP14); default | Growth × (1 − 0.1 × innovation); sea deaths 0.001 × sailing × coastal share a year ([rules/population.md](rules/population.md)) |
+| `state_view` | 2026-11-22 (U, WP15); default; needs `city_culture` | Revolt's alien term, subjects' weight in strength and expulsion read the ruling lineage's values moved toward the state's culture by its tolerance ([rules/states.md](rules/states.md)) |

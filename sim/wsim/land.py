@@ -493,14 +493,21 @@ class LandMixin:
     def famine(self):
         """When a cell holds more people than its land now feeds, part of
         the surplus leaves: up to FAMINE_RANGE cells away, to empty land
-        or kin with room. The rest dies back as the land allows."""
+        or kin with room. The rest dies back as the land allows. Under
+        `shared_cells` the minority and further rows too (WP15)."""
+        self.famine_movers = 0.0
+        self.famine_main()
+        if self.sh_on:
+            self.famine_movers += self.famine_rows()
+
+    def famine_main(self):
+        """`famine` for the main rows."""
         W, rng = self.W, self.R("famine")
         occ = np.nonzero(self.lin >= 0)[0]
         K = self.Kf(self.lin[occ], occ)
         ex = self.pop[occ] - 1.05 * K
         h = ex > np.maximum(FOUND_MIN, 0.05 * K)
         src, ex = occ[h], ex[h]
-        self.famine_movers = 0.0
         if not len(src):
             return
         o = np.argsort(-ex)[:FAMINE_MAX]
@@ -532,7 +539,7 @@ class LandMixin:
         self.lin[best[new]] = self.lin[src[new]]
         self.cul[best[new]] = self.cul[src[new]]
         self.pop[best] += mv
-        self.famine_movers = float(mv.sum())
+        self.famine_movers += float(mv.sum())
         self.hard[src] = 1
 
     def land_use(self, occ, L, Kc=None, Kh=None):

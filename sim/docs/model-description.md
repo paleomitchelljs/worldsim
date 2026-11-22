@@ -1195,6 +1195,11 @@ states' nearest cities.
   × 0.0009 × (distance to capital / reach)² × (1.5 − S) × (1 + 3 × (1 −
   similarity of its lineage to the ruler) × (1 − 0.6 × ruler tolerance)) ×
   (1 + 0.2 ln cities) × (1 + 3 × stress `[unrest]`).
+- `[state_view]` (WP15, 2026-11-22, U; form **U**, no new numbers) the
+  similarity is of the city's culture to the state's view, and the
+  tolerance is the view's: view = ruler lineage + its tolerance ×
+  (state culture − ruler lineage). The same view's tolerance sets
+  foreign subjects' weight in strength and the expulsion rate.
 - `[unrest]` a revolt cuts elite × 0.8 (minimum 0.3).
 - **The breakaway:** a new state (cohesion 0.75). If the city's lineage
   is the ruling lineage, the rebels found a daughter lineage (mutation

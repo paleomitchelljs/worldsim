@@ -192,6 +192,90 @@ class SharedMixin:
             return np.zeros(0, int), np.zeros(0, int)
         return np.concatenate(I), np.concatenate(J)
 
+    def row_press(self, o):
+        """For the rows o (not main rows) and the main rows of their
+        cells: the rows r, their capacity K, food per head e and the food
+        the others in the cell take from each, sum_j alpha_ij (w_j / w_i)
+        f_j (`grow_shared`)."""
+        cells = np.unique(self.rc[o])
+        r = np.concatenate([cells[self.rp[cells] >= 0], o])
+        K, w, e, f, herd = self.row_terms(r)
+        I, J = self.rows_pairs(r)
+        a = SHARE_ALPHA * self.overlap(self.rl[r[I]], self.rl[r[J]],
+                                       herd[I], herd[J])
+        press = np.zeros(len(r))          # food the others take from i
+        np.add.at(press, I, a * w[J] / w[I] * f[J])
+        return r, K, e, press
+
+    def row_cap(self, ro, K, e, press):
+        """Capacity of rows ro (not main rows) less what the others eat;
+        a capped row (merchants) MIN_CAP of its K."""
+        kk = np.maximum(K - press / e, 1e-3)
+        return np.where(self.rm[ro], np.maximum(MIN_CAP * K, 1e-3), kk)
+
+    def famine_rows(self):
+        """`shared_cells` (WP15): a minority or further row (not a capped
+        one) holding more than 1.05 x its capacity as `grow_shared` reads
+        it sends FAMINE_MOVE of the surplus, as `famine` does the main
+        row's, up to FAMINE_RANGE cells to the cell with most room where
+        its people lives or the land is empty. Returns the heads moved."""
+        N = self.W.N
+        o = np.nonzero((self.rp[N:] >= 0) & (self.rl[N:] >= 0) &
+                       (self.rh[N:] > 0))[0] + N
+        if not len(o):
+            return 0.0
+        r, K, e, press = self.row_press(o)
+        oo = r >= N
+        ro = r[oo]
+        kk = self.row_cap(ro, K[oo], e[oo], press[oo])
+        ex = self.rh[ro] - 1.05 * kk
+        h = (ex > np.maximum(FOUND_MIN, 0.05 * kk)) & ~self.rm[ro]
+        src, ex = ro[h], ex[h]
+        if not len(src):
+            return 0.0
+        o = np.argsort(-ex)[:FAMINE_MAX]
+        src, ex = src[o], ex[o]
+        tgt, rb, _ = self.row_targets(self.rc[src], self.rp[src],
+                                      self.rl[src], FAMINE_RANGE,
+                                      self.R("famine"))
+        go = rb > FOUND_MIN
+        src, tgt, ex, rb = src[go], tgt[go], ex[go], rb[go]
+        _, first = np.unique(tgt, return_index=True)   # one band per target
+        src, tgt = src[first], tgt[first]
+        mv = np.minimum(FAMINE_MOVE * ex[first], rb[first])
+        self.rh[src] -= mv
+        left = self.rows_put(tgt, self.rp[src], self.rl[src], mv)
+        self.rh[src] += left
+        self.hard[self.rc[src]] = 1
+        return float((mv - left).sum())
+
+    def row_targets(self, src, P, L, R, rng):
+        """For groups of people P (lineage L) leaving cells src: the cell
+        with most room among 16 drawn up to R cells away on the same
+        landmass where P already lives or the land is empty; the room
+        there (0: none) and whether it is empty."""
+        W = self.W
+        dr = rng.integers(-R, R + 1, (len(src), 16))
+        dc = rng.integers(-R, R + 1, (len(src), 16))
+        r2 = W.row[src][:, None] + dr
+        ok = (r2 >= 0) & (r2 < NY)
+        t = W.idx2[np.clip(r2, 0, NY - 1), (W.col[src][:, None] + dc) % NX]
+        ok &= (t >= 0)
+        t = np.where(ok, t, src[:, None])
+        ok &= (t != src[:, None]) & (W.landmass[t] == W.landmass[src][:, None])
+        Pt = P[:, None] * np.ones((1, 16), int)
+        Lt = L[:, None] * np.ones((1, 16), int)
+        row = self.rows_find(t.ravel(), Pt.ravel()).reshape(t.shape)
+        empty = self.cul[t] < 0
+        ok &= (row >= 0) | empty
+        Kt = self.Kf(Lt, t)
+        have = np.where(row >= 0, self.rh[np.maximum(row, 0)], 0)
+        room = np.where(ok, (Kt - have) * np.where(empty, self.colon(t, Lt),
+                                                   1), 0)
+        b = np.argmax(room, 1)
+        n = np.arange(len(src))
+        return t[n, b], np.clip(room[n, b], 0, None), empty[n, b]
+
     def grow_shared(self, occ, k):
         """`shared_cells`: every row other than a cell's main one grows
         logistically toward its own capacity less what the others eat,
@@ -203,14 +287,7 @@ class SharedMixin:
         o = np.nonzero(self.rp[N:] >= 0)[0] + N
         if not len(o):
             return k
-        cells = np.unique(self.rc[o])
-        r = np.concatenate([cells[self.rp[cells] >= 0], o])
-        K, w, e, f, herd = self.row_terms(r)
-        I, J = self.rows_pairs(r)
-        a = SHARE_ALPHA * self.overlap(self.rl[r[I]], self.rl[r[J]],
-                                       herd[I], herd[J])
-        press = np.zeros(len(r))          # food the others take from i
-        np.add.at(press, I, a * w[J] / w[I] * f[J])
+        r, K, e, press = self.row_press(o)
         main = r < N
         # the main row: subtract from grow's k
         pos = np.full(N, -1)
@@ -224,8 +301,7 @@ class SharedMixin:
         oo = ~main
         ro = r[oo]
         Lo = self.rl[ro]
-        kk = np.maximum(K[oo] - press[oo] / e[oo], 1e-3)
-        kk = np.where(self.rm[ro], np.maximum(MIN_CAP * K[oo], 1e-3), kk)
+        kk = self.row_cap(ro, K[oo], e[oo], press[oo])
         p = self.rh[ro]
         rr = R_SCALE * self.Lr[Lo]
         if "tech_costs" in self.on:
@@ -453,7 +529,6 @@ class SharedMixin:
         live or the land is empty. Those who find no room, and the rest,
         die (recorded by the caller as `cause`). Returns the heads that
         fled, per entry."""
-        W = self.W
         cells = np.atleast_1d(np.asarray(cells, int))
         k = len(cells)
         people = np.broadcast_to(np.asarray(people, int), (k,))
@@ -467,27 +542,8 @@ class SharedMixin:
             return out
         i = np.nonzero(m)[0]
         src, P, L = cells[i], people[i], lin[i]
-        rng, R = self.R("migrate"), FLEE_RINGS
-        dr = rng.integers(-R, R + 1, (len(i), 16))
-        dc = rng.integers(-R, R + 1, (len(i), 16))
-        r2 = W.row[src][:, None] + dr
-        ok = (r2 >= 0) & (r2 < NY)
-        t = W.idx2[np.clip(r2, 0, NY - 1), (W.col[src][:, None] + dc) % NX]
-        ok &= (t >= 0)
-        t = np.where(ok, t, src[:, None])
-        ok &= (t != src[:, None]) & (W.landmass[t] == W.landmass[src][:, None])
-        Pt = P[:, None] * np.ones((1, 16), int)
-        Lt = L[:, None] * np.ones((1, 16), int)
-        row = self.rows_find(t.ravel(), Pt.ravel()).reshape(t.shape)
-        empty = self.cul[t] < 0
-        ok &= (row >= 0) | empty
-        Kt = self.Kf(Lt, t)
-        have = np.where(row >= 0, self.rh[np.maximum(row, 0)], 0)
-        room = np.where(ok, (Kt - have) * np.where(empty, self.colon(t, Lt),
-                                                   1), 0)
-        b = np.argmax(room, 1)
-        tgt = t[np.arange(len(i)), b]
-        rb = np.clip(room[np.arange(len(i)), b], 0, None)
+        tgt, rb, emp = self.row_targets(src, P, L, FLEE_RINGS,
+                                        self.R("migrate"))
         mv = np.minimum(want[i], rb)
         g = mv > 1
         if not g.any():
@@ -499,7 +555,7 @@ class SharedMixin:
         self.flee_rows.extend(zip(
             [self.year] * int(g.sum()), src[g].tolist(), tgt[g].tolist(),
             P[g].tolist(), np.round(out[i[g]], 1).tolist(),
-            empty[np.arange(len(i)), b][g].astype(int).tolist(),
+            emp[g].astype(int).tolist(),
             [cause] * int(g.sum())))
         return out
 
