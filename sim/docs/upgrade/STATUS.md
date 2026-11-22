@@ -62,6 +62,7 @@ what an entry holds.
 | 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
 | 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
+| 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | - |
 
 ## Entries
 
@@ -2738,4 +2739,34 @@ built: the cost of a fall of state already exists (above).
    seed-104 kind of event. Trace it (what fell in capacity in S, W and
    E around 6750; climate?) before any more crisis mechanics?
 3. Build C anyway (disorder after a fall of state), or close WP12?
+
+### WP12 stage C, part 2: `rural_onset` default; `collapse_cost` (2026-11-22, -)
+
+**Decisions (U, 2026-11-22).** 1 yes (`rural_onset` a default); 2 no
+(no trace of seed 104's event); 3 yes (build C).
+
+**Done.**
+- `rural_onset` moved from OPTIONAL to FEATURES (OPTIONAL is empty).
+- `collapse_cost` (default): `states.collapse_mark` at each territory
+  redraw gives disorder 1 to cells whose city passed to another state,
+  whose city is gone, or whose state ended leaving them stateless; it
+  falls over CHAOS_YEARS (50). Feud order, the raid hold and works
+  building are x (1 - disorder). Counter `collapse_cells`.
+- Docs: rules/states.md, model-description, switch inventory,
+  rules/disasters.md, README (D16), run-log.
+
+**Runs.** `wp12e_sanity` (3,000 years, fine) and `wp12e_seed101`-`104`,
+`106` (8,000 years, summary, traced). Results in run-log.md.
+- 30-64 thousand cell-marks a run; the cells' next century is as
+  before (left stateless about 8% below held cells).
+- 26 plague falls on landmasses, 6 outside E; three falls now last
+  375-425 years (seed 101 S, unrecovered; 104 W; 106 E).
+- World measures inside the `wp13b` spread; steel 5,430-6,840.
+
+**Not done.** No new baseline; `wp13b` stays the full one.
+
+**For U.** Make `wp12e` the baseline (rebuild full, shrink `wp13b`), or
+keep `wp13b`? `collapse_cost` is weak as built (C: CHAOS_YEARS longer,
+or disorder that also stops rent and trade, would bite more; not done
+without U). WP12 can close here.
 

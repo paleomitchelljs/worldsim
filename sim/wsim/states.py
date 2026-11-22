@@ -275,6 +275,39 @@ class StatesMixin:
         self.cell_city[ok] = src[ok]
         # travel cost from each ruled cell to its city (`food_flow`)
         self.cdist = np.where(ok, dist, np.inf)
+        if "collapse_cost" in self.on:
+            self.collapse_mark()
+
+    def collapse_mark(self):
+        """`collapse_cost` (WP12 C): since the last territory, cells whose
+        city passed to another state, whose city is gone, or whose state
+        ended (and left them stateless) take disorder 1. Border cells that
+        only move with a state's reach do not."""
+        cp = {c: C["polity"] for c, C in self.cities.items()}
+        prev = getattr(self, "_cpol_prev", None)
+        if prev is not None:
+            moved = [c for c, p in cp.items() if c in prev and prev[c] != p]
+            gone = [c for c in prev if c not in cp]
+            pc, pcity = self._cell_pol_prev, self._cell_city_prev
+            m = np.zeros(self.W.N, bool)
+            if moved:
+                m |= np.isin(self.cell_city, moved)
+            if gone:
+                m |= np.isin(pcity, gone)
+            lost = (pc >= 0) & (self.cell_pol < 0)
+            if lost.any():
+                ended = [p for p in np.unique(pc[lost]).tolist()
+                         if p not in self.polities or
+                         self.polities[p]["ended"] is not None]
+                if ended:
+                    m |= lost & np.isin(pc, ended)
+            m &= (self.lin >= 0) & (self.pop > 0)
+            if m.any():
+                self.disorder[m] = 1.0
+                self.count("collapse_cells", int(m.sum()))
+        self._cpol_prev = cp
+        self._cell_pol_prev = self.cell_pol.copy()
+        self._cell_city_prev = self.cell_city.copy()
 
     def polity_stats(self):
         W = self.W

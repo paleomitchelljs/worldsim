@@ -2691,3 +2691,42 @@ Landmass falls of 20%+ (traces; X's founding falls left out):
   the next century about 8% below cells kept in a state (heads after /
   before 0.96-0.97 against 1.04-1.06), mostly by feud; passing to
   another state costs 3-5%.
+
+### 2026-11-22 WP12 C: disorder after a fall of state (`wp12e_seed101`-`104`, `106`)
+
+What it tested (U): `collapse_cost` built and on, `rural_onset` made a
+default, with `works_lag`; all WP12 switches on. Summary runs, each
+traced (`docs/upgrade/baseline/wp12e_falls_*`).
+
+| Measure | wp13b | wp12d | wp12e |
+|---|---|---|---|
+| Population at 8000 (M) | 47.5-95.2 | 52.9-79.4 | 53.3-74.6 |
+| Improvements at 8000 | 0.44-0.57 | 0.40-0.47 | 0.42-0.45 |
+| First bronze / iron / steel (yr) | 4,560-6,165 / 4,965-7,710 / 5,250-7,560 | 3,845-5,085 / 4,480-6,435 / 4,915-6,925 | 4,580-5,350 / 5,105-6,085 / 5,430-6,840 |
+| Deaths: feud / raid / plague | 0.49-0.58 / 0.25-0.33 / 0.07-0.14 | 0.50-0.57 / 0.30-0.32 / 0.09-0.14 | 0.52-0.57 / 0.28-0.33 / 0.09-0.12 |
+| Largest 100-yr fall after 3000 (log) | -0.06 to -0.19 | -0.07 to -0.26 | -0.05 to -0.15 |
+| Worst 300-yr world fall | 0.10-0.22 | 0.10-0.24 | 0.11-0.19 |
+| States with 3+ cities | 59-288 | 84-151 | 75-185 |
+| Cells marked by disorder per run | - | - | 30,102-64,125 |
+| Rural onsets per run | - | 8-17 | 14-20 |
+
+Cells that change hands, next 100 years, heads after / before:
+
+| | wp12c | wp12e |
+|---|---|---|
+| To another state | 0.99-1.05 | 1.01-1.05 |
+| To no state | 0.96-0.97 | 0.95-0.97 |
+| Kept, in a state | 1.04-1.06 | 1.04-1.06 |
+
+**Found.**
+- `collapse_cost` barely changes what happens to cells that change
+  hands: the gap to held cells is as before (about 8% for cells left
+  stateless, 1-4% for a change of ruler). Disorder averages 0.5 over
+  50 years and only scales the order term, which is the ruler's
+  administration (often well under 1) and acts only on violent lineages.
+- Landmass falls: 26 plague falls (wp12d 20), 6 outside E. A few now
+  last longer: S in seed 101 (from 7475, 425 years down, not back by
+  8000), W in seed 104 (6575, 375 down, 275 back), E in seed 106 (5225,
+  425 years back). Plague, feud and raids go together in the first two.
+  Other plague falls still recover in 50-200 years.
+- World measures sit inside the `wp13b` spread.

@@ -566,6 +566,8 @@ class LandMixin:
         build = np.zeros(W.N)
         build[occ] = IMP_BUILD * use[occ] * (0.5 + adm)
         build[occ] *= 0.5 + self.pati[L]
+        if "collapse_cost" in self.on:
+            build[occ] *= 1 - self.disorder[occ]
         lapse = IMP_DECAY * (1 - use)
         if "upkeep" in self.on:
             # works need hands: they are sized to the people who kept
@@ -631,6 +633,8 @@ class LandMixin:
         rng = self.R("disasters")
         self.drought += (1 - self.drought) * over(DROUGHT_REC)
         self.imm *= math.exp(-IMM_DECAY * DT)
+        if "collapse_cost" in self.on:
+            self.disorder = np.maximum(self.disorder - DT / CHAOS_YEARS, 0)
         if self.cities:
             cc = np.fromiter(self.cities.keys(), int)
             big = cc[self.pop[cc] > 5 * self.pcity[np.maximum(

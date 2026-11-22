@@ -100,14 +100,13 @@ but the decision rested on my wrong premise. **Decided (U,
 
 From WP4 stage B (2026-11-17), `params.OPTIONAL` lists mechanics that
 are off by default and switched on with `worldsim.py --on NAME`.
-`--off all` leaves them as they are. The list was empty from WP4 D to
-WP12 C (`rural_onset`).
+`--off all` leaves them as they are. The list is empty since WP4 D
+(`rural_onset` was here for part of 2026-11-22).
 `--on` also takes a default switch, so that a branch from a state saved
 before that switch became a default can turn it on.
 
 | Switch | Since | What it does |
 |---|---|---|
-| `rural_onset` | 2026-11-22 (WP12 C, U) | Plague can also start outside cities: each occupied cell, 2e-6 a year x min(1, people per km² / 5) ([rules/disasters.md](rules/disasters.md)) |
 | `site_defence` | 2026-11-18 (U) | Each city site's own defence multiplier, clip(exp(0.12 t3), 0.5, 3), on top of terrain ([rules/war.md](rules/war.md)) |
 | `ruler_mil` | 2026-11-18 (U) | Each ruler's offensive talent (exponential, mean 0.1) multiplies the state's strength when it besieges; half carries into each later reign ([rules/war.md](rules/war.md)) |
 | `war_odds` | 2026-11-18 (WP5 B, U: build) | Steeper odds gate on declaring war (with a floor for the hungry, the hating, the zealous); sieges only at win probability >= 0.15, else ravage or sit; wars with no siege for 15 years end "abandoned"; a defender facing odds >= 0.6 may submit before the siege and never cedes its last city ([structural.md](structural.md)). A state saved before WP5 B keeps it off unless the branch names `--on war_odds` |
@@ -133,3 +132,5 @@ before that switch became a default can turn it on.
 | `camp_tribute` | 2026-11-21 (U, D15); default | Herding camps make the cities they win pay tribute (vassals) instead of taking them, and stay camps ([rules/war.md](rules/war.md)) |
 | `vassal_annex_cross` | 2026-11-21 (U, D15); default | Lords may annex vassals of another people, at the kin rate x (1 - vassal's tolerance) x lord's dominance ([rules/states.md](rules/states.md)) |
 | `works_lag` | 2026-11-22 (U, D16); default | Upkeep's threshold is 0.85 of the 50-year mean instead of 0.7, so a plague-sized loss also lets works fall in ([rules/population.md](rules/population.md)) |
+| `rural_onset` | 2026-11-22 (U, D16); default | Plague can also start outside cities: each occupied cell, 2e-6 a year x min(1, people per km² / 5) ([rules/disasters.md](rules/disasters.md)) |
+| `collapse_cost` | 2026-11-22 (U, D16); default | A cell whose city passes to another state, whose city is gone, or whose state ends takes disorder 1, gone over 50 years; meanwhile its order against feud, its state's hold on raids and its works building are x (1 − disorder) ([rules/states.md](rules/states.md)) |

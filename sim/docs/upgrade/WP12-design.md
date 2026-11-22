@@ -225,3 +225,7 @@ In short: neither A nor B lengthens recovery from a plague (50-300
 years to 90%). B spreads plague falls beyond E. A fall of state already
 costs a cell about 8% of its heads over the next century.
 
+Then (U, 2026-11-22): `rural_onset` a default and C built as
+`collapse_cost` (`wp12e`). It barely changes what follows a change of
+hands; three landmass falls now last 375-425 years. See run-log.md.
+

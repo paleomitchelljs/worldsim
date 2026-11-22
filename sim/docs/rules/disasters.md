@@ -25,7 +25,7 @@ states. The form and every number are **C**.
   / 30,000) x (1 + its state's trade ties, summed, up to 1). The city's
   people is the host. A city already inside an epidemic starts no other.
   Several epidemics can run at once; there is no minimum gap.
-- **Outside cities** (`rural_onset`, off unless `--on`; WP12 C,
+- **Outside cities** (`rural_onset`, on by default; WP12 C,
   2026-11-22, U; form and numbers C). A reservoir in herds or wild
   rodents: every occupied cell, herders' included, can start one, with
   chance per year 2e-6 x min(1, its people per km² / 5). The cell's

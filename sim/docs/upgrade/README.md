@@ -117,7 +117,7 @@ Recommendations are mine (C). Record answers here with the date.
 | D13 | WP10: how peoples move (`WP10-design.md`) | A conquest that settles, C assimilation under long rule; B deportation later; WP11 trace first | 2026-11-21 (U): build A, B and C; WP11's trace after WP10's build |
 | D14 | WP11 stage B part 2: metal to low-innovation peoples (Goblins) by contact | leave for WP14; close WP11 as a trace; settle feud (FEUD_K grounds predate D7) first | 2026-11-21 (U): (b), leave it for WP14; WP11 closes as a trace |
 | D15 | WP13 (`WP13-design.md`): muster, campaign goals, annexing foreign vassals, the ruler in the war decision, herder tribute, the dead war constants | build all five | 2026-11-21 (U): yes to 1a, 1b, 2b, 3, 4 and 5 |
-| D16 | WP12 (`WP12-design.md`): A works that lapse after smaller losses, B rural plague onset, C disorder after a fall of state, later steel | A at 0.85; hold B; measure C first; report any delay to steel, do not tune | 2026-11-22 (U): "those are all fine"; then build B too (`rural_onset`, optional until its batch is read) |
+| D16 | WP12 (`WP12-design.md`): A works that lapse after smaller losses, B rural plague onset, C disorder after a fall of state, later steel | A at 0.85; hold B; measure C first; report any delay to steel, do not tune | 2026-11-22 (U): "those are all fine"; then build B too; then (U) `rural_onset` a default, build C (`collapse_cost`), no trace of seed 104 |
 
 ## Files here
 

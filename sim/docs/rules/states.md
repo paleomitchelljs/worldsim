@@ -56,6 +56,17 @@ ruling lineage at 0.8% x (0.5 + statecraft) per year.
   - same people with 3 or fewer cities left: it is absorbed;
   - otherwise, 40% of the time it shatters into city-states;
   - otherwise it moves its capital.
+- **Disorder after a fall** (`collapse_cost`, WP12 C, 2026-11-22, U;
+  form and numbers C). A cell takes disorder 1 when its city passes to
+  another state (conquest, revolt, cession, partition, union or
+  annexation alike), when its city is gone, or when its state ends and
+  leaves it stateless. Cells that only move with a state's reach at the
+  border do not. Disorder falls to 0 over 50 years. Meanwhile the
+  state's order against feud, its hold on raids (RAID_ADMIN x
+  administration) and the building of works are all x (1 − disorder).
+  Before WP12 a cell left with no state already lost about 8% of its
+  heads over the next century against a held cell, and a change of
+  ruler 3-5%, with no rule of their own.
 
 ## Polities without cities (`camps`, WP5 stage F, 2026-11-18)
 

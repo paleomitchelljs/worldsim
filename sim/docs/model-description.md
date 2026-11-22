@@ -1483,6 +1483,11 @@ is k × (1 − x), a fall k × x; traits kept in [0.01, 0.99].
   Outside a state at violence 0.99 the settled density falls to about
   0.65-0.8 of capacity. More violent lineages lose more, so selection
   acts on violence within a people.
+- `[collapse_cost]` (WP12 C, 2026-11-22, U; numbers **C**) disorder per
+  cell: 1 when its city's polity changes, its city is gone, or its state
+  ends leaving it stateless (checked at each territory redraw); − DT / 50
+  per tick. order (feuding), the admin term in raid order, and works
+  building are × (1 − disorder).
 - `[war_hardy]` (U 2026-11-02: biological; Trolls lose much less from
   losing fights; number U→C) The roster's `hardy` (default 1; Trolls 0.3)
   scales a people's own losses from raids (as defender and attacker),
@@ -1541,7 +1546,7 @@ numbers **C**) replaces the rule below:
   U(0.15, 0.35) per epidemic, × 0.3 for peoples other than the host; city
   cells a further 0.3 × that; immunity ≥ 0.8. Ends when no new cell is
   reached, or after 100 years.
-- `[rural_onset]` (WP12 C, 2026-11-22, U; numbers **C**; optional) also
+- `[rural_onset]` (WP12 C, 2026-11-22, U; numbers **C**) also
   onset per occupied cell per year: 2e-6 × min(1, people per km² / 5),
   host = the cell's people; a cell inside an epidemic starts none.
 

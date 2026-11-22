@@ -192,6 +192,7 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         self.imm = np.zeros(N)            # plague immunity
         self.epi = []                     # epidemics under way (WP6 C)
         self.pmem = np.zeros(N)           # people, mean of ~50 yr (upkeep)
+        self.disorder = np.zeros(N)       # after a fall of state (`collapse_cost`)
         self.road = np.zeros(N)           # road stock 0-1
         self.roadq = np.ones(N)           # road quality (`road_tech`)
         self.imp = np.zeros(N)            # improvements 0-1
@@ -480,6 +481,8 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.epi = []
         if not hasattr(self, "pmem"):
             self.pmem = self.pop.copy()
+        if not hasattr(self, "disorder"):
+            self.disorder = np.zeros(self.W.N)
         if not hasattr(self, "clear"):
             self.clear = np.zeros(self.W.N)
         if not hasattr(self, "clear_at"):

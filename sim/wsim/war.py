@@ -73,6 +73,8 @@ class WarMixin:
         pol = self.cell_pol[occ]
         ordv = self.padm()
         order = np.where(pol >= 0, ordv[np.maximum(pol, 0)], 0)
+        if "collapse_cost" in self.on:
+            order = order * (1 - self.disorder[occ])
         lost = DT * FEUD_K * f * (1 - order)
         b_pop = self.pop[occ]
         self.pop[occ] *= 1 - lost
@@ -221,12 +223,16 @@ class WarMixin:
         """How far states and peace hold raids back on these edges."""
         pl = self.ptab()[0]
         f = np.ones(len(att))
+        cc = "collapse_cost" in self.on
         for c in (att, dfn):
             pc = self.cell_pol[c]
             L = pl[np.maximum(pc, 0)]
             ok = (pc >= 0) & (L >= 0)
-            f = f * np.where(ok, 1 - RAID_ADMIN *
-                             self.admin[np.maximum(L, 0)], 1)
+            hold = self.admin[np.maximum(L, 0)]
+            if cc:
+                # `collapse_cost`: a fallen state's hold has not come back
+                hold = hold * (1 - self.disorder[c])
+            f = f * np.where(ok, 1 - RAID_ADMIN * hold, 1)
         pa, pb = self.cell_pol[att], self.cell_pol[dfn]
         two = (pa >= 0) & (pb >= 0) & (pa != pb)
         if two.any():
