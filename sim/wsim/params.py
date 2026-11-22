@@ -116,7 +116,7 @@ FEATURES = ["acculturation", "acc_cross", "mission", "conformity",
             "clear_terrain", "fire", "conquest_settle", "deport",
             "assimilate", "muster", "campaign", "vassal_annex_cross",
             "ruler_odds", "camp_tribute", "works_lag", "rural_onset",
-            "collapse_cost"]
+            "collapse_cost", "tech_forget", "closed_borrow", "tech_costs"]
 # Switches off unless named in --on (WP4 stage B, 2026-11-17). Kept apart
 # from FEATURES so that "--off all" and old states are unchanged. Empty
 # since `trade_debit` became a default (WP4 D, U 2026-11-18), and again
@@ -227,6 +227,21 @@ AVULSE_RATE, AVULSE_TOL = 2.5e-4, 0.03
 # cities, administration and metallurgy decay.
 SUPPLY_GRACE = 20           # years (was 4 ticks)
 DECAY_ADMIN, DECAY_METAL = 0.002, 0.0004   # per year, scaled by city loss
+# `tech_forget` (WP14 B, U 2026-11-22 "dive in"; numbers C): a metal stage
+# out of use for TECH_FORGET years (about ten generations: no smith left
+# who worked it) is forgotten, with every stage above it; metallurgy
+# falls to FORGET_DROP below the forgotten stage's threshold, so it must
+# be found again by invention or borrowing.
+TECH_FORGET, FORGET_DROP = 300.0, 0.2
+# `closed_borrow` (WP14 B; C): borrowing runs at BORROW0 + innovation
+# (0.3 + innovation before), so a people with no curiosity borrows little.
+BORROW0 = 0.0
+# `tech_costs` (WP14 B; C): curiosity costs growth (time and risk spent
+# on new ways): the growth rate x (1 - COST_INN x innovation). Seafaring
+# costs lives: each year a cell's people lose COST_SAIL x sailing x the
+# cell's coastal share at sea (cause "sea"). Trade already costs through
+# plague, which follows trade ties (PL_LINK, PL_JUMP).
+COST_INN, COST_SAIL = 0.1, 0.001
 # Growth (WP6, C): frontier fecundity multiplies the rate by up to
 # 1 + FRONT_K where a cell is empty, falling to 1 at FRONT_END x K.
 # R_SCALE multiplies every lineage's growth rate; R_MAX caps the

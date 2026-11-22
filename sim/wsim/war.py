@@ -611,7 +611,7 @@ class WarMixin:
             PX, PY, pw = self.siege_odds(w, A, B, t)
         else:
             PX = self.projected(X, t) * self.offense(X) * self.field(X)
-            PY = self.defence_at(Y, X, t) * self.garrison(Y)
+            PY = self.defence_at(Y, X, t, w) * self.garrison(Y)
             pw = PX ** 2 / (PX ** 2 + PY ** 2 + 1e-9)
         if toll:
             b_pop = self.pop[t]
@@ -745,10 +745,12 @@ class WarMixin:
                              f"call of {self.pname(b)}; the alliance ends",
                              polities=[q, b])
 
-    def defence_at(self, D, O, t):
+    def defence_at(self, D, O, t, w=None):
         """What state D brings to bear holding its city t against O:
         its own projected strength, allies not allied to O, lord and
-        vassals, times terrain, capital and walls."""
+        vassals, times terrain, capital and walls. With war w, allies
+        who help the war's attacker hold its cities are recorded
+        (`att_helpers`, WP15)."""
         PD = self.projected(D, t)
         d, o = D["id"], O["id"]
         for kk in self.allies:
@@ -760,6 +762,8 @@ class WarMixin:
                 if q != o and Q and Q["ended"] is None and \
                         (min(q, o), max(q, o)) not in self.allies:
                     PD += 0.35 * self.projected(Q, t)
+                    if w is not None and d == w["att"]:
+                        w.setdefault("att_helpers", set()).add(q)
         lord = self.vassal.get(d)
         if lord is not None and lord != o and lord in self.polities:
             PD += 0.5 * self.projected(self.polities[lord], t)
@@ -799,7 +803,7 @@ class WarMixin:
             t = pool[int(np.argmin(gc_km(self.W.xyz, B["capital"],
                                          np.array(pool))))]
             PB = self.projected(B, t) * self.offense(B) * self.field(B)
-            PA = self.defence_at(A, B, t) * self.garrison(A)
+            PA = self.defence_at(A, B, t, w) * self.garrison(A)
             pw = PB ** 2 / (PB ** 2 + PA ** 2 + 1e-9)
             if "war_odds" in self.on and pw < SIEGE_MIN:
                 break               # too long odds: no siege
@@ -978,6 +982,8 @@ class WarMixin:
                  moved_back=round(w.get("moved_back", 0.0)),
                  helpers=" ".join(str(x) for x in
                                   sorted(w.get("helpers", ()))),
+                 att_helpers=" ".join(str(x) for x in
+                                      sorted(w.get("att_helpers", ()))),
                  sacks=w.get("sacks", 0), ravages=w.get("ravages", 0),
                  battles=w.get("battles", 0))
 

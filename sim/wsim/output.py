@@ -101,7 +101,8 @@ WCOL = ["id", "start", "end", "years", "att", "dfn", "people_att",
         "people_dfn", "landmass_att", "landmass_dfn", "cities_att",
         "cities_dfn", "strength_att", "strength_dfn", "goal", "goal_city",
         "goal_met", "why", "sieges", "captures", "recaptures", "moved",
-        "moved_back", "helpers", "sacks", "ravages", "battles"]
+        "moved_back", "helpers", "sacks", "ravages", "battles",
+        "att_helpers"]
 
 # Append-only tables: (Sim attribute, file, header). A header of None
 # takes the columns from the first row (dict rows); the column set is the

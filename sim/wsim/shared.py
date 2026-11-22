@@ -228,6 +228,8 @@ class SharedMixin:
         kk = np.where(self.rm[ro], np.maximum(MIN_CAP * K[oo], 1e-3), kk)
         p = self.rh[ro]
         rr = R_SCALE * self.Lr[Lo]
+        if "tech_costs" in self.on:
+            rr = rr * (1 - COST_INN * self.innov[Lo])   # WP14 B
         am = 0.6 + 0.4 * self.agri[Lo]
         p0 = logistic(p, kk, self.rcap(rr * am))
         rr = rr - self.dragon_pen(self.rc[ro])

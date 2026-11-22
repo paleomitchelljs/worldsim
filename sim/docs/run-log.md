@@ -2743,3 +2743,39 @@ its surplus sold in trade, and its city's trade weight by
 300-year world fall (0.17-0.23, wp12e 0.11-0.19) and the largest
 100-year fall (to -0.25 in log). One long fall: X in seed 101 from
 6800, feud, 1,075 years down, unrecovered.
+
+### 2026-11-22 WP14 B: technology lost, borrowed, paid for (`wp14b_seed101`-`104`, `106`; ablations `wp14x_*`)
+
+What it tested (U, D17: "dive in", no technology targets): `tech_forget`,
+`closed_borrow` and `tech_costs`, all on, against the baseline `wp12f`.
+Summary runs. Then seeds 101 and 103 with each switch off in turn.
+(In these runs the innovation cost reached main rows only; the
+minority and extra rows' growth, `grow_shared`, got it afterwards.)
+
+| Measure | wp12f | wp14b |
+|---|---|---|
+| Population at 8000 (M) | 55.8-82.2 | 37.8-51.7 |
+| Urban share at the end | 0.050-0.059 | 0.030-0.043 |
+| First bronze / iron / steel (yr) | 4,250-5,435 / 4,890-6,230 / 5,420-6,715 | 3,920-6,430 / 4,980-7,885 / 5,515-6,670 |
+| States with 3+ cities | 79-210 | 25-94 |
+| Largest state (M km²) | 1.8-3.3 | 0.8-1.7 |
+| Wars | 1,388-4,551 | 670-1,046 |
+| Deaths at sea, share | - | 0.026-0.031 |
+| Lineage-stages forgotten per run | - | 16-1,107 |
+| Largest people at the end | Snk 4, Hum 1 | Snk 3, Hum 1, Dwf 1 |
+
+Ablations (population at 8000, M; states with 3+ cities):
+
+| Seed | wp12f | wp14b | tech_costs off | tech_forget off | closed_borrow off |
+|---|---|---|---|---|---|
+| 101 | 55.8; 90 | 51.7; 94 | 49.8; 55 | 51.1; 111 | 44.0; 53 |
+| 103 | 74.2; 139 | 43.6; 49 | 71.9; 222 | 45.8; 60 | 61.5; 127 |
+
+**Found.**
+- Population, cities, states and wars fall by a third or more. Seed 103
+  puts it on `tech_costs` (off: back to 71.9M and 222 states); seed 101
+  moves within its own noise. The cost lowers the settled level: people
+  sit where growth meets deaths (WP11 B), and both the growth cost and
+  sea deaths (3% of deaths) move it.
+- Metal is now lost: 16-1,107 forgettings a run; the steel years barely
+  move.

@@ -1748,6 +1748,8 @@ Design and decisions in `docs/upgrade/WP7-design.md`; numbers C.
   `food_flows`, the food ledger, dragons' head counts, `add_minority`
   (garrisons and merchants may take an extra row), `minorities`
   (expulsion) and `price` (now all rows, the minority included).
-- Not read by: technology contact, city composition (`city_culture`),
-  famine, clearance targeting (main rows of the city's people only), the
-  history snapshots (plurality and minority only).
+- Not read by: city composition (`city_culture`), famine, clearance
+  targeting (main rows of the city's people only), the history snapshots
+  (plurality and minority only). Technology contact reads them since
+  WP15 (2026-11-22): each extra row counts as a minority (2 per cell)
+  with the cell's main lineage.

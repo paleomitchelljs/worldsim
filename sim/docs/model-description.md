@@ -1248,6 +1248,8 @@ symmetrized; plus 30 × tie between ruling lineages. Contact C = clip(sum
 
 Borrowing of a technology at factor f = f × max over contacts of (C ×
 positive gap) × (0.3 + innovation) × (1 − 0.5 × cohesion `[costs]`).
+`[closed_borrow]` (WP14 B, 2026-11-22, U; **C**): innovation in place of
+(0.3 + innovation).
 
 ### 15.3 Progress per year
 
@@ -1267,6 +1269,10 @@ positive gap) × (0.3 + innovation) × (1 − 0.5 × cohesion `[costs]`).
 - Metallurgy += 0.0005 × innovation² × [farming > 0.5] × (1 + ln(1 +
   cities) / 3) + borrowing (0.0008). Cap 1.2 before bronze, 2.0 before
   iron, 3.5 after (bronze/iron known `[supply]`, in use otherwise).
+  `[tech_forget]` (WP14 B, 2026-11-22, U; **C**) a known stage out of
+  use for 300 years is forgotten with the stages above it, and
+  metallurgy = min(metallurgy, its threshold − 0.2) (thresholds 1.0, 1.8,
+  2.6).
 - `[fishing]` fishing += 0.001 × innovation × (waterside share + 0.05) ×
   (1 − fishing) + borrowing (0.002); limited to [0, 1].
 - Sailing += 0.0012 × y × (coastal share + 0.1) × (1 − sailing) +

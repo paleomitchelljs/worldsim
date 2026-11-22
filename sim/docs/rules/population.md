@@ -79,6 +79,11 @@ near capacity once land fills. R_SCALE does not scale the dragon cut, so a lower
 peoples below zero under dragons. The minority's rate takes R_SCALE and
 R_MAX too (it has no frontier term).
 
+**Costs of curiosity and the sea** (`tech_costs`, WP14 B, 2026-11-22,
+U; form and numbers C). A lineage's growth rate is × (1 − 0.1 ×
+innovation), and each year a cell's people lose 0.001 × their sailing
+(0-1) × the cell's coastal share at sea (deaths "sea").
+
 **Upkeep** (`upkeep`, WP6 C, 2026-11-18, **C**). Improvements (field
 works, terraces, canals; clearing the forest is `clearing`, 2026-11-20; up to 1.3x rain-fed and 2.5x irrigated yield)
 need people to keep them, and are sized to the people who kept them.

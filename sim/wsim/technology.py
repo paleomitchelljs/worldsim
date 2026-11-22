@@ -54,6 +54,14 @@ class TechnologyMixin:
         m = occ & (self.mlin >= 0) & (self.mlin != self.lin)
         m &= amap[np.maximum(self.mlin, 0)] >= 0
         add(amap[self.lin[m]], amap[self.mlin[m]], 2.0, 2)
+        # ...and so do third and further peoples (WP15: extra rows)
+        x = self.xrows()
+        if len(x):
+            xc, xl = self.rc[x], self.rl[x]
+            m = (self.lin[xc] >= 0) & (xl >= 0) & (xl != self.lin[xc])
+            m &= (amap[np.maximum(xl, 0)] >= 0) & \
+                (amap[np.maximum(self.lin[xc], 0)] >= 0)
+            add(amap[self.lin[xc[m]]], amap[xl[m]], 2.0, 2)
         tr = [(amap[pl[x]], amap[pl[y]], 30 * t)
               for (x, y), t in self.ties.items()
               if pl[x] >= 0 and pl[y] >= 0 and pl[x] != pl[y] and
@@ -76,6 +84,8 @@ class TechnologyMixin:
         crr = np.clip(Mk[1] / 60, 0, 1)
         ctt = np.clip(Mk[3] / 60, 0, 1)
         inn = self.innov[A]
+        # `closed_borrow` (WP14 B): no floor under curiosity
+        b0 = BORROW0 if "closed_borrow" in self.on else 0.3
         # closed, cohesive societies borrow less from outsiders
         openness = 1 - COST_COH * self.coh[A]
 
@@ -91,7 +101,7 @@ class TechnologyMixin:
         def diffuse(v, rate):
             g = np.zeros(nA)
             np.maximum.at(g, crow, cval * np.clip(v[ccol] - v[crow], 0, None))
-            return rate * g * (0.3 + inn) * openness
+            return rate * g * (b0 + inn) * openness
 
         LpopF = Lpop * self.peat[np.maximum(self.Lpeople[:nL], 0)]
         g = 0.5 + 0.5 * np.clip(np.log10(1 + LpopF[A]) / 6, 0, 1)
@@ -200,6 +210,8 @@ class TechnologyMixin:
             self.known[A, s] |= ok
             self.lack[A, s] = np.where(ok, 0, self.lack[A, s] + 1)
             stages.append(ok | (arr[A] & (self.lack[A, s] * DT <= SUPPLY_GRACE)))
+        if "tech_forget" in self.on:
+            self.forget(A, stages)
         br, fe, st = stages
         lost = self.bronze[A] & ~br & (Lpop[A] > 3e5)
         for L in A[lost]:
@@ -436,3 +448,26 @@ class TechnologyMixin:
                          polities=[pid], lineages=[L])
                 if self.n_guard >= GUARD_MAX:
                     return
+
+    def forget(self, A, stages):
+        """`tech_forget` (WP14 B): a known metal stage out of use for
+        TECH_FORGET years is forgotten, with the stages above it, and
+        metallurgy falls below its threshold (FORGET_DROP)."""
+        thr = (1.0, 1.8, 2.6)
+        gone = np.zeros(len(A), bool)
+        drop = np.full(len(A), np.inf)
+        for s in range(3):
+            g = gone | (self.known[A, s] & ~stages[s] &
+                        (self.lack[A, s] * DT >= TECH_FORGET))
+            new = g & ~gone & self.known[A, s]
+            drop = np.where(new & np.isinf(drop), thr[s] - FORGET_DROP, drop)
+            gone = g
+            self.known[A, s] &= ~g
+        hit = np.isfinite(drop)
+        if hit.any():
+            self.metal[A[hit]] = np.minimum(self.metal[A[hit]], drop[hit])
+            self.count("tech_forgotten", int(hit.sum()))
+            for L in A[hit][self.Lpeak[A[hit]] > 3e5]:
+                self.log("tech", f"{self.lname(L)} has forgotten its "
+                         "metalworking", lineages=[int(L)])
+

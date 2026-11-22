@@ -191,18 +191,12 @@ double the standing vassals; world population falls a quarter.
   subjects in strength (tolerance, `polity_stats`), and the expulsion
   of minorities (tolerance, `minorities`). Intended (the lineage's own
   view), or should they move to the state's culture?
-- **Counteroffensive helpers are unrecorded.** Since 2026-11-07 the
-  original attacker's allies help it hold its cities, but `wars.csv`'s
-  `helpers` lists only the defender's.
 
 ### Economy and technology
-- **Innovation, seafaring and trade have no cost of their own.**
 - **Herding at low farming** is never worse than foraging, which loosens
   the early farming penalty on poor land.
-- **Technology is never lost** as knowledge (with `supply`, use lapses
-  without ore or cities).
-- **Low-innovation peoples reach steel** through long contact; borrowing
-  runs at (0.3 + innovation), never zero.
+- Technology loss, borrowing and costs: WP14 (`tech_forget`,
+  `closed_borrow`, `tech_costs`; see `upgrade/WP14-design.md`).
 
 ### Landscape and climate
 - **The terrain effect hasn't been isolated** (needs the same seeds with

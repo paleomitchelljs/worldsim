@@ -134,3 +134,6 @@ before that switch became a default can turn it on.
 | `works_lag` | 2026-11-22 (U, D16); default | Upkeep's threshold is 0.85 of the 50-year mean instead of 0.7, so a plague-sized loss also lets works fall in ([rules/population.md](rules/population.md)) |
 | `rural_onset` | 2026-11-22 (U, D16); default | Plague can also start outside cities: each occupied cell, 2e-6 a year x min(1, people per km² / 5) ([rules/disasters.md](rules/disasters.md)) |
 | `collapse_cost` | 2026-11-22 (U, D16); default | A cell whose city passes to another state, whose city is gone, or whose state ends takes disorder 1, gone over 50 years; meanwhile its order against feud, its state's hold on raids, its works building, its rent, its surplus sold in trade and its city's share of trade are x (1 − disorder) ([rules/states.md](rules/states.md)) |
+| `tech_forget` | 2026-11-22 (U, WP14); default | A metal stage out of use for 300 years is forgotten with the stages above it; metallurgy falls 0.2 below its threshold ([WP14-design.md](upgrade/WP14-design.md)) |
+| `closed_borrow` | 2026-11-22 (U, WP14); default | Borrowing runs at innovation, not 0.3 + innovation ([WP14-design.md](upgrade/WP14-design.md)) |
+| `tech_costs` | 2026-11-22 (U, WP14); default | Growth × (1 − 0.1 × innovation); sea deaths 0.001 × sailing × coastal share a year ([rules/population.md](rules/population.md)) |

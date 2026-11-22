@@ -439,6 +439,8 @@ class LandMixin:
                 coef = np.where(full, SHARE_ALPHA * wm / wM, 1.0)
             pm = self.mpop[mo]
             rm = R_SCALE * self.Lr[Lm]
+            if "tech_costs" in self.on:
+                rm = rm * (1 - COST_INN * self.innov[Lm])
             am = 0.6 + 0.4 * self.agri[Lm]
             pm0 = logistic(pm, km, self.rcap(rm * am))  # records: no dragons
             rm = rm - self.dragon_pen(mo)
@@ -454,6 +456,9 @@ class LandMixin:
         # frontier fecundity: thinly settled land grows fastest
         front = 1 + FRONT_K * np.clip(1 - p / (FRONT_END * k), 0, 1)
         r0 = R_SCALE * self.Lr[L]
+        if "tech_costs" in self.on:
+            # `tech_costs` (WP14 B): curiosity costs growth
+            r0 = r0 * (1 - COST_INN * self.innov[L])
         r = self.rcap(r0 * (0.6 + 0.4 * self.agri[L]) * front)
         # dragons: a cut in the growth rate, the same for everyone;
         # only fast breeders stay above zero under a dragon
@@ -476,6 +481,12 @@ class LandMixin:
             hc = occ[lost > 0.05 * np.maximum(p0, 1)]
             self.shock(hc[np.isin(hc, list(self.cities))], "dragon")
         self.feud(occ, L)
+        if "tech_costs" in self.on:
+            # `tech_costs` (WP14 B): seafaring costs lives at sea
+            lost = DT * COST_SAIL * np.clip(self.sail[L], 0, 1) * \
+                self.W.coastal[occ] * self.pop[occ]
+            self.pop[occ] -= lost
+            self.dead("sea", occ, lost)
         # capacity does not depend on population: grow's is still current
         self.land_use(occ, L, Kc, Kh)
 

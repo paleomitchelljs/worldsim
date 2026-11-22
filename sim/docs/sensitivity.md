@@ -101,7 +101,14 @@ Four parameters move no pattern at all over a factor of 4:
   war motive. Both were deleted in WP13 B.
 - **ACC** (acculturation): not even mu\* is above noise.
 - **SITE_DEF_SD**: mu\* above noise on 4 patterns, with no clear
-  direction.
+  direction. Checked in WP15 (2026-11-22, `wp12f` seeds 101 and 103):
+  site defence does reach the odds (`city_def` in every siege and
+  defence path; `--set` reaches it). Hard sites are besieged about half
+  as often (strongest quartile 5.8 and 7.2 sieges per 1,000 city-years,
+  weakest 8.9 and 16.0), but the odds and outcomes of the sieges that
+  happen do not vary with it (correlation -0.02 and 0.02): `war_odds`
+  gates sieges on the odds, so it selects the sieges that are worth
+  laying. No pattern measures siege frequency per site.
 
 Their mechanisms run, but the measured patterns don't see them. Either
 the mechanism is swamped by others (war onset by the odds and raid

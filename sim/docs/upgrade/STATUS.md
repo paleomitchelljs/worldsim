@@ -64,6 +64,8 @@ what an entry holds.
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 | 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
 | 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, 94e7172 |
+| 14 | A note; B build | done (D17; `tech_costs` effect needs U) | 2026-11-22 | - |
+| 15 | 2 (part), 3, 4 | done (1 needs U) | 2026-11-22 | - |
 
 ## Entries
 
@@ -2787,4 +2789,34 @@ freed). BASELINE.md has the `wp12f` section.
 0.17-0.23. One fall lasts over 1,000 years (X in seed 101, feud).
 
 **Next.** WP14 (`WP14-design.md`), built at once (U: "dive in").
+
+
+
+### WP14: design note and build (2026-11-22, -)
+
+**Asked by U (2026-11-22).** "Dive in on WP14"; no technology targets
+and no concern for when peoples reach what (D17).
+
+**Done.** `WP14-design.md`: measures on `wp12f` and three switches, on
+by default: `tech_forget` (a metal stage unused 300 years is forgotten),
+`closed_borrow` (borrowing at innovation, no 0.3 floor), `tech_costs`
+(growth x (1 - 0.1 innovation); sea deaths 0.001 x sailing x coastal
+share a year). Counter `tech_forgotten`; death cause "sea".
+
+**Runs.** `wp14b_seed*` (summary; full tables were refused by the
+auto-mode check) and ablations `wp14x_no_*_seed101/103`. Results in
+run-log.md: population 37.8-51.7M (wp12f 55.8-82.2), states with 3+
+cities 25-94, wars a third; seed 103's ablation puts it on
+`tech_costs`.
+
+**Not done.** The innovation cost missed `grow_shared` rows in these
+runs (fixed after).
+
+**For U.** Keep `tech_costs`, soften it, or switch it off?
+
+### WP15: items 2 (part), 3, 4 (2026-11-22, -)
+
+**Done.** Item 3: `wars.csv` `att_helpers`. Item 4: checked (see
+`sensitivity.md`). Item 2: extra rows in technology contact. Item 1
+waits for U. Not separately run (rules change only in 2's contact).
 
