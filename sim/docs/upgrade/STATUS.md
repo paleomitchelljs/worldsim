@@ -64,8 +64,8 @@ what an entry holds.
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 | 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
 | 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, 94e7172 |
-| 14 | A note; B build | done (D17; `tech_costs` effect needs U) | 2026-11-22 | - |
-| 15 | 2 (part), 3, 4 | done (1 needs U) | 2026-11-22 | - |
+| 14 | A note; B build | done (D17; `tech_costs` effect needs U) | 2026-11-22 | 77c13ff |
+| 15 | 2 (part), 3, 4 | done (1 needs U) | 2026-11-22 | 77c13ff |
 
 ## Entries
 
@@ -2792,7 +2792,7 @@ freed). BASELINE.md has the `wp12f` section.
 
 
 
-### WP14: design note and build (2026-11-22, -)
+### WP14: design note and build (2026-11-22, 77c13ff)
 
 **Asked by U (2026-11-22).** "Dive in on WP14"; no technology targets
 and no concern for when peoples reach what (D17).
@@ -2814,7 +2814,7 @@ runs (fixed after).
 
 **For U.** Keep `tech_costs`, soften it, or switch it off?
 
-### WP15: items 2 (part), 3, 4 (2026-11-22, -)
+### WP15: items 2 (part), 3, 4 (2026-11-22, 77c13ff)
 
 **Done.** Item 3: `wars.csv` `att_helpers`. Item 4: checked (see
 `sensitivity.md`). Item 2: extra rows in technology contact. Item 1
