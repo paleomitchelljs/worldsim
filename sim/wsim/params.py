@@ -1155,8 +1155,9 @@ WORKS_HANDS = 0.85
 # `collapse_cost` (WP12 C, U 2026-11-22; form and number C): a cell whose
 # city passes to another state, whose city is gone, or whose state ends
 # takes disorder 1, falling to 0 over CHAOS_YEARS. Meanwhile its order
-# against feud, its state's hold on raids, and the building of its works
-# are all x (1 - disorder).
+# against feud, its state's hold on raids, the building of its works, its
+# rent, its surplus sold in trade and (a city) its share of the state's
+# trade are all x (1 - disorder) (rent and trade: U 2026-11-22).
 CHAOS_YEARS = 50.0
 # Separation as spacing (`separation`, 2026-10-29; U: a separated people
 # may be tolerant and trade freely, yet live at low density). A lineage

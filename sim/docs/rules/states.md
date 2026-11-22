@@ -64,6 +64,9 @@ ruling lineage at 0.8% x (0.5 + statecraft) per year.
   border do not. Disorder falls to 0 over 50 years. Meanwhile the
   state's order against feud, its hold on raids (RAID_ADMIN x
   administration) and the building of works are all x (1 − disorder).
+  So are (U, 2026-11-22) the cell's rent, the surplus it sells in trade,
+  and, for a city, its share of the trade food arriving in its state: a
+  fallen land feeds no landlord and no market until order returns.
   Before WP12 a cell left with no state already lost about 8% of its
   heads over the next century against a held cell, and a change of
   ruler 3-5%, with no rule of their own.

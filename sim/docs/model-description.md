@@ -1486,8 +1486,9 @@ is k × (1 − x), a fall k × x; traits kept in [0.01, 0.99].
 - `[collapse_cost]` (WP12 C, 2026-11-22, U; numbers **C**) disorder per
   cell: 1 when its city's polity changes, its city is gone, or its state
   ends leaving it stateless (checked at each territory redraw); − DT / 50
-  per tick. order (feuding), the admin term in raid order, and works
-  building are × (1 − disorder).
+  per tick. order (feuding), the admin term in raid order, works
+  building, the rent rate (`food_flow`), the marketable surplus
+  (`trade_debit`) and a city's trade weight are × (1 − disorder).
 - `[war_hardy]` (U 2026-11-02: biological; Trolls lose much less from
   losing fights; number U→C) The roster's `hardy` (default 1; Trolls 0.3)
   scales a people's own losses from raids (as defender and attacker),

@@ -744,6 +744,10 @@ class StatesMixin:
         # nominal rates: rent (what can be carted to town), tax, tribute
         eloc = np.exp(-self.cdist / FF_KM)
         xr = FF_RENT * h * eloc * ~city * (self.cell_city >= 0)
+        cc_on = "collapse_cost" in self.on
+        if cc_on:
+            # `collapse_cost`: no landlord collects in disorder
+            xr = xr * (1 - self.disorder)
         xo = np.where(city, 0.0, FF_TAX * h)
         xs = EXT_SUBJ * h * np.where(city, EXT_CITY, 1)
         xo_n = np.minimum(xr + xo, EXT_MAX) * m
@@ -852,6 +856,9 @@ class StatesMixin:
             c2, p2 = cc[okc], cp[okc]
             wc = (0.5 + 0.5 * np.maximum(W.coastal[c2], W.river[c2])) * \
                 need[c2]
+            if cc_on:
+                # `collapse_cost`: merchants stay away from disorder
+                wc = wc * (1 - self.disorder[c2])
             ws = np.bincount(p2, weights=wc, minlength=n)
         give, tlost = np.zeros(N), np.zeros(n)
         if self.td_on:
@@ -912,6 +919,8 @@ class StatesMixin:
                   self.polities.get(k[0], {}).get("ended", 1) is not None]:
             del self.fdist[k]
         s = np.maximum(Q - need - T, 0) * TRADE_SURPLUS * m
+        if "collapse_cost" in self.on:
+            s = s * (1 - self.disorder)       # nothing sold from disorder
         S = np.bincount(pol[m], weights=s[m], minlength=n)
         per = S / np.maximum(FE, 1e-9)
         flows, want = [], np.zeros(n)
