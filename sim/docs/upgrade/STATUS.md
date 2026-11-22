@@ -2635,7 +2635,7 @@ inventory, open-questions (vassalage), run-log.
 campaigns as a state's run of wars over a reign? Make `wp13b` the
 baseline (rebuild full, shrink `wp10c`)?
 
-### WP13: campaigns measured; baseline `wp13b` (2026-11-21, HASH)
+### WP13: campaigns measured; baseline `wp13b` (2026-11-21, ede01cf)
 
 **Asked by U (2026-11-21).** Keep `campaign`, measure campaigns, and
 make `wp13b` the baseline after shrinking `wp10c` (done, 374 MB freed).
