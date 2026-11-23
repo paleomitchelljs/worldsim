@@ -2899,5 +2899,5 @@ the last era.
   10000 51-87M; feud 0.36-0.50 of deaths (0.57-0.63); every seed
   reaches steel; growth, states and wars still rising at 10000.
 
-**Not done.** `wp12f` (the old full baseline, five seeds) is not yet
-shrunk: that deletes files and needs U.
+**Clean-up (U, 2026-11-22: "delete away the old").** `wp12f_seed*`
+shrunk to summary (381 MB freed); `wp16` is the one full baseline.
