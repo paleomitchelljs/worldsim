@@ -11,9 +11,9 @@ what an entry holds.
 | 0 | D streamed output | done | 2026-11-17 | 858b205 |
 | 0 | E clean-up | done | 2026-11-17 | 44ef835 + fix a5b8d95 |
 | 1 | A polity table | done | 2026-11-17 | 48ce872 |
-| 1 | B capacity factoring | partial (lineage tables) | 2026-11-17 | 48ce872 |
-| 1 | C resident capacity cache | measured, not adopted | 2026-11-17 | - |
-| 1 | D migration, raids, climate, wars | partial (see entries) | 2026-11-17 | 17e54e7, b8c092b, 4466cfd |
+| 1 | B capacity factoring | done (lineage tables; cell vectors 2026-11-22) | 2026-11-17, 2026-11-22 | 48ce872, 14d9983 |
+| 1 | C resident capacity cache | measured, not adopted (reconfirmed 2026-11-22: inputs change on every cell twice a tick) | 2026-11-17 | - |
+| 1 | D migration, raids, climate, wars | done (closed 2026-11-22) | 2026-11-17, 2026-11-22 | 17e54e7, b8c092b, 4466cfd, 14d9983 |
 | 1 | E branching from a saved state | done | 2026-11-17 | 8aba7b8 |
 | 1 | F RNG streams and new baseline | done | 2026-11-17 | 668ac79 |
 | 2 | A structured events | done | 2026-11-17 | 1f51f62 |
@@ -25,7 +25,7 @@ what an entry holds.
 | 3 | C state colours and change layers | done | 2026-11-17 | 1149de9 |
 | 3 | D video and viewer | done | 2026-11-17 | 42d3a85, 374139a |
 | 4 | A ledger (records only) | done | 2026-11-17 | 83775fa |
-| 4 | B debited trade | done (switch off by default; default needs U) | 2026-11-17 | 672415b |
+| 4 | B debited trade | done (default and port-to-port carriage: WP4 D) | 2026-11-17 | 672415b |
 | 4 | C deaths and growth account | done | 2026-11-17 | f777567 |
 | 5 | A diagnosis | done (B-F forms need U) | 2026-11-18 | 75c481c |
 | 5 | B odds-gated war | done (on by default) | 2026-11-18 | 583d7ee |
@@ -60,12 +60,17 @@ what an entry holds.
 | 10 | A measures; B design note | done (U decided D13) | 2026-11-21 | 0576866 |
 | 10 | C build | done (`conquest_settle`, `deport`, `assimilate` on; baseline `wp10c_`) | 2026-11-21 | 289a949 |
 | 11 | A density trace | done (B needs U: three proposals in `WP11-settlement-density.md`) | 2026-11-21 | 478292a |
+| 11 | B part 1 the half-fill | done; WP11 closed as a trace (D14) | 2026-11-21 | 632c804 |
+| 13 | A design note | done (U decided D15) | 2026-11-21 | f2f988f |
+| 13 | B build; campaigns measured, baseline `wp13b` | done | 2026-11-21 | 4808fea, ede01cf |
 | 12 | A measures; B design note | done (B needs U: four questions in `WP12-design.md`) | 2026-11-21 | 6beeea5 |
 | 12 | C build | done (`works_lag` on; `rural_onset` optional, default needs U; C measured, not built) | 2026-11-22 | 6beeea5 |
 | 12 | C: rural_onset default, collapse_cost | done (both on by default) | 2026-11-22 | 441c3e7 |
 | 12 | C: rent and trade under disorder; baseline `wp12f` | done | 2026-11-22 | c933d2b, 94e7172 |
 | 14 | A note; B build | done (D17; `tech_costs` effect needs U) | 2026-11-22 | 77c13ff |
 | 15 | 2 (part), 3, 4 | done (1 needs U) | 2026-11-22 | 77c13ff |
+| 15 | 1, 2 | done (D18) | 2026-11-22 | 2998603 |
+| 1 | B, C, D closed; FEUD_K; 10,000-year baseline `wp16` | done | 2026-11-22 | 14d9983 |
 
 ## Entries
 
@@ -2835,3 +2840,64 @@ the snapshots (`xr_*` in history.npz). WP15 is closed.
 **Runs.** `wp15b_seed*` and `wp15x_nosv_seed101` (summary). Population
 29.6-41.8M (`wp14b` 37.8-51.7), states with 3+ cities 17-44, wars
 377-702; steel in 3 seeds, 6,825-7,930. Run-log.md.
+
+### WP1 B, C, D closed; FEUD_K; baseline `wp16` (2026-11-22, 14d9983)
+
+**Asked by U (2026-11-22).** FEUD_K "can be lowered a bit"; close the
+D8 gap; finish capacity factoring, adopt the cache "unless there's a
+strong reason not to", finalise WP1 D; port-to-port trade if WP4 B
+left a gap; then "launch some 10k time runs to serve as the new
+baseline".
+
+**Done.**
+- FEUD_K 0.004 -> 0.003 (U->C). D8's answer (U, 2026-11-18, WP5 D/F)
+  written into the decision register.
+- WP4 B: no gap. Port-to-port carriage and the default were done in
+  WP4 D (nearest city pair over the food graph); the "not done" line
+  in the WP4 B entry predates it.
+- WP1 B, the cell half: `cterms`/`ctab` hold K2's cell-only factors
+  (rain-fed and all farm yield after land and salt, forage, herd,
+  area x Kcell) for every cell. Rebuilt when `cver` moves (end of
+  `prepare_capacity`, end of `land_use`) or the rivers change
+  (`W.rver`, bumped in `derive_rivers`); `cfix` refreshes cells whose
+  works a raid, ravage, sack or clearance damaged. Check: over the last
+  200 years of a 4,000-year run, 2,514 K2 calls (32.2M values) against
+  the old formula, worst relative difference 8.5e-16.
+- WP1 C: not adopted, and the reason stands. Every input it would
+  cache changes on every cell twice a tick (climate's `cm` in
+  `prepare_capacity`, land, salt and works in `land_use`), so it can
+  only hit between `land_use` and the next tick; the 2026-11-17 build
+  was correct and no faster. After the cell vectors K2 is 9% of the
+  last 500 years (3.3 s of about 36 s, 6,796 calls).
+- WP1 D, closed: `route` and the basin pass work a drainage front at
+  a time instead of cell by cell (river rerouting was 7% late);
+  `adjacency_by_people` uses one precomputed (cell, neighbour) list;
+  `similarity` and `vsim` use dot products instead of
+  `np.linalg.norm` (668k calls per 100 ticks); `heads` reads an
+  `armed` set instead of every polity ever made (26 calls a tick).
+  Left: `voyages` (the landing loop is sequential by rule),
+  `power_dist` (hits already 0.4 us; a memo needs ~20 hooks), `gc_km`
+  (0.9 s); each is under about 3%.
+
+**Profile** (seed 101, 6,000 years, HEAD copy and new code run side
+by side; phase seconds per era):
+
+| | 0k | 1k | 2k | 3k | 4k | 5k | all |
+|---|---|---|---|---|---|---|---|
+| before (2998603 + FEUD_K) | 24.6 | 35.0 | 41.6 | 49.9 | 60.7 | 74.2 | 286 |
+| after (14d9983) | 21.0 | 31.0 | 37.5 | 45.2 | 54.2 | 67.9 | 257 |
+
+-10% in all; Kf 10.5 -> 7.6 s and `prepare_capacity` 5.4 -> 3.5 s in
+the last era.
+
+**Runs.**
+- The "after" profile is the sanity run: year 6,000 with 31.0M people,
+  108 cities, 113 states, all ten peoples.
+- `wp16_seed101`-`104`, `106`: 10,000 years, `--keep full`, 98-111 MB
+  each, 989-1,187 s with five at once. Table in BASELINE.md (`wp16`)
+  and run-log.md. Population at 8000 35-58M (`wp15b` 30-42M), at
+  10000 51-87M; feud 0.36-0.50 of deaths (0.57-0.63); every seed
+  reaches steel; growth, states and wars still rising at 10000.
+
+**Not done.** `wp12f` (the old full baseline, five seeds) is not yet
+shrunk: that deletes files and needs U.

@@ -949,3 +949,42 @@ falls are deeper (0.17-0.23). Landmass falls of 20%+ (traces in
 75-350 years; one X fall in seed 101 from 6800 (feud, 1,075 years
 down, not back by 8000); seed 104's S and W falls at 6850 as before.
 Reported only.
+
+## `wp16`: 10,000-year baseline (2026-11-22)
+
+**Asked by U (2026-11-22):** FEUD_K "lowered a bit" (0.004 -> 0.003,
+C), WP1 B-D closed (speed only), then "launch some 10k time runs to
+serve as the new baseline". `wp16_seed101`-`104`, `106`, standard
+settings with `--years 10000 --keep full` (98-111 MB each, 989-1,187 s
+with five at once). It replaces `wp12f` as the full baseline. `wp15b`
+(summary, 8,000 years) is the last batch before it; its rules differ
+from `wp16` only in FEUD_K.
+
+| Measure | wp16 at 8000 | wp16 at 10000 | wp15b at 8000 |
+|---|---|---|---|
+| World population (M) | 35.0-57.5 | 50.7-86.9 | 29.6-41.8 |
+| First bronze / iron / steel (year) | | 5,010-6,610 / 5,990-7,785 / 6,620-8,520 (all five seeds) | 4,470-6,300 / 6,210-6,920 (3 seeds) / 6,820-7,930 (3 seeds) |
+| Urban share at the end | | 0.043-0.071 | 0.019-0.032 |
+| States with 3+ cities | | 62-405 | 17-44 |
+| Largest state (M km²) | | 1.5-4.2 | 0.7-2.2 |
+| Wars | | 1,500-4,902 | 377-702 |
+| Sieges taken | | 0.39-0.49 | 0.29-0.37 |
+| Deaths: feud / raid / plague | | 0.36-0.50 / 0.24-0.37 / 0.08-0.26 | 0.57-0.63 / 0.29-0.31 / 0.03-0.10 |
+| Worst 300-yr world fall | | 0.11-0.24 (4 seeds) | 0.10-0.27 (3 seeds) |
+| Largest people (share) | Lizardfolk, Humans x2, Snake folk x2 (0.21-0.45) | Snake folk 1, Lizardfolk 2, Humans 2 (0.25-0.40) | |
+
+Measures without a year are at each run's end, so the two columns are
+not like for like.
+
+**What moved.**
+- Lower feud raises population at 8000 by about a third (35-58M
+  against 30-42M); feud's share of deaths falls from 0.57-0.63 to
+  0.36-0.50. FEUD_K is the only rule change; the speed work reorders
+  arithmetic, which moves single histories (differences under about
+  20% are noise, WP4 B) but should not shift five seeds together.
+- The last 2,000 years are not a plateau. Population grows 1.4-1.9x
+  from 8000 to 10000, states with 3+ cities and wars keep rising
+  (seed 101: 853 wars started in 8000-9000, 1,457 in 9000-10000), and
+  every seed reaches steel, the latest at 8,520.
+- All ten peoples are alive at 10000 in every seed. Ogres, Giants
+  and Trolls stay small (0.01-0.3M), as before.

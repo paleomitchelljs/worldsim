@@ -2817,3 +2817,18 @@ on 35.0, 32, 477, 7,505.
 - Metal comes later again, and two seeds reach no iron (`wp14b`'s
   ranges were over the seeds that reached each stage). Reported, not
   tuned (D16, D17).
+
+### 2026-11-22 FEUD_K 0.003; 10,000-year baseline `wp16` (`wp16_seed101`-`104`, `106`, full)
+
+What it tested (U): FEUD_K "lowered a bit" (0.004 -> 0.003, C) and
+runs of 10,000 years as the new baseline, on code with WP1 B-D closed
+(cell vectors for capacity, vectorised river routing, neighbour
+adjacency, similarity and the soldiers count; rules unchanged).
+Standard settings, `--years 10000 --keep full`. Table in BASELINE.md
+(`wp16`).
+
+**Found.** Population at 8000 35.0-57.5M (`wp15b` 29.6-41.8), at
+10000 50.7-86.9M; feud's share of deaths 0.36-0.50 (0.57-0.63).
+Every seed reaches steel (6,620-8,520). States with 3+ cities 62-405,
+wars 1,500-4,902 at 10000, both still rising in the last millennium.
+All ten peoples alive; the largest holds 0.25-0.40 at the end.
