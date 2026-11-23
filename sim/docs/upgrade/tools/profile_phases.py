@@ -45,7 +45,7 @@ for p in PH:
 
 sim, out, t0 = worldsim.make_sim([
     "--peoples", "peoples_regional", "--starts", "20", "--start-vary", "0.1",
-    "--vary", "0", "--sites", "sites_v2.json", "--seed", "101",
+    "--vary", "0", "--sites", "sites_v3.json", "--seed", "101",
     "--years", str(YEARS), "--frame-every", "100", "--out", OUT])
 print("setup", round(time.time() - t0, 1), flush=True)
 from wsim.output import Stream, write_outputs  # noqa: E402
@@ -74,7 +74,7 @@ for i in range(nt):
               sum(p["ended"] is None for p in sim.polities.values()),
               "nL", sim.nL, round(time.time() - t0), flush=True)
 
-with open(os.path.join(OUT, "phases.txt"), "w") as fh:
+with open(OUT + "_phases.txt", "w") as fh:
     eras = sorted(tot)
     fh.write("phase " + " ".join(f"{e:>8d}k" for e in eras) + "\n")
     fh.write("TOTAL " + " ".join(f"{tot[e]:9.1f}" for e in eras) + "\n")
@@ -93,6 +93,6 @@ with open(os.path.join(OUT, "phases.txt"), "w") as fh:
 t = time.perf_counter()
 stream.flush()
 write_outputs(sim, OUT)
-with open(os.path.join(OUT, "phases.txt"), "a") as fh:
+with open(OUT + "_phases.txt", "a") as fh:
     fh.write(f"write_outputs {time.perf_counter() - t:.1f}s\n")
 print("done", round(time.time() - t0))

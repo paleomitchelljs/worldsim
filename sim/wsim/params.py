@@ -857,7 +857,9 @@ APP0, APP_K = 0.5, 1.5
 # state this lowers the settled density to about 0.65-0.8 of capacity
 # (growth 0.012-0.02); at 0.8 to about 0.85-0.9. More violent lineages
 # lose more, so selection can act on violence within a people.
-FEUD_K, FEUD_PIVOT = 0.004, 0.6
+# U->C 2026-11-22: "Feud_K can be lowered a bit" (it was 0.004, set
+# before D7 halved growth, so it cost about twice its stated share).
+FEUD_K, FEUD_PIVOT = 0.003, 0.6
 # `travel_reach` (U 2026-11-02: roads extend reach, and maritime empires
 # must be possible; form and numbers C). A state's hold on a city (revolt
 # risk) and its strength there (war) fall with the travel distance from

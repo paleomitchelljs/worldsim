@@ -197,11 +197,13 @@ class SettlementMixin:
         """adj[c, i]: some neighbour of cell i is held by people c."""
         W = self.W
         adj = np.zeros((self.nP, W.N), bool)
-        for k in range(8):
-            i = np.nonzero(W.nb[:, k] >= 0)[0]
-            cn = self.cul[W.nb[i, k]]
-            ok = cn >= 0
-            adj[cn[ok], i[ok]] = True
+        if getattr(W, "_nbij", None) is None:
+            i, k = np.nonzero(W.nb >= 0)
+            W._nbij = (i, W.nb[i, k])     # every (cell, neighbour) pair
+        i, j = W._nbij
+        cn = self.cul[j]
+        ok = cn >= 0
+        adj[cn[ok], i[ok]] = True
         return adj
 
     def migrate(self):

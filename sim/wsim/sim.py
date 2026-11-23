@@ -84,6 +84,10 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
         # ltab(): K2's per-lineage tables and the version that invalidates
         # them (bumped by every write to agri, metal or domlv)
         self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
+        # ctab(): K2's per-cell vectors and the version that invalidates
+        # them (bumped by prepare_capacity and land_use)
+        self.cver, self._ctab_key = 0, None
+        self.armed = set()                # polities that raised soldiers
         self.Lpeople = -np.ones(MAXL, int)
         self.Lparent = -np.ones(MAXL, int)
         self.Lparent2 = -np.ones(MAXL, int)   # second parent (fusion)
@@ -437,6 +441,11 @@ class Sim(CitiesMixin, LandMixin, EconomyMixin, SettlementMixin, DragonsMixin, C
             self.uc_on = "urban_city" in self.on
         if not hasattr(self, "lver"):
             self.lver, self._ltab_ver, self._ltab_n = 0, -1, 0
+        if not hasattr(self, "cver"):
+            self.cver, self._ctab_key = 0, None
+        if not hasattr(self, "armed"):
+            self.armed = {pid for pid, P in self.polities.items()
+                          if P.get("army", 0.0) > 0}
         if self.events and not isinstance(self.events[0], dict):
             # before WP2 stage A: (year, kind, text)
             self.events = [dict(year=y, kind=k, text=t)

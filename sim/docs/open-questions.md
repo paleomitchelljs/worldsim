@@ -779,3 +779,5 @@ FEUD_K costs about twice that share. Feud is the largest single cause
 of the half-fill: 0.09-0.33 of heads per century (WP11 brief, "Stage B
 part 1 results"). Undecided (U): rescale FEUD_K to its stated grounds,
 leave it, or take it up under WP13 (how far state order reaches).
+**Decided (U, 2026-11-22):** "Feud_K can be lowered a bit": 0.004 ->
+0.003 (C), a quarter less, not the half its grounds would give.

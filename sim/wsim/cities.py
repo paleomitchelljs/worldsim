@@ -129,8 +129,9 @@ class CitiesMixin:
         """similarity() of two value vectors, with the affinities of
         lineages La and Lb; `same`: of one people."""
         nT = len(TRAITS)
-        d = float(np.linalg.norm(va[:nT] - vb[:nT]) + 0.3 * np.linalg.norm(
-            np.log(self.Laff[La]) - np.log(self.Laff[Lb])))
+        dv = va[:nT] - vb[:nT]
+        da = np.log(self.Laff[La] / self.Laff[Lb])
+        d = math.sqrt(dv @ dv) + 0.3 * math.sqrt(da @ da)
         if same:
             return math.exp(-d / SIM_SAME_SCALE)
         return SIM_OTHER[0] + SIM_OTHER[1] * math.exp(-d / 0.8)

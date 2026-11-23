@@ -92,9 +92,8 @@ class CultureMixin:
         s = self._sim.get(key)
         if s is None:
             dv = self.LT[a] - self.LT[b]
-            d = float(np.linalg.norm(dv) + 0.3 *
-                      np.linalg.norm(np.log(self.Laff[a]) -
-                                     np.log(self.Laff[b])))
+            da = np.log(self.Laff[a] / self.Laff[b])
+            d = math.sqrt(dv @ dv) + 0.3 * math.sqrt(da @ da)
             if self.Lpeople[a] == self.Lpeople[b]:
                 s = math.exp(-d / SIM_SAME_SCALE)
             else:

@@ -1489,7 +1489,7 @@ is k × (1 − x), a fall k × x; traits kept in [0.01, 0.99].
   kind of goods × appetite (trade offers, resource war motive).
 - `[feuding]` (U 2026-11-02: violence has an internal cost, so stateless
   peoples can stay violent but vary; form and numbers C) Each tick a
-  cell loses DT × 0.004 × f × (1 − order) of its people, f = clip((violence
+  cell loses DT × 0.003 (U→C 2026-11-22; was 0.004) × f × (1 − order) of its people, f = clip((violence
   − 0.6) / 0.4, 0, 1), order = in a state × the ruler's administration.
   Outside a state at violence 0.99 the settled density falls to about
   0.65-0.8 of capacity. More violent lineages lose more, so selection

@@ -332,20 +332,16 @@ class World:
         N, down = self.N, self.flow
         deg = np.bincount(down[down >= 0], minlength=N)
         level = np.zeros(N, int)
-        front = list(np.nonzero(deg == 0)[0])
-        order = []
-        while front:
-            nxt = []
-            for i in front:
-                order.append(i)
-                j = down[i]
-                if j >= 0:
-                    level[j] = max(level[j], level[i] + 1)
-                    deg[j] -= 1
-                    if deg[j] == 0:
-                        nxt.append(j)
-            front = nxt
-        self.order = np.array(order)
+        front = np.nonzero(deg == 0)[0]
+        while len(front):
+            # a whole front at once: every cell in it has all its
+            # upstream cells done, so its level is final
+            f = front[down[front] >= 0]
+            j = down[f]
+            np.maximum.at(level, j, level[f] + 1)
+            np.subtract.at(deg, j, 1)
+            j = np.unique(j)
+            front = j[deg[j] == 0]
         self.levels = [np.nonzero((level == lv) & (down >= 0))[0]
                        for lv in range(level.max() + 1)]
 
@@ -360,6 +356,7 @@ class World:
         """Everything that depends on where the rivers run: river links,
         foraging and irrigation, city locus and travel costs."""
         N, b = self.N, self.biome
+        self.rver = getattr(self, "rver", 0) + 1   # for Sim.ctab()
         coastal, pn = self.coastal, self.pn
         self.down = np.where(self.river, self.flow, -1)
         self.down[self.down >= 0] = np.where(
@@ -527,9 +524,8 @@ class World:
         darea = self.accumulate(self.area)
         self.river = (self.Q > 300) & (darea > 30000) & ~self.lake
         basin = np.arange(self.N)
-        for k in self.order[::-1]:
-            if self.flow[k] >= 0:
-                basin[k] = basin[self.flow[k]]
+        for c in self.levels[::-1]:       # downstream levels first
+            basin[c] = basin[self.flow[c]]
         self.basin = basin
         self.derive_rivers()
 

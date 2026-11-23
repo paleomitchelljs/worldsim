@@ -975,7 +975,8 @@ seafaring do they merge." Roster keys `region` and `anywhere`;
   technology, administration, violence and trade): APP0 0.5, APP_K 1.5,
   equal weights (C).
 - **Feuding** (`feuding`, U 2026-11-02: an internal cost of violence;
-  stateless peoples may stay violent but should vary): FEUD_K 0.004,
+  stateless peoples may stay violent but should vary): FEUD_K 0.004
+  (0.003 from 2026-11-22, U→C: "can be lowered a bit"),
   FEUD_PIVOT 0.6 (C). Reason: in the grid runs Ogres and Giants sat at
   violence 0.99 / tolerance 0.01 for thousands of years, with selection
   against violence too weak to move them.

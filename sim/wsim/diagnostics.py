@@ -339,10 +339,14 @@ class DiagnosticsMixin:
             np.bincount(self.mcul[b], weights=self.mpop[b], minlength=n)
         x = self.xrows()
         h += np.bincount(self.rp[x], weights=self.rh[x], minlength=n)
-        for P in self.polities.values():
-            # soldiers under arms (`army`) are out of their cells
+        for pid in list(self.armed):
+            # soldiers under arms (`army`) are out of their cells; `armed`
+            # holds every polity that has raised some
+            P = self.polities[pid]
             if P.get("army", 0.0) > 0:
                 h[P["culture"]] += P["army"]
+            else:
+                self.armed.discard(pid)
         return h
 
     def acct_mark(self, phase):

@@ -159,6 +159,7 @@ class WarMixin:
             self.pop[dfn[hit]] *= loss
             self.dead("raid", dh, b_pop - self.pop[dh])
             self.imp[dfn[hit]] *= 1 - 0.3 * (1 - loss)
+            self.cfix(dh)
             # capacity reads improvements: redo it where they fell
             self.raid_K(a, b, Ka, Kb, dfn[hit])
             if self.cities:
@@ -711,6 +712,7 @@ class WarMixin:
         d = min(want - a, 0.5 * opop)
         self.pop[oc] *= 1 - d / opop
         P["army"] = a + d
+        self.armed.add(P["id"])
         self.count("war_muster")
 
     def camp_trib(self, P):
@@ -918,6 +920,7 @@ class WarMixin:
                 # no home cells left: the soldiers stay under arms
                 d = 0.0
             P["army"] = a + d
+            self.armed.add(pid)
             delta[pid] = d
             if P["army"] > 0:
                 share[pid] = P["army"] / max(P.get("K_own", 0.0), 1.0)
@@ -945,6 +948,7 @@ class WarMixin:
         self.dead("ravage", h, b_mpop - self.mpop[h], minority=True)
         self.rows_scale(h, 1 - dmg, "ravage")
         self.imp[h] *= 1 - 0.3 * dmg
+        self.cfix(h)
         self.raided[h] = 1
         self.shock(t, "ravage")
         w["ravages"] = w.get("ravages", 0) + 1
@@ -1052,6 +1056,7 @@ class WarMixin:
         hint = self.cell_city == t
         self.imp[hint] *= 1 - 0.5 * IMP_SACK * self.eff(A, "viol")
         self.imp[t] *= 1 - IMP_SACK * self.eff(A, "viol")
+        self.cfix(np.append(np.nonzero(hint)[0], t))
         # a conqueror may carry off the secret
         take = self.guard[B["lin"]] & ~self.guard[La]
         for g in np.nonzero(take)[0]:
@@ -1098,6 +1103,7 @@ class WarMixin:
                 self.lost_rows(r, b_r - self.rh[r], v, "clearance")
             self.shock(t, "clearance")
             self.imp[hint] *= 0.5
+            self.cfix(hint)
             if len(A["cities"]) + len(B["cities"]) >= 5:
                 self.log("clearance", f"{self.pname(att)} clears "
                          f"{self.keys[rec['culture']]} from the city at "
@@ -1182,6 +1188,7 @@ class WarMixin:
         hint = self.cell_city == t
         self.imp[hint] *= 1 - 0.5 * IMP_SACK * self.eff(A, "viol")
         self.imp[t] *= 1 - IMP_SACK * self.eff(A, "viol")
+        self.cfix(np.append(np.nonzero(hint)[0], t))
         take = self.guard[B["lin"]] & ~self.guard[A["lin"]]
         for g in np.nonzero(take)[0]:
             if self.R("war").random() < GUARD_TAKE * (2 if was_cap else 1):

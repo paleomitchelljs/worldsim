@@ -48,6 +48,7 @@ class LandMixin:
                 self.Kcap[cc] = CITY_POP * (CITY_CAP0 + CITY_CAP1 * adm ** 2)
         self.waste = np.minimum(1.0, self.waste + DT / WASTE_YEARS)
         self.Kcell *= self.waste
+        self.cver += 1                    # Kcell, Kcap, cm, eco: new
 
     def dev(self, L):
         """Development (0-1) of lineages L: their technologies' mean."""
@@ -155,7 +156,36 @@ class LandMixin:
         """(farming K, herding K or None) of cells j for lineages L."""
         W = self.W
         a, tools, sf, eat, fk, pw, dv, h = self.lterms(L)
-        cm = self.cm
+        R, F, FO, HE, AK = self.ctab()
+        # grassland sod resists the plough until bronze, then iron
+        farm = F[j] - self.c_grass[j] * (1 - sf) * R[j]
+        # what there is to farm and herd: the packages a lineage holds
+        b = W.biome[j]
+        FIT, CR, AN = self.ltab()
+        cr, an = CR[L, b], AN[L, b]
+        farm = farm * (DOM_FLOOR + (1 - DOM_FLOOR) * cr)
+        herd = HE[j] * (DOM_HFLOOR + (1 - DOM_HFLOOR) * an)
+        forage = FO[j]
+        dens = forage * (1 - a) + farm * a * tools
+        fit = FIT[L, b]
+        # near a biome edge, a dry or wet spell moves the edge
+        f = self.eco_f[j]
+        fit = fit + f * (FIT[L, np.maximum(self.eco_tgt[j], 0)] - fit)
+        coast = 1 + fk * W.water[j]
+        if self.pwet.any():
+            fit = fit * (1 + pw * W.wet[j])
+        cap = self.Kcap[j] / eat
+        base = AK[j] * fit * coast * dv / eat
+        Kc = np.minimum(base * dens, cap)
+        # herders forage too; animals make the difference
+        Kh = np.minimum(base * (forage * (1 - h) + herd * h), cap)
+        return Kc, Kh
+
+    def cterms(self, j):
+        """K2's factors that depend on the cell alone, for cells j: rain-fed
+        yield (R) and all farm yield (F), both after land condition and
+        salt; forage (FO) and herd (HE) yields; area x Kcell (AK)."""
+        W, cm = self.W, self.cm
         rain = W.rain_ws[j]
         forage = W.forage[j] * cm[2, j]
         herd = W.herd[j] * cm[3, j]
@@ -170,40 +200,30 @@ class LandMixin:
             unc = 1 - self.clear[j] if "clearing" in self.on else 1
             forage = forage * (1 + BURN_GAIN * self.burn[j] * unc)
         # canals carry irrigation; field works and terraces help rain-fed
-        cm0, cm1 = cm[0, j], cm[1, j]
         imp = self.imp[j]
-        farm = rain * cm0 * (1 + IMP_RAIN * imp) + \
-            W.irr_w[j] * cm1 * (IMP_IRR0 + (1 - IMP_IRR0) * imp) + \
-            W.fish[j]
-        rainc = rain * cm0 * (1 + IMP_RAIN * imp)
-        # grassland sod resists the plough until bronze, then iron
-        grass = W.biome[j] == BIOMES.index("Grassland")
-        farm = farm - grass * (1 - sf) * rainc
-        farm = farm * self.land[j]
-        farm = farm * (1 - SALT_MAX * self.salt[j] * W.irr_share[j])
-        # what there is to farm and herd: the packages a lineage holds
-        b = W.biome[j]
-        FIT, CR, AN = self.ltab()
-        cr, an = CR[L, b], AN[L, b]
-        farm = farm * (DOM_FLOOR + (1 - DOM_FLOOR) * cr)
-        herd = herd * (DOM_HFLOOR + (1 - DOM_HFLOOR) * an)
-        dens = forage * (1 - a) + farm * a * tools
-        fit = FIT[L, b]
-        # near a biome edge, a dry or wet spell moves the edge
-        f = self.eco_f[j]
-        fit = fit + f * (FIT[L, np.maximum(self.eco_tgt[j], 0)] - fit)
-        coast = 1 + fk * W.water[j]
-        if self.pwet.any():
-            fit = fit * (1 + pw * W.wet[j])
-        cap = self.Kcap[j] / eat
-        coast = coast * dv
-        Kc = np.minimum(W.area[j] * dens * fit * self.Kcell[j] * coast / eat,
-                        cap)
-        # herders forage too; animals make the difference
-        hd = forage * (1 - h) + herd * h
-        Kh = np.minimum(W.area[j] * hd * fit * self.Kcell[j] * coast / eat,
-                        cap)
-        return Kc, Kh
+        R = rain * cm[0, j] * (1 + IMP_RAIN * imp)
+        lf = self.land[j] * (1 - SALT_MAX * self.salt[j] * W.irr_share[j])
+        F = (R + W.irr_w[j] * cm[1, j] * (IMP_IRR0 + (1 - IMP_IRR0) * imp) +
+             W.fish[j]) * lf
+        return R * lf, F, forage, herd, W.area[j] * self.Kcell[j]
+
+    def ctab(self):
+        """Cell vectors of cterms() over all cells, rebuilt when cver moves
+        (prepare_capacity, land_use) or the rivers change; `cfix` refreshes
+        single cells whose works a raid or sack damaged."""
+        key = (self.cver, getattr(self.W, "rver", 0))
+        if self._ctab_key != key:
+            self._ctab = self.cterms(slice(None))
+            self.c_grass = self.W.biome == BIOMES.index("Grassland")
+            self._ctab_key = key
+        return self._ctab
+
+    def cfix(self, j):
+        """Refresh ctab() at cells j after a write to their works."""
+        if self._ctab_key is None:
+            return
+        for v, x in zip(self._ctab, self.cterms(j)):
+            v[j] = x
 
     def climate_setup(self):
         """Fixed patterns, their time series for the whole run, and the
@@ -628,6 +648,7 @@ class LandMixin:
             self.burn += DT * np.where(gap > 0, BURN_RATE * gap,
                                        BURN_REGROW * gap)
             np.clip(self.burn, 0, 1, out=self.burn)
+        self.cver += 1                    # land, salt, works, clearing: new
 
     def clear_terrain(self):
         """`clear_terrain`: cells whose cleared share has moved by
