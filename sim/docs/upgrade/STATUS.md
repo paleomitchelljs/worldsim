@@ -2818,3 +2818,20 @@ runs (fixed after).
 `sensitivity.md`). Item 2: extra rows in technology contact. Item 1
 waits for U. Not separately run (rules change only in 2's contact).
 
+
+### WP15: items 1 and 2 (2026-11-22, 2998603)
+
+**Asked by U (2026-11-22).** Keep `tech_costs` for now, no trials;
+item 1: "state's culture with ruling lineage's tolerance determining
+how much the state ends up culturally compromising" (D18); item 2: do
+them.
+
+**Done.** Switch `state_view` (default): the revolt alien term,
+subjects' weight in strength and expulsion read the ruling lineage's
+values moved toward the state's culture by its tolerance. Item 2:
+extra rows in city composition, famine (`famine_rows`), clearance and
+the snapshots (`xr_*` in history.npz). WP15 is closed.
+
+**Runs.** `wp15b_seed*` and `wp15x_nosv_seed101` (summary). Population
+29.6-41.8M (`wp14b` 37.8-51.7), states with 3+ cities 17-44, wars
+377-702; steel in 3 seeds, 6,825-7,930. Run-log.md.

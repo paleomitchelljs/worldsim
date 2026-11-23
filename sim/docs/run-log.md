@@ -2779,3 +2779,41 @@ Ablations (population at 8000, M; states with 3+ cities):
   sea deaths (3% of deaths) move it.
 - Metal is now lost: 16-1,107 forgettings a run; the steel years barely
   move.
+
+### 2026-11-22 WP15: state's view, further peoples (`wp15b_seed101`-`104`, `106`; `wp15x_nosv_seed101`)
+
+What it tested: WP15 item 1 (U, D18: the state's culture, the ruling
+lineage's tolerance setting how far it compromises; switch
+`state_view`) and item 2 (extra rows in city composition, famine,
+clearance and snapshots), on top of WP14 with `tech_costs` kept (U) and
+the innovation cost now reaching `grow_shared` rows. Summary runs
+against `wp14b`; seed 101 again with `state_view` off.
+
+| Measure | wp14b | wp15b |
+|---|---|---|
+| Population at 8000 (M) | 37.8-51.7 | 29.6-41.8 |
+| Urban share at the end | 0.030-0.043 | 0.019-0.032 |
+| States with 3+ cities | 25-94 | 17-44 |
+| Wars | 670-1,046 | 377-702 |
+| Deaths expelled, share | 0.0021-0.0042 | 0.0008-0.0029 |
+| Minority share of heads, end | 0.019-0.032 | 0.019-0.029 |
+| Seeds reaching iron / steel | 4 / 3 | 3 / 3 |
+| First steel (yr), where reached | 5,515-6,670 | 6,825-7,930 |
+
+Seed 101 (population M; states with 3+ cities; wars; first steel):
+`wp14b` 51.7, 94, 1,046, 5,515; `state_view` off 39.2, 66, 830, 6,970;
+on 35.0, 32, 477, 7,505.
+
+**Found.**
+- `state_view` lowers revolt: the view is usually more tolerant than the
+  ruling lineage (city life raises the capital's tolerance), so the
+  alien term and expulsion fall (seed 101: 2 revolts in the chronicle
+  against 10; expelled deaths about half). With fewer secessions there
+  are fewer states and wars.
+- On seed 101 the other changes (the `grow_shared` cost and item 2)
+  account for more of the fall from `wp14b` than `state_view` does
+  (51.7 to 39.2 against 39.2 to 35.0). One seed; seed 101 moved 44-52M
+  among WP14's variants.
+- Metal comes later again, and two seeds reach no iron (`wp14b`'s
+  ranges were over the seeds that reached each stage). Reported, not
+  tuned (D16, D17).
